@@ -953,6 +953,112 @@
             background-color: #7A4020;
         }
 
+        /* Achievement Toast */
+        .achievement-toast {
+            position: fixed;
+            top: -80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #2E7D32, #1B5E20);
+            border: 2px solid #4CAF50;
+            border-radius: 8px;
+            padding: 12px 24px;
+            color: #F5DEB3;
+            font-family: "Georgia", serif;
+            font-weight: bold;
+            z-index: 500;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(76, 175, 80, 0.5);
+            transition: top 0.5s ease;
+            max-width: 350px;
+        }
+
+        .achievement-toast.show {
+            top: 20px;
+        }
+
+        .achievement-toast .toast-icon {
+            font-size: 1.5em;
+            margin-bottom: 4px;
+        }
+
+        .achievement-toast .toast-title {
+            font-size: 0.75em;
+            color: #4CAF50;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .achievement-toast .toast-name {
+            font-size: 1.1em;
+            color: #FFD700;
+        }
+
+        /* Achievement display on menu */
+        .achievements-section {
+            margin-top: 25px;
+            text-align: center;
+        }
+
+        .achievements-title {
+            font-size: 1em;
+            color: #DAA520;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .achievements-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .achievement-badge {
+            width: 60px;
+            padding: 6px 4px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid #555;
+            border-radius: 6px;
+            text-align: center;
+            opacity: 0.4;
+            transition: all 0.3s;
+        }
+
+        .achievement-badge.unlocked {
+            opacity: 1;
+            border-color: #FFD700;
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .achievement-badge .badge-icon {
+            font-size: 1.5em;
+            margin-bottom: 2px;
+        }
+
+        .achievement-badge .badge-name {
+            font-size: 0.5em;
+            color: #C9A961;
+            line-height: 1.2;
+        }
+
+        .achievement-badge.unlocked .badge-name {
+            color: #FFD700;
+        }
+
+        /* Stats line on menu */
+        .stats-line {
+            font-size: 0.8em;
+            color: #C9A961;
+            margin-top: 15px;
+        }
+
+        .stats-line span {
+            color: #FFD700;
+            font-weight: bold;
+        }
+
         /* Responsive */
         @media (max-width: 800px) {
             .menu-title {
@@ -1009,6 +1115,11 @@
                 <button class="diff-btn" id="diffEasy">Easy</button>
                 <button class="diff-btn selected" id="diffNormal">Normal</button>
                 <button class="diff-btn" id="diffHard">Hard</button>
+            </div>
+            <div class="stats-line" id="statsLine"></div>
+            <div class="achievements-section">
+                <div class="achievements-title">Medals</div>
+                <div class="achievements-grid" id="achievementsGrid"></div>
             </div>
         </div>
     </div>
@@ -1117,6 +1228,12 @@
                 <button class="campaign-menu-btn" id="campaignMenuBtn">Campaign Menu</button>
             </div>
         </div>
+    </div>
+
+    <div class="achievement-toast" id="achievementToast">
+        <div class="toast-icon" id="toastIcon"></div>
+        <div class="toast-title">Medal Earned!</div>
+        <div class="toast-name" id="toastName"></div>
     </div>
 
     <script>
@@ -1228,6 +1345,135 @@
                     _campaignProgress.unlocked.push(next);
                 }
                 saveCampaignProgress();
+            }
+
+            // ========== ACHIEVEMENTS ==========
+            var ACHIEVEMENTS = [
+                { id: "first_win", name: "First Victory", icon: "\u2B50", desc: "Win your first game" },
+                { id: "campaign_hero", name: "Campaign Hero", icon: "\uD83C\uDFC6", desc: "Complete all 5 campaign battles" },
+                { id: "blitz_master", name: "Blitz Master", icon: "\u26A1", desc: "Win with 3+ Blitz units on the board" },
+                { id: "perfect_general", name: "Perfect General", icon: "\uD83D\uDEE1\uFE0F", desc: "Win without losing any HP" },
+                { id: "card_storm", name: "Card Storm", icon: "\uD83C\uDCCF", desc: "Play 5+ cards in a single turn" },
+                { id: "comeback_kid", name: "Comeback Kid", icon: "\uD83D\uDD25", desc: "Win with 5 or less HP remaining" },
+                { id: "ten_wins", name: "Veteran", icon: "\uD83C\uDF96\uFE0F", desc: "Win 10 games total" },
+                { id: "hard_mode", name: "Iron Will", icon: "\uD83D\uDCAA", desc: "Win a game on Hard difficulty" }
+            ];
+
+            var _stats = null;
+            var _cardsPlayedThisTurn = 0;
+
+            function loadStats() {
+                try {
+                    var saved = localStorage.getItem("liberty1776_stats");
+                    if (saved) _stats = JSON.parse(saved);
+                } catch (e) {}
+                if (!_stats) {
+                    _stats = { wins: 0, achievements: [] };
+                }
+            }
+
+            function saveStats() {
+                try {
+                    localStorage.setItem("liberty1776_stats", JSON.stringify(_stats));
+                } catch (e) {}
+            }
+
+            function hasAchievement(id) {
+                return _stats.achievements.indexOf(id) !== -1;
+            }
+
+            function unlockAchievement(id) {
+                if (hasAchievement(id)) return;
+                _stats.achievements.push(id);
+                saveStats();
+                // Show toast
+                var ach = null;
+                for (var i = 0; i < ACHIEVEMENTS.length; i++) {
+                    if (ACHIEVEMENTS[i].id === id) { ach = ACHIEVEMENTS[i]; break; }
+                }
+                if (ach) showAchievementToast(ach);
+            }
+
+            function showAchievementToast(ach) {
+                var toast = document.getElementById("achievementToast");
+                var icon = document.getElementById("toastIcon");
+                var name = document.getElementById("toastName");
+                if (!toast) return;
+                icon.textContent = ach.icon;
+                name.textContent = ach.name;
+                toast.classList.add("show");
+                setTimeout(function() {
+                    toast.classList.remove("show");
+                }, 3000);
+            }
+
+            function checkAchievements() {
+                if (!G || !G.gameOver) return;
+                var won = G.winner === "player";
+
+                if (won) {
+                    // First win
+                    _stats.wins += 1;
+                    saveStats();
+                    unlockAchievement("first_win");
+
+                    // Ten wins
+                    if (_stats.wins >= 10) unlockAchievement("ten_wins");
+
+                    // Perfect General - full HP
+                    if (G.player.hp >= G.player.maxHP) unlockAchievement("perfect_general");
+
+                    // Comeback Kid - 5 or less HP
+                    if (G.player.hp <= 5) unlockAchievement("comeback_kid");
+
+                    // Blitz Master - 3+ blitz units on board
+                    var blitzCount = 0;
+                    for (var i = 0; i < G.player.board.length; i++) {
+                        if (G.player.board[i].def.blitz) blitzCount++;
+                    }
+                    if (blitzCount >= 3) unlockAchievement("blitz_master");
+
+                    // Campaign Hero - all 5 battles complete
+                    if (_campaignMode && _campaignProgress.completed.length >= 5) {
+                        unlockAchievement("campaign_hero");
+                    }
+
+                    // Hard mode win
+                    var eff = _campaignMode ? BATTLES[_currentBattle].difficulty : _difficulty;
+                    if (eff === "hard") unlockAchievement("hard_mode");
+                }
+            }
+
+            function renderAchievements() {
+                var grid = document.getElementById("achievementsGrid");
+                var statsLine = document.getElementById("statsLine");
+                if (!grid) return;
+                grid.innerHTML = "";
+
+                for (var i = 0; i < ACHIEVEMENTS.length; i++) {
+                    var ach = ACHIEVEMENTS[i];
+                    var unlocked = hasAchievement(ach.id);
+
+                    var badge = document.createElement("div");
+                    badge.className = "achievement-badge" + (unlocked ? " unlocked" : "");
+                    badge.title = ach.desc;
+
+                    var iconEl = document.createElement("div");
+                    iconEl.className = "badge-icon";
+                    iconEl.textContent = unlocked ? ach.icon : "\uD83D\uDD12";
+
+                    var nameEl = document.createElement("div");
+                    nameEl.className = "badge-name";
+                    nameEl.textContent = unlocked ? ach.name : "???";
+
+                    badge.appendChild(iconEl);
+                    badge.appendChild(nameEl);
+                    grid.appendChild(badge);
+                }
+
+                if (statsLine) {
+                    statsLine.innerHTML = "Wins: <span>" + _stats.wins + "</span> \u2022 Medals: <span>" + _stats.achievements.length + "/" + ACHIEVEMENTS.length + "</span>";
+                }
             }
 
             // ========== CARD DEFINITIONS ==========
@@ -1412,6 +1658,7 @@
 
                 G.player.hand.splice(idx, 1);
                 G.player.supply -= instance.def.cost;
+                _cardsPlayedThisTurn++;
                 _activeSide = G.player;
 
                 if (instance.def.type === "unit") {
@@ -1550,6 +1797,10 @@
 
             function endTurn() {
                 if (G.phase !== "player" || G.gameOver) return;
+
+                // Card Storm achievement
+                if (_cardsPlayedThisTurn >= 5) unlockAchievement("card_storm");
+                _cardsPlayedThisTurn = 0;
 
                 G.phase = "animating";
                 render();
@@ -1740,6 +1991,7 @@
             function endGame() {
                 G.gameOver = true;
                 G.phase = "over";
+                checkAchievements();
             }
 
             // ========== LOGGING ==========
@@ -2488,13 +2740,16 @@
 
                 selectedCard = null;
                 G = null;
+                renderAchievements();
             }
 
             // ========== PUBLIC API ==========
             function start() {
                 initCardDefs();
                 loadCampaignProgress();
+                loadStats();
                 setupEventListeners();
+                renderAchievements();
             }
 
             return {
