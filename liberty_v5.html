@@ -1852,14 +1852,6 @@
     <!-- Game Screen -->
     <div id="gameScreen">
         <div class="enemy-info" id="enemyInfoBar" style="cursor: pointer;">
-            <div class="hq-card enemy-hq">
-                <div class="hq-name" id="enemyName">-</div>
-                <div class="hq-shield">
-                    <svg viewBox="0 0 40 46"><path d="M20 2 L38 10 L38 26 Q38 40 20 44 Q2 40 2 26 L2 10 Z" fill="rgba(220,20,60,0.35)" stroke="#DC143C" stroke-width="2"/></svg>
-                    <span class="hq-hp" id="enemyHP">-</span>
-                </div>
-                <div class="hq-bar-mini"><div class="hq-bar-mini-fill enemy" id="enemyHPBar"></div></div>
-            </div>
             <div class="info-section">
                 <div class="info-label">Hand:</div>
                 <div class="info-value" id="enemyHandCount">-</div>
@@ -1877,7 +1869,16 @@
         <div class="trap-zone" id="enemyTrapZone"></div>
         <div class="board-zone enemy-support-zone">
             <div class="zone-label">Enemy Reserve</div>
-            <div class="zone-cards" id="enemyReserve"></div>
+            <div class="zone-cards" id="enemyReserve">
+                <div class="hq-card enemy-hq">
+                    <div class="hq-name" id="enemyName">-</div>
+                    <div class="hq-shield">
+                        <svg viewBox="0 0 40 46"><path d="M20 2 L38 10 L38 26 Q38 40 20 44 Q2 40 2 26 L2 10 Z" fill="rgba(220,20,60,0.35)" stroke="#DC143C" stroke-width="2"/></svg>
+                        <span class="hq-hp" id="enemyHP">-</span>
+                    </div>
+                    <div class="hq-bar-mini"><div class="hq-bar-mini-fill enemy" id="enemyHPBar"></div></div>
+                </div>
+            </div>
         </div>
 
         <div class="frontline-divider">
@@ -1895,19 +1896,20 @@
 
         <div class="board-zone player-support-zone">
             <div class="zone-label">Your Reserve</div>
-            <div class="zone-cards" id="playerReserve"></div>
+            <div class="zone-cards" id="playerReserve">
+                <div class="hq-card player-hq">
+                    <div class="hq-name" id="playerName">-</div>
+                    <div class="hq-shield">
+                        <svg viewBox="0 0 40 46"><path d="M20 2 L38 10 L38 26 Q38 40 20 44 Q2 40 2 26 L2 10 Z" fill="rgba(65,105,225,0.35)" stroke="#4169E1" stroke-width="2"/></svg>
+                        <span class="hq-hp" id="playerHP">-</span>
+                    </div>
+                    <div class="hq-bar-mini"><div class="hq-bar-mini-fill player" id="playerHPBar"></div></div>
+                </div>
+            </div>
         </div>
         <div class="trap-zone" id="playerTrapZone"></div>
 
         <div class="player-info">
-            <div class="hq-card player-hq">
-                <div class="hq-name" id="playerName">-</div>
-                <div class="hq-shield">
-                    <svg viewBox="0 0 40 46"><path d="M20 2 L38 10 L38 26 Q38 40 20 44 Q2 40 2 26 L2 10 Z" fill="rgba(65,105,225,0.35)" stroke="#4169E1" stroke-width="2"/></svg>
-                    <span class="hq-hp" id="playerHP">-</span>
-                </div>
-                <div class="hq-bar-mini"><div class="hq-bar-mini-fill player" id="playerHPBar"></div></div>
-            </div>
             <div class="info-section">
                 <div class="info-label">Hand:</div>
                 <div class="info-value" id="playerHandCount">-</div>
@@ -3278,10 +3280,19 @@
 
                 if (!enemyReserve || !enemyFrontline || !playerFrontline || !playerReserve) return;
 
-                enemyReserve.innerHTML = "";
+                // Clear zones but preserve HQ cards
+                function clearZoneKeepHQ(zone) {
+                    var children = zone.children;
+                    for (var i = children.length - 1; i >= 0; i--) {
+                        if (!children[i].classList.contains("hq-card")) {
+                            zone.removeChild(children[i]);
+                        }
+                    }
+                }
+                clearZoneKeepHQ(enemyReserve);
                 enemyFrontline.innerHTML = "";
                 playerFrontline.innerHTML = "";
-                playerReserve.innerHTML = "";
+                clearZoneKeepHQ(playerReserve);
 
                 // Enemy units
                 for (var i = 0; i < G.enemy.board.length; i++) {
