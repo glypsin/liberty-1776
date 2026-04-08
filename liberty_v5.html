@@ -30,7 +30,7 @@
         }
 
         /* Screens */
-        #menuScreen, #gameScreen, #gameOverScreen {
+        #menuScreen, #gameScreen, #gameOverScreen, #campaignScreen {
             display: none;
             width: 100%;
             height: 100%;
@@ -40,7 +40,7 @@
             z-index: 10;
         }
 
-        #menuScreen.active, #gameScreen.active, #gameOverScreen.active {
+        #menuScreen.active, #gameScreen.active, #gameOverScreen.active, #campaignScreen.active {
             display: flex;
         }
 
@@ -544,6 +544,280 @@
             z-index: 100;
         }
 
+        /* Campaign Screen */
+        #campaignScreen {
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            background: linear-gradient(135deg, #2C1810 0%, #1A0F0A 100%);
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .campaign-container {
+            text-align: center;
+            padding: 20px;
+            max-width: 700px;
+            width: 100%;
+        }
+
+        .campaign-title {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            margin-bottom: 10px;
+        }
+
+        .campaign-subtitle {
+            font-size: 1em;
+            color: #F5DEB3;
+            margin-bottom: 25px;
+        }
+
+        .battle-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .battle-card {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid #DAA520;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: left;
+        }
+
+        .battle-card:hover:not(.locked) {
+            background: rgba(139, 69, 19, 0.5);
+            transform: scale(1.02);
+            box-shadow: 0 0 15px rgba(218, 165, 32, 0.4);
+        }
+
+        .battle-card.locked {
+            opacity: 0.4;
+            cursor: not-allowed;
+            border-color: #555;
+        }
+
+        .battle-card.completed {
+            border-color: #4CAF50;
+        }
+
+        .battle-card.completed .battle-status {
+            color: #4CAF50;
+        }
+
+        .battle-number {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #FFD700;
+            min-width: 45px;
+            text-align: center;
+        }
+
+        .battle-card.locked .battle-number {
+            color: #555;
+        }
+
+        .battle-info {
+            flex: 1;
+        }
+
+        .battle-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #F5DEB3;
+            margin-bottom: 3px;
+        }
+
+        .battle-card.locked .battle-name {
+            color: #777;
+        }
+
+        .battle-desc {
+            font-size: 0.85em;
+            color: #C9A961;
+            line-height: 1.3;
+        }
+
+        .battle-card.locked .battle-desc {
+            color: #555;
+        }
+
+        .battle-difficulty {
+            font-size: 0.75em;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .battle-difficulty.easy { background: #2E7D32; color: #C8E6C9; }
+        .battle-difficulty.normal { background: #F57F17; color: #FFF8E1; }
+        .battle-difficulty.hard { background: #C62828; color: #FFCDD2; }
+
+        .battle-status {
+            font-size: 1.5em;
+            min-width: 30px;
+            text-align: center;
+        }
+
+        .campaign-back-btn {
+            padding: 12px 30px;
+            font-size: 1em;
+            background-color: #5A3010;
+            color: #F5DEB3;
+            border: 2px solid #8B6914;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            font-family: "Georgia", serif;
+        }
+
+        .campaign-back-btn:hover {
+            background-color: #7A4020;
+        }
+
+        /* Difficulty selector for Skirmish */
+        .difficulty-selector {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+            margin-bottom: 10px;
+        }
+
+        .diff-btn {
+            padding: 8px 18px;
+            font-size: 0.9em;
+            background-color: #5A3010;
+            color: #F5DEB3;
+            border: 2px solid #8B6914;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            font-family: "Georgia", serif;
+        }
+
+        .diff-btn:hover {
+            background-color: #7A4020;
+        }
+
+        .diff-btn.selected {
+            border-color: #FFD700;
+            background-color: #8B4513;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+        }
+
+        .difficulty-label {
+            font-size: 0.9em;
+            color: #C9A961;
+            margin-top: 15px;
+        }
+
+        /* Battle intro overlay */
+        .battle-intro {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .battle-intro-title {
+            font-size: 2.5em;
+            color: #FFD700;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        .battle-intro-year {
+            font-size: 1.3em;
+            color: #DAA520;
+            margin-bottom: 20px;
+        }
+
+        .battle-intro-text {
+            font-size: 1.1em;
+            color: #F5DEB3;
+            max-width: 500px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .battle-intro-btn {
+            padding: 15px 40px;
+            font-size: 1.2em;
+            background-color: #8B4513;
+            color: #F5DEB3;
+            border: 3px solid #DAA520;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            font-family: "Georgia", serif;
+        }
+
+        .battle-intro-btn:hover {
+            background-color: #A0522D;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(218, 165, 32, 0.5);
+        }
+
+        /* Campaign victory additions to game over */
+        .campaign-next-btn {
+            padding: 15px 40px;
+            font-size: 1.2em;
+            background-color: #2E7D32;
+            color: #F5DEB3;
+            border: 3px solid #4CAF50;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            font-family: "Georgia", serif;
+            margin-top: 10px;
+        }
+
+        .campaign-next-btn:hover {
+            background-color: #388E3C;
+            transform: scale(1.05);
+        }
+
+        .campaign-menu-btn {
+            padding: 12px 30px;
+            font-size: 1em;
+            background-color: #5A3010;
+            color: #F5DEB3;
+            border: 2px solid #8B6914;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            font-family: "Georgia", serif;
+            margin-top: 10px;
+        }
+
+        .campaign-menu-btn:hover {
+            background-color: #7A4020;
+        }
+
         /* Responsive */
         @media (max-width: 800px) {
             .menu-title {
@@ -578,9 +852,26 @@
                 Command your forces through the American Revolution. Choose your faction and claim victory!
             </div>
             <div class="menu-buttons">
-                <button class="menu-btn" id="playPatriotsBtn">Play as Patriots</button>
-                <button class="menu-btn" id="playBritishBtn">Play as British</button>
+                <button class="menu-btn" id="campaignBtn">Campaign</button>
+                <button class="menu-btn" id="skirmishPatriotsBtn">Skirmish — Patriots</button>
+                <button class="menu-btn" id="skirmishBritishBtn">Skirmish — British</button>
             </div>
+            <div class="difficulty-label">Skirmish Difficulty:</div>
+            <div class="difficulty-selector">
+                <button class="diff-btn" id="diffEasy">Easy</button>
+                <button class="diff-btn selected" id="diffNormal">Normal</button>
+                <button class="diff-btn" id="diffHard">Hard</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Campaign Screen -->
+    <div id="campaignScreen">
+        <div class="campaign-container">
+            <div class="campaign-title">Campaign</div>
+            <div class="campaign-subtitle">Fight through the key battles of the American Revolution</div>
+            <div class="battle-list" id="battleList"></div>
+            <button class="campaign-back-btn" id="campaignBackBtn">Back to Menu</button>
         </div>
     </div>
 
@@ -653,6 +944,11 @@
             <div class="game-over-title" id="gameOverTitle">-</div>
             <div class="game-over-text" id="gameOverText">-</div>
             <button class="game-over-btn" id="playAgainBtn">Play Again</button>
+            <div id="campaignButtons" style="display:none;">
+                <button class="campaign-next-btn" id="nextBattleBtn" style="display:none;">Next Battle</button>
+                <br>
+                <button class="campaign-menu-btn" id="campaignMenuBtn">Campaign Menu</button>
+            </div>
         </div>
     </div>
 
@@ -666,6 +962,106 @@
             var audioContext = null;
             var selectedCard = null;
             var _activeSide = null; // tracks which side is currently acting (for battleCry context)
+            var _difficulty = "normal"; // easy, normal, hard
+            var _campaignMode = false;
+            var _currentBattle = 0;
+            var _campaignProgress = null;
+
+            // ========== CAMPAIGN DATA ==========
+            var BATTLES = [
+                {
+                    id: "lexington",
+                    name: "Lexington & Concord",
+                    year: "April 1775",
+                    desc: "The first shots of the revolution! Defend the militia against British regulars.",
+                    intro: "The British march to seize colonial weapons stores. Minutemen gather on the green. The shot heard round the world is about to ring out.",
+                    difficulty: "easy",
+                    enemyHP: 20,
+                    playerHP: 30,
+                    enemyExtraCards: 0
+                },
+                {
+                    id: "bunkerhill",
+                    name: "Battle of Bunker Hill",
+                    year: "June 1775",
+                    desc: "Hold the hill against waves of British assault. Don't fire until you see the whites of their eyes!",
+                    intro: "Colonial forces fortify Breed's Hill overlooking Boston Harbor. The British launch a frontal assault uphill. Hold your ground, soldier!",
+                    difficulty: "easy",
+                    enemyHP: 25,
+                    playerHP: 30,
+                    enemyExtraCards: 0
+                },
+                {
+                    id: "trenton",
+                    name: "Crossing the Delaware",
+                    year: "December 1776",
+                    desc: "A daring Christmas night attack on the Hessian garrison at Trenton.",
+                    intro: "Washington's army crosses the icy Delaware River on Christmas night. The Hessian mercenaries won't expect an attack in this weather. Surprise is your greatest weapon!",
+                    difficulty: "normal",
+                    enemyHP: 30,
+                    playerHP: 30,
+                    enemyExtraCards: 1
+                },
+                {
+                    id: "saratoga",
+                    name: "Battle of Saratoga",
+                    year: "October 1777",
+                    desc: "The turning point of the war. Defeat Burgoyne to win French alliance!",
+                    intro: "General Burgoyne's army is surrounded in upstate New York. Victory here will convince France to join our cause. The fate of the revolution hangs in the balance!",
+                    difficulty: "normal",
+                    enemyHP: 30,
+                    playerHP: 28,
+                    enemyExtraCards: 1
+                },
+                {
+                    id: "yorktown",
+                    name: "Siege of Yorktown",
+                    year: "October 1781",
+                    desc: "The final battle! Trap Cornwallis and win American independence!",
+                    intro: "Cornwallis is pinned at Yorktown. The French fleet blocks escape by sea. This is the decisive moment — victory here means independence for America!",
+                    difficulty: "hard",
+                    enemyHP: 35,
+                    playerHP: 28,
+                    enemyExtraCards: 2
+                }
+            ];
+
+            function loadCampaignProgress() {
+                try {
+                    var saved = localStorage.getItem("liberty1776_campaign");
+                    if (saved) {
+                        _campaignProgress = JSON.parse(saved);
+                    }
+                } catch (e) {}
+                if (!_campaignProgress) {
+                    _campaignProgress = { completed: [], unlocked: [0] };
+                }
+            }
+
+            function saveCampaignProgress() {
+                try {
+                    localStorage.setItem("liberty1776_campaign", JSON.stringify(_campaignProgress));
+                } catch (e) {}
+            }
+
+            function isBattleUnlocked(index) {
+                return _campaignProgress.unlocked.indexOf(index) !== -1;
+            }
+
+            function isBattleCompleted(index) {
+                return _campaignProgress.completed.indexOf(index) !== -1;
+            }
+
+            function completeBattle(index) {
+                if (_campaignProgress.completed.indexOf(index) === -1) {
+                    _campaignProgress.completed.push(index);
+                }
+                var next = index + 1;
+                if (next < BATTLES.length && _campaignProgress.unlocked.indexOf(next) === -1) {
+                    _campaignProgress.unlocked.push(next);
+                }
+                saveCampaignProgress();
+            }
 
             // ========== CARD DEFINITIONS ==========
             function initCardDefs() {
@@ -711,10 +1107,21 @@
             }
 
             // ========== GAME STATE ==========
-            function initGameState(playerFaction) {
+            function initGameState(playerFaction, options) {
+                options = options || {};
                 var enemyFaction = playerFaction === "patriots" ? "british" : "patriots";
                 var deck = createDeck(playerFaction);
                 var enemyDeck = createDeck(enemyFaction);
+
+                var playerHP = options.playerHP || 30;
+                var enemyHP = options.enemyHP || 30;
+
+                // Difficulty modifiers
+                if (_difficulty === "easy" && !options.enemyHP) {
+                    enemyHP = 25;
+                } else if (_difficulty === "hard" && !options.enemyHP) {
+                    enemyHP = 35;
+                }
 
                 G = {
                     phase: "player",
@@ -722,8 +1129,8 @@
                     enemyFaction: enemyFaction,
                     player: {
                         name: playerFaction === "patriots" ? "Continental Army" : "British Empire",
-                        hp: 30,
-                        maxHP: 30,
+                        hp: playerHP,
+                        maxHP: playerHP,
                         hand: [],
                         board: [],
                         deck: deck,
@@ -732,8 +1139,8 @@
                     },
                     enemy: {
                         name: enemyFaction === "patriots" ? "Continental Army" : "British Empire",
-                        hp: 30,
-                        maxHP: 30,
+                        hp: enemyHP,
+                        maxHP: enemyHP,
                         hand: [],
                         board: [],
                         deck: enemyDeck,
@@ -746,7 +1153,21 @@
                     winner: null
                 };
 
+                // Enemy draws extra cards on harder difficulties / campaign battles
+                var extraCards = options.enemyExtraCards || 0;
+                if (!_campaignMode) {
+                    if (_difficulty === "hard") extraCards = 1;
+                }
+
                 _drawCards(3);
+
+                // Give enemy extra starting cards for difficulty
+                if (extraCards > 0) {
+                    _activeSide = G.enemy;
+                    _drawCards(extraCards);
+                    _activeSide = null;
+                }
+
                 _log("Game started! You play as " + playerFaction + ".");
             }
 
@@ -1022,19 +1443,33 @@
                 }
 
                 // Attack
+                var effectiveDiff = _campaignMode ? BATTLES[_currentBattle].difficulty : _difficulty;
                 for (var i = 0; i < G.enemy.board.length; i++) {
                     var attacker = G.enemy.board[i];
                     if (attacker.exhausted) continue;
 
-                    // Find target
+                    // Find target based on difficulty
                     if (G.player.board.length > 0) {
-                        var weakest = G.player.board[0];
-                        for (var j = 1; j < G.player.board.length; j++) {
-                            if (G.player.board[j].hp < weakest.hp) {
-                                weakest = G.player.board[j];
+                        var target = G.player.board[0];
+                        if (effectiveDiff === "hard") {
+                            // Hard: target highest attack threat
+                            for (var j = 1; j < G.player.board.length; j++) {
+                                if (G.player.board[j].atk > target.atk) {
+                                    target = G.player.board[j];
+                                }
+                            }
+                        } else if (effectiveDiff === "easy") {
+                            // Easy: random target
+                            target = G.player.board[Math.floor(Math.random() * G.player.board.length)];
+                        } else {
+                            // Normal: target weakest
+                            for (var j = 1; j < G.player.board.length; j++) {
+                                if (G.player.board[j].hp < target.hp) {
+                                    target = G.player.board[j];
+                                }
                             }
                         }
-                        resolveCombat(attacker, weakest);
+                        resolveCombat(attacker, target);
                     } else {
                         G.player.hp -= attacker.atk;
                         attacker.exhausted = true;
@@ -1434,18 +1869,55 @@
                 var isVictory = G.winner === "player";
                 var title = document.getElementById("gameOverTitle");
                 var text = document.getElementById("gameOverText");
+                var campaignBtns = document.getElementById("campaignButtons");
+                var nextBtn = document.getElementById("nextBattleBtn");
+                var playAgainBtn = document.getElementById("playAgainBtn");
 
                 if (isVictory) {
                     addClass(title, "victory");
                     removeClass(title, "defeat");
-                    title.textContent = "VICTORY!";
-                    text.textContent = "You've secured independence! The British have surrendered.";
+
+                    if (_campaignMode) {
+                        var battle = BATTLES[_currentBattle];
+                        title.textContent = "VICTORY!";
+                        completeBattle(_currentBattle);
+
+                        if (_currentBattle < BATTLES.length - 1) {
+                            text.textContent = battle.name + " is won! The revolution advances.";
+                            nextBtn.style.display = "inline-block";
+                        } else {
+                            title.textContent = "INDEPENDENCE!";
+                            text.textContent = "You've won the American Revolution! From Lexington to Yorktown, your leadership secured freedom for a new nation!";
+                            nextBtn.style.display = "none";
+                        }
+                        campaignBtns.style.display = "block";
+                        playAgainBtn.style.display = "none";
+                    } else {
+                        title.textContent = "VICTORY!";
+                        text.textContent = "You've secured independence! The British have surrendered.";
+                        campaignBtns.style.display = "none";
+                        playAgainBtn.style.display = "inline-block";
+                    }
                     _playSound("victory");
                 } else {
                     addClass(title, "defeat");
                     removeClass(title, "victory");
-                    title.textContent = "DEFEAT";
-                    text.textContent = "Your forces have been defeated. The revolution has failed.";
+
+                    if (_campaignMode) {
+                        var battle = BATTLES[_currentBattle];
+                        title.textContent = "DEFEAT";
+                        text.textContent = battle.name + " is lost. But the fight for liberty continues!";
+                        campaignBtns.style.display = "block";
+                        nextBtn.style.display = "none";
+                        playAgainBtn.textContent = "Retry Battle";
+                        playAgainBtn.style.display = "inline-block";
+                    } else {
+                        title.textContent = "DEFEAT";
+                        text.textContent = "Your forces have been defeated. The revolution has failed.";
+                        campaignBtns.style.display = "none";
+                        playAgainBtn.textContent = "Play Again";
+                        playAgainBtn.style.display = "inline-block";
+                    }
                     _playSound("defeat");
                 }
 
@@ -1455,19 +1927,45 @@
 
             // ========== UI EVENTS ==========
             function setupEventListeners() {
-                var playPatriotsBtn = document.getElementById("playPatriotsBtn");
-                var playBritishBtn = document.getElementById("playBritishBtn");
+                var campaignBtn = document.getElementById("campaignBtn");
+                var skirmishPatriotsBtn = document.getElementById("skirmishPatriotsBtn");
+                var skirmishBritishBtn = document.getElementById("skirmishBritishBtn");
                 var endTurnBtn = document.getElementById("endTurnBtn");
                 var playAgainBtn = document.getElementById("playAgainBtn");
+                var campaignBackBtn = document.getElementById("campaignBackBtn");
+                var nextBattleBtn = document.getElementById("nextBattleBtn");
+                var campaignMenuBtn = document.getElementById("campaignMenuBtn");
 
-                if (playPatriotsBtn) {
-                    playPatriotsBtn.addEventListener("click", function() {
+                // Difficulty buttons
+                var diffBtns = document.querySelectorAll(".diff-btn");
+                for (var i = 0; i < diffBtns.length; i++) {
+                    diffBtns[i].addEventListener("click", (function(btn) {
+                        return function() {
+                            for (var j = 0; j < diffBtns.length; j++) {
+                                removeClass(diffBtns[j], "selected");
+                            }
+                            addClass(btn, "selected");
+                            _difficulty = btn.id.replace("diff", "").toLowerCase();
+                        };
+                    })(diffBtns[i]));
+                }
+
+                if (campaignBtn) {
+                    campaignBtn.addEventListener("click", function() {
+                        showCampaignScreen();
+                    });
+                }
+
+                if (skirmishPatriotsBtn) {
+                    skirmishPatriotsBtn.addEventListener("click", function() {
+                        _campaignMode = false;
                         startGame("patriots");
                     });
                 }
 
-                if (playBritishBtn) {
-                    playBritishBtn.addEventListener("click", function() {
+                if (skirmishBritishBtn) {
+                    skirmishBritishBtn.addEventListener("click", function() {
+                        _campaignMode = false;
                         startGame("british");
                     });
                 }
@@ -1482,7 +1980,32 @@
 
                 if (playAgainBtn) {
                     playAgainBtn.addEventListener("click", function() {
+                        if (_campaignMode) {
+                            // Retry same battle
+                            startCampaignBattle(_currentBattle);
+                        } else {
+                            showMenu();
+                        }
+                    });
+                }
+
+                if (campaignBackBtn) {
+                    campaignBackBtn.addEventListener("click", function() {
                         showMenu();
+                    });
+                }
+
+                if (nextBattleBtn) {
+                    nextBattleBtn.addEventListener("click", function() {
+                        if (_currentBattle < BATTLES.length - 1) {
+                            startCampaignBattle(_currentBattle + 1);
+                        }
+                    });
+                }
+
+                if (campaignMenuBtn) {
+                    campaignMenuBtn.addEventListener("click", function() {
+                        showCampaignScreen();
                     });
                 }
 
@@ -1492,29 +2015,134 @@
                 }, { once: true });
             }
 
-            function startGame(faction) {
-                initGameState(faction);
+            function hideAllScreens() {
+                var screens = ["menuScreen", "gameScreen", "gameOverScreen", "campaignScreen"];
+                for (var i = 0; i < screens.length; i++) {
+                    var el = document.getElementById(screens[i]);
+                    if (el) removeClass(el, "active");
+                }
+                // Remove any battle intros
+                var intro = document.getElementById("battleIntro");
+                if (intro) intro.parentNode.removeChild(intro);
+            }
 
-                var menuScreen = document.getElementById("menuScreen");
+            function showCampaignScreen() {
+                hideAllScreens();
+                renderCampaignScreen();
+                var el = document.getElementById("campaignScreen");
+                if (el) addClass(el, "active");
+            }
+
+            function renderCampaignScreen() {
+                var list = document.getElementById("battleList");
+                if (!list) return;
+                list.innerHTML = "";
+
+                for (var i = 0; i < BATTLES.length; i++) {
+                    var b = BATTLES[i];
+                    var unlocked = isBattleUnlocked(i);
+                    var completed = isBattleCompleted(i);
+
+                    var card = document.createElement("div");
+                    card.className = "battle-card";
+                    if (!unlocked) card.className += " locked";
+                    if (completed) card.className += " completed";
+
+                    var num = document.createElement("div");
+                    num.className = "battle-number";
+                    num.textContent = (i + 1);
+
+                    var info = document.createElement("div");
+                    info.className = "battle-info";
+
+                    var name = document.createElement("div");
+                    name.className = "battle-name";
+                    name.textContent = unlocked ? b.name : "???";
+
+                    var desc = document.createElement("div");
+                    desc.className = "battle-desc";
+                    desc.textContent = unlocked ? b.desc : "Win the previous battle to unlock";
+
+                    info.appendChild(name);
+                    info.appendChild(desc);
+
+                    var diff = document.createElement("span");
+                    diff.className = "battle-difficulty " + b.difficulty;
+                    diff.textContent = b.difficulty;
+
+                    var status = document.createElement("div");
+                    status.className = "battle-status";
+                    if (completed) {
+                        status.textContent = "\u2713";
+                    } else if (unlocked) {
+                        status.textContent = "\u2794";
+                    } else {
+                        status.textContent = "\uD83D\uDD12";
+                    }
+
+                    card.appendChild(num);
+                    card.appendChild(info);
+                    card.appendChild(diff);
+                    card.appendChild(status);
+
+                    if (unlocked) {
+                        card.addEventListener("click", (function(idx) {
+                            return function() {
+                                startCampaignBattle(idx);
+                            };
+                        })(i));
+                    }
+
+                    list.appendChild(card);
+                }
+            }
+
+            function startCampaignBattle(index) {
+                _campaignMode = true;
+                _currentBattle = index;
+                var battle = BATTLES[index];
+                _difficulty = battle.difficulty;
+
+                // Show battle intro
+                hideAllScreens();
+
+                var intro = document.createElement("div");
+                intro.className = "battle-intro";
+                intro.id = "battleIntro";
+
+                intro.innerHTML = '<div class="battle-intro-title">' + battle.name + '</div>' +
+                    '<div class="battle-intro-year">' + battle.year + '</div>' +
+                    '<div class="battle-intro-text">' + battle.intro + '</div>' +
+                    '<button class="battle-intro-btn" id="startBattleBtn">Fight!</button>';
+
+                document.body.appendChild(intro);
+
+                document.getElementById("startBattleBtn").addEventListener("click", function() {
+                    intro.parentNode.removeChild(intro);
+                    startGame("patriots", {
+                        playerHP: battle.playerHP,
+                        enemyHP: battle.enemyHP,
+                        enemyExtraCards: battle.enemyExtraCards
+                    });
+                });
+            }
+
+            function startGame(faction, options) {
+                initGameState(faction, options);
+
+                hideAllScreens();
                 var gameScreen = document.getElementById("gameScreen");
-                var gameOverScreen = document.getElementById("gameOverScreen");
-
-                if (menuScreen) removeClass(menuScreen, "active");
                 if (gameScreen) addClass(gameScreen, "active");
-                if (gameOverScreen) removeClass(gameOverScreen, "active");
 
                 selectedCard = null;
                 render();
             }
 
             function showMenu() {
+                _campaignMode = false;
+                hideAllScreens();
                 var menuScreen = document.getElementById("menuScreen");
-                var gameScreen = document.getElementById("gameScreen");
-                var gameOverScreen = document.getElementById("gameOverScreen");
-
                 if (menuScreen) addClass(menuScreen, "active");
-                if (gameScreen) removeClass(gameScreen, "active");
-                if (gameOverScreen) removeClass(gameOverScreen, "active");
 
                 selectedCard = null;
                 G = null;
@@ -1523,6 +2151,7 @@
             // ========== PUBLIC API ==========
             function start() {
                 initCardDefs();
+                loadCampaignProgress();
                 setupEventListeners();
             }
 
