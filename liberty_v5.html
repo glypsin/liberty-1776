@@ -100,14 +100,16 @@
             box-shadow: 0 0 20px rgba(218, 165, 32, 0.5);
         }
 
-        /* Game Screen */
+        /* Game Screen - War Map */
         #gameScreen {
             flex-direction: column;
             align-items: stretch;
             justify-content: space-between;
-            background: linear-gradient(135deg, #2C1810 0%, #1A0F0A 100%);
-            padding: 10px;
-            gap: 5px;
+            background:
+                radial-gradient(ellipse at 50% 50%, rgba(60, 40, 20, 0.3) 0%, transparent 70%),
+                linear-gradient(180deg, #1a1208 0%, #2a1f10 30%, #1f1a0e 70%, #151008 100%);
+            padding: 8px;
+            gap: 3px;
             overflow-y: auto;
         }
 
@@ -115,73 +117,115 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 15px;
-            padding-right: 140px;
-            background-color: rgba(0, 0, 0, 0.3);
-            border: 2px solid #DC143C;
-            border-radius: 6px;
-            font-size: 0.95em;
+            padding: 6px 12px;
+            padding-right: 130px;
+            background: linear-gradient(90deg, rgba(220, 20, 60, 0.15), rgba(0,0,0,0.2));
+            border: 1px solid rgba(220, 20, 60, 0.4);
+            border-radius: 4px;
+            font-size: 0.85em;
         }
 
         .info-section {
             display: flex;
-            gap: 20px;
+            gap: 6px;
             align-items: center;
         }
 
         .info-label {
-            color: #FFD700;
+            color: #DAA520;
             font-weight: bold;
-            min-width: 80px;
+            font-size: 0.85em;
         }
 
         .info-value {
             color: #F5DEB3;
+            font-weight: bold;
         }
 
-        .enemy-board {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            padding: 10px;
-            background-color: rgba(0, 0, 0, 0.2);
-            border-radius: 6px;
-            flex-wrap: wrap;
-            min-height: 120px;
-            align-content: flex-start;
+        .hp-value {
+            color: #6BCB77;
+            font-size: 1.1em;
         }
 
-        .player-board {
+        /* Board Zones - KARDS-inspired layout */
+        .board-zone {
+            border-radius: 6px;
+            padding: 6px 10px;
+            position: relative;
+        }
+
+        .zone-label {
+            position: absolute;
+            top: 2px;
+            left: 10px;
+            font-size: 0.65em;
+            color: rgba(245, 222, 179, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
+
+        .zone-cards, .zone-row {
             display: flex;
             justify-content: center;
-            gap: 10px;
-            padding: 10px;
-            background-color: rgba(0, 0, 0, 0.2);
-            border-radius: 6px;
+            gap: 8px;
             flex-wrap: wrap;
-            min-height: 120px;
-            align-content: flex-end;
+            min-height: 90px;
+            align-items: center;
+        }
+
+        .enemy-support-zone {
+            background: rgba(220, 20, 60, 0.08);
+            border: 1px solid rgba(220, 20, 60, 0.2);
+        }
+
+        .player-support-zone {
+            background: rgba(65, 105, 225, 0.08);
+            border: 1px solid rgba(65, 105, 225, 0.2);
+        }
+
+        .frontline-zone {
+            background: rgba(255, 215, 0, 0.06);
+            border: 1px solid rgba(255, 215, 0, 0.25);
+            padding: 4px 10px;
+        }
+
+        .frontline-zone .zone-row {
+            min-height: 70px;
+        }
+
+        .frontline-divider {
+            text-align: center;
+            padding: 1px 0;
+        }
+
+        .frontline-label {
+            font-size: 0.6em;
+            color: rgba(255, 215, 0, 0.5);
+            letter-spacing: 4px;
+            font-weight: bold;
         }
 
         .player-info {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 15px;
-            background-color: rgba(0, 0, 0, 0.3);
-            border: 2px solid #4169E1;
-            border-radius: 6px;
-            font-size: 0.95em;
+            padding: 6px 12px;
+            background: linear-gradient(90deg, rgba(65, 105, 225, 0.15), rgba(0,0,0,0.2));
+            border: 1px solid rgba(65, 105, 225, 0.4);
+            border-radius: 4px;
+            font-size: 0.85em;
         }
 
         .player-hand {
             display: flex;
             justify-content: center;
-            gap: 8px;
-            padding: 10px;
-            background-color: rgba(0, 0, 0, 0.2);
+            gap: 6px;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(65, 105, 225, 0.2);
             border-radius: 6px;
-            min-height: 180px;
+            min-height: 155px;
             flex-wrap: wrap;
             align-content: flex-start;
             overflow-y: auto;
@@ -190,14 +234,14 @@
         .controls {
             display: flex;
             justify-content: center;
-            gap: 10px;
-            padding: 10px;
+            gap: 8px;
+            padding: 6px;
         }
 
         .control-btn {
-            padding: 12px 24px;
-            font-size: 1em;
-            background-color: #8B4513;
+            padding: 8px 20px;
+            font-size: 0.9em;
+            background: linear-gradient(180deg, #8B4513, #6B3410);
             color: #F5DEB3;
             border: 2px solid #DAA520;
             border-radius: 6px;
@@ -208,7 +252,7 @@
         }
 
         .control-btn:hover:not(:disabled) {
-            background-color: #A0522D;
+            background: linear-gradient(180deg, #A0522D, #8B4513);
             transform: scale(1.05);
         }
 
@@ -217,16 +261,33 @@
             cursor: not-allowed;
         }
 
+        .move-btn {
+            padding: 4px 10px;
+            font-size: 0.7em;
+            background: linear-gradient(180deg, #2E7D32, #1B5E20);
+            color: #C8E6C9;
+            border: 1px solid #4CAF50;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: "Georgia", serif;
+            margin-top: 2px;
+        }
+
+        .move-btn:hover {
+            background: linear-gradient(180deg, #388E3C, #2E7D32);
+        }
+
         .game-log {
-            padding: 10px;
-            background-color: rgba(0, 0, 0, 0.3);
-            border: 2px solid #DAA520;
-            border-radius: 6px;
-            font-size: 0.85em;
+            padding: 6px 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(218, 165, 32, 0.3);
+            border-radius: 4px;
+            font-size: 0.75em;
             overflow-y: auto;
-            max-height: 80px;
-            color: #F5DEB3;
-            line-height: 1.4;
+            max-height: 60px;
+            color: #C9A961;
+            line-height: 1.3;
         }
 
         .log-entry {
@@ -238,54 +299,66 @@
             border-bottom: none;
         }
 
-        /* Cards */
+        /* Cards - KARDS-inspired */
         .card {
-            width: 110px;
-            height: 160px;
-            border-radius: 8px;
-            padding: 6px;
-            background: linear-gradient(135deg, #3A3A3A 0%, #1A1A1A 100%);
-            border: 3px solid;
+            width: 100px;
+            height: 140px;
+            border-radius: 6px;
+            padding: 5px;
+            background: linear-gradient(180deg, #3A3A3A 0%, #1A1A1A 100%);
+            border: 2px solid;
             cursor: pointer;
             display: flex;
             flex-direction: column;
             position: relative;
             transition: all 0.2s;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
         }
 
-        .card.patriot {
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.7);
+        }
+
+        .card.patriots {
             border-color: #4169E1;
+            background: linear-gradient(180deg, #1a2a4a 0%, #0f1a2e 100%);
         }
 
         .card.british {
             border-color: #DC143C;
+            background: linear-gradient(180deg, #3a1a1a 0%, #2e0f0f 100%);
         }
 
         .card.order {
-            border-color: #FFD700;
+            border-style: dashed;
         }
 
         .card.hero {
             border-color: #FFD700;
-            box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+            box-shadow: 0 0 12px rgba(255, 215, 0, 0.4);
         }
 
         .card.disabled {
-            opacity: 0.5;
+            opacity: 0.4;
             filter: grayscale(100%);
             cursor: not-allowed;
         }
 
+        .card.disabled:hover {
+            transform: none;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+        }
+
         .card.selected {
-            transform: scale(1.1) translateY(-10px);
-            box-shadow: 0 0 25px rgba(255, 215, 0, 0.8);
+            transform: scale(1.1) translateY(-8px);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.7);
             border-color: #FFD700;
         }
 
         .card.exhausted {
-            opacity: 0.6;
-            filter: brightness(0.8);
+            opacity: 0.5;
+            filter: brightness(0.7) saturate(0.5);
         }
 
         .card.dead {
@@ -293,36 +366,58 @@
             pointer-events: none;
         }
 
+        .card.in-reserve {
+            opacity: 0.85;
+        }
+
+        .card.can-move {
+            box-shadow: 0 0 8px rgba(0, 255, 100, 0.4);
+            cursor: pointer;
+        }
+
+        .card.guard-unit::after {
+            content: "";
+            position: absolute;
+            inset: -3px;
+            border: 2px solid rgba(255, 215, 0, 0.6);
+            border-radius: 8px;
+            pointer-events: none;
+        }
+
         .card-cost {
             position: absolute;
-            top: 4px;
-            left: 4px;
-            width: 24px;
-            height: 24px;
-            background-color: #8B4513;
+            top: -4px;
+            left: -4px;
+            width: 22px;
+            height: 22px;
+            background: linear-gradient(135deg, #8B4513, #6B3410);
             border: 2px solid #DAA520;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 0.9em;
+            font-size: 0.85em;
             color: #FFD700;
+            z-index: 5;
         }
 
         .card-name {
-            font-size: 0.75em;
+            font-size: 0.65em;
             font-weight: bold;
             color: #F5DEB3;
             text-align: center;
-            margin-top: 2px;
+            margin-top: 1px;
             line-height: 1.1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .card-icon {
-            font-size: 2.5em;
+            font-size: 2.2em;
             text-align: center;
-            margin: 4px 0;
+            margin: 2px 0;
             flex-grow: 1;
             display: flex;
             align-items: center;
@@ -330,34 +425,72 @@
         }
 
         .card-flavor {
-            font-size: 0.6em;
+            font-size: 0.55em;
             color: #C9A961;
             text-align: center;
             line-height: 1;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
+        }
+
+        .card-keywords {
+            display: flex;
+            justify-content: center;
+            gap: 3px;
+            margin-bottom: 2px;
+        }
+
+        .keyword-badge {
+            font-size: 0.5em;
+            padding: 1px 4px;
+            border-radius: 3px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .keyword-badge.guard {
+            background: rgba(255, 215, 0, 0.3);
+            color: #FFD700;
+            border: 1px solid rgba(255, 215, 0, 0.5);
+        }
+
+        .keyword-badge.blitz {
+            background: rgba(255, 60, 60, 0.3);
+            color: #FF6B6B;
+            border: 1px solid rgba(255, 60, 60, 0.5);
         }
 
         .card-stats {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 4px;
+            padding: 0 2px;
             font-weight: bold;
-            font-size: 0.9em;
+            font-size: 0.85em;
             color: #FFD700;
             margin-top: auto;
         }
 
         .stat-box {
-            width: 22px;
-            height: 22px;
+            width: 20px;
+            height: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            background-color: rgba(0, 0, 0, 0.5);
+            background-color: rgba(0, 0, 0, 0.6);
             border: 1px solid #DAA520;
             border-radius: 3px;
-            font-size: 0.8em;
+            font-size: 0.75em;
+        }
+
+        .stat-box.atk {
+            color: #FF6B6B;
+            border-color: #CC4444;
+        }
+
+        .stat-box.hp {
+            color: #6BCB77;
+            border-color: #44AA44;
         }
 
         .card-type-badge {
@@ -532,16 +665,18 @@
         /* Phase indicator */
         .phase-indicator {
             position: fixed;
-            top: 10px;
-            right: 10px;
-            padding: 10px 15px;
-            background-color: rgba(0, 0, 0, 0.5);
-            border: 2px solid #FFD700;
-            border-radius: 6px;
-            color: #FFD700;
+            top: 6px;
+            right: 6px;
+            padding: 4px 10px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(255, 215, 0, 0.4);
+            border-radius: 4px;
+            color: #DAA520;
             font-weight: bold;
-            font-size: 0.9em;
+            font-size: 0.7em;
             z-index: 100;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         /* Campaign Screen */
@@ -825,20 +960,33 @@
             }
 
             .card {
-                width: 90px;
-                height: 130px;
+                width: 80px;
+                height: 115px;
             }
 
             .card-name {
-                font-size: 0.65em;
+                font-size: 0.55em;
             }
 
             .card-icon {
-                font-size: 2em;
+                font-size: 1.8em;
             }
 
             .card-flavor {
-                font-size: 0.55em;
+                display: none;
+            }
+
+            .keyword-badge {
+                font-size: 0.45em;
+            }
+
+            .zone-cards, .zone-row {
+                min-height: 70px;
+                gap: 4px;
+            }
+
+            .frontline-zone .zone-row {
+                min-height: 55px;
             }
         }
     </style>
@@ -877,14 +1025,14 @@
 
     <!-- Game Screen -->
     <div id="gameScreen">
-        <div class="enemy-info">
+        <div class="enemy-info" id="enemyInfoBar" style="cursor: pointer;">
             <div class="info-section">
                 <div class="info-label">Enemy:</div>
                 <div class="info-value" id="enemyName">-</div>
             </div>
             <div class="info-section">
                 <div class="info-label">HP:</div>
-                <div class="info-value" id="enemyHP">-</div>
+                <div class="info-value hp-value" id="enemyHP">-</div>
             </div>
             <div class="info-section">
                 <div class="info-label">Hand:</div>
@@ -900,9 +1048,28 @@
             </div>
         </div>
 
-        <div class="enemy-board" id="enemyBoard"></div>
+        <div class="board-zone enemy-support-zone">
+            <div class="zone-label">Enemy Reserve</div>
+            <div class="zone-cards" id="enemyReserve"></div>
+        </div>
 
-        <div class="player-board" id="playerBoard"></div>
+        <div class="frontline-divider">
+            <div class="frontline-label">— FRONTLINE —</div>
+        </div>
+
+        <div class="board-zone frontline-zone">
+            <div class="zone-row" id="enemyFrontline"></div>
+            <div class="zone-row" id="playerFrontline"></div>
+        </div>
+
+        <div class="frontline-divider">
+            <div class="frontline-label">— FRONTLINE —</div>
+        </div>
+
+        <div class="board-zone player-support-zone">
+            <div class="zone-label">Your Reserve</div>
+            <div class="zone-cards" id="playerReserve"></div>
+        </div>
 
         <div class="player-info">
             <div class="info-section">
@@ -1067,40 +1234,40 @@
             function initCardDefs() {
                 cardDefs = [
                     // Patriots
-                    { id: "patriot_minuteman", name: "Minuteman", faction: "patriots", type: "unit", cost: 1, atk: 2, hp: 1, icon: "🪖", flavor: "Militia ready", rarity: "common", battleCry: null, effect: null, history: "Colonial militia could muster in minutes" },
-                    { id: "patriot_militia", name: "Patriot Militia", faction: "patriots", type: "unit", cost: 2, atk: 2, hp: 3, icon: "⚔", flavor: "Steady fighters", rarity: "common", battleCry: null, effect: null, history: "Local volunteers formed the backbone" },
-                    { id: "patriot_rifleman", name: "Frontier Rifleman", faction: "patriots", type: "unit", cost: 3, atk: 4, hp: 2, icon: "🎯", flavor: "Sharpshooter", rarity: "common", battleCry: null, effect: null, history: "Frontier marksmen were deadly accurate" },
-                    { id: "patriot_regular", name: "Continental Regular", faction: "patriots", type: "unit", cost: 4, atk: 4, hp: 4, icon: "🪖", flavor: "Professional soldier", rarity: "common", battleCry: null, effect: null, history: "Regular army troops strengthened forces" },
-                    { id: "patriot_french", name: "French Infantry", faction: "patriots", type: "unit", cost: 5, atk: 5, hp: 5, icon: "⚜", flavor: "Allied forces", rarity: "rare", battleCry: null, effect: null, history: "France joined the war in 1778" },
-                    { id: "patriot_washington", name: "George Washington", faction: "patriots", type: "unit", cost: 6, atk: 6, hp: 7, icon: "🎖", flavor: "Commander in Chief", rarity: "legendary", battleCry: function(instance) { _drawCards(2); }, effect: null, history: "Washington led the Continental Army" },
-                    { id: "patriot_lafayette", name: "Lafayette", faction: "patriots", type: "unit", cost: 4, atk: 4, hp: 5, icon: "🗽", flavor: "Young general", rarity: "rare", battleCry: function(instance) { G.player.supply += 1; }, effect: null, history: "Lafayette served without pay" },
-                    { id: "patriot_franklin", name: "Benjamin Franklin", faction: "patriots", type: "unit", cost: 3, atk: 1, hp: 4, icon: "🔑", flavor: "Diplomat & sage", rarity: "rare", battleCry: function(instance) { _drawCards(1); G.player.supply += 1; }, effect: null, history: "Franklin secured French alliance" },
+                    { id: "patriot_minuteman", name: "Minuteman", faction: "patriots", type: "unit", cost: 1, atk: 2, hp: 1, icon: "🪖", flavor: "Militia ready", rarity: "common", blitz: true, guard: false, battleCry: null, effect: null, history: "Colonial militia could muster in minutes" },
+                    { id: "patriot_militia", name: "Patriot Militia", faction: "patriots", type: "unit", cost: 2, atk: 2, hp: 3, icon: "⚔", flavor: "Steady fighters", rarity: "common", blitz: false, guard: true, battleCry: null, effect: null, history: "Local volunteers formed the backbone" },
+                    { id: "patriot_rifleman", name: "Frontier Rifleman", faction: "patriots", type: "unit", cost: 3, atk: 4, hp: 2, icon: "🎯", flavor: "Sharpshooter", rarity: "common", blitz: false, guard: false, battleCry: null, effect: null, history: "Frontier marksmen were deadly accurate" },
+                    { id: "patriot_regular", name: "Continental Regular", faction: "patriots", type: "unit", cost: 4, atk: 4, hp: 4, icon: "🪖", flavor: "Professional soldier", rarity: "common", blitz: false, guard: true, battleCry: null, effect: null, history: "Regular army troops strengthened forces" },
+                    { id: "patriot_french", name: "French Infantry", faction: "patriots", type: "unit", cost: 5, atk: 5, hp: 5, icon: "⚜", flavor: "Allied forces", rarity: "rare", blitz: false, guard: false, battleCry: null, effect: null, history: "France joined the war in 1778" },
+                    { id: "patriot_washington", name: "George Washington", faction: "patriots", type: "unit", cost: 6, atk: 6, hp: 7, icon: "🎖", flavor: "Commander in Chief", rarity: "legendary", blitz: false, guard: false, battleCry: function(instance) { _drawCards(2); }, effect: null, history: "Washington led the Continental Army" },
+                    { id: "patriot_lafayette", name: "Lafayette", faction: "patriots", type: "unit", cost: 4, atk: 4, hp: 5, icon: "🗽", flavor: "Young general", rarity: "rare", blitz: false, guard: false, battleCry: function(instance) { G.player.supply += 1; }, effect: null, history: "Lafayette served without pay" },
+                    { id: "patriot_franklin", name: "Benjamin Franklin", faction: "patriots", type: "unit", cost: 3, atk: 1, hp: 4, icon: "🔑", flavor: "Diplomat & sage", rarity: "rare", blitz: false, guard: false, battleCry: function(instance) { _drawCards(1); G.player.supply += 1; }, effect: null, history: "Franklin secured French alliance" },
                     { id: "patriot_delaware", name: "Crossing Delaware", faction: "patriots", type: "order", cost: 3, atk: 0, hp: 0, icon: "🌊", flavor: "Surprise attack", rarity: "common", battleCry: function() { _dealDamage(3, "enemy"); }, effect: null, history: "Famous 1776 surprise attack" },
                     { id: "patriot_declaration", name: "Declaration of Independence", faction: "patriots", type: "order", cost: 2, atk: 0, hp: 0, icon: "📜", flavor: "Independence declared", rarity: "common", battleCry: function() { _drawCards(2); }, effect: null, history: "Declared independence July 4, 1776" },
                     { id: "patriot_saratoga", name: "Victory at Saratoga", faction: "patriots", type: "order", cost: 4, atk: 0, hp: 0, icon: "🏆", flavor: "Major victory", rarity: "rare", battleCry: function() { _drawCards(2); G.player.supply += 1; }, effect: null, history: "Turning point battle in 1777" },
                     // Naval & expansion cards (Andy's designs)
-                    { id: "patriot_privateer", name: "Privateer Ship", faction: "patriots", type: "unit", cost: 3, atk: 3, hp: 4, icon: "🚢", flavor: "Licensed raider", rarity: "common", battleCry: function(instance) { _dealDamage(1, "enemy"); }, effect: null, history: "Congress authorized privateers to raid British ships" },
-                    { id: "patriot_jones", name: "John Paul Jones", faction: "patriots", type: "unit", cost: 5, atk: 5, hp: 4, icon: "⚓", flavor: "Naval hero", rarity: "legendary", battleCry: function(instance) { _dealDamage(3, "enemy"); _drawCards(1); }, effect: null, history: "I have not yet begun to fight!" },
-                    { id: "patriot_cannon", name: "Hidden Cannon", faction: "patriots", type: "unit", cost: 2, atk: 4, hp: 1, icon: "💥", flavor: "Ambush artillery", rarity: "common", battleCry: null, effect: null, history: "Colonial cannon concealed behind fortifications" },
+                    { id: "patriot_privateer", name: "Privateer Ship", faction: "patriots", type: "unit", cost: 3, atk: 3, hp: 4, icon: "🚢", flavor: "Licensed raider", rarity: "common", blitz: false, guard: false, battleCry: function(instance) { _dealDamage(1, "enemy"); }, effect: null, history: "Congress authorized privateers to raid British ships" },
+                    { id: "patriot_jones", name: "John Paul Jones", faction: "patriots", type: "unit", cost: 5, atk: 5, hp: 4, icon: "⚓", flavor: "Naval hero", rarity: "legendary", blitz: true, guard: false, battleCry: function(instance) { _dealDamage(3, "enemy"); _drawCards(1); }, effect: null, history: "I have not yet begun to fight!" },
+                    { id: "patriot_cannon", name: "Hidden Cannon", faction: "patriots", type: "unit", cost: 2, atk: 4, hp: 1, icon: "💥", flavor: "Ambush artillery", rarity: "common", blitz: true, guard: false, battleCry: null, effect: null, history: "Colonial cannon concealed behind fortifications" },
                     { id: "patriot_yorktown", name: "Siege of Yorktown", faction: "patriots", type: "order", cost: 5, atk: 0, hp: 0, icon: "🏰", flavor: "Final siege", rarity: "legendary", battleCry: function() { _dealDamage(5, "enemy"); _drawCards(1); }, effect: null, history: "The final major battle that won the war in 1781" },
                     { id: "patriot_spyring", name: "Culper Spy Ring", faction: "patriots", type: "order", cost: 3, atk: 0, hp: 0, icon: "🕵", flavor: "Secret intel", rarity: "rare", battleCry: function() { _drawCards(3); }, effect: null, history: "Washington's spy network on Long Island" },
 
                     // British
-                    { id: "british_redcoat", name: "British Redcoat", faction: "british", type: "unit", cost: 2, atk: 3, hp: 2, icon: "🪖", flavor: "Professional soldier", rarity: "common", battleCry: null, effect: null, history: "Red-uniformed British regulars" },
-                    { id: "british_grenadier", name: "Grenadier", faction: "british", type: "unit", cost: 3, atk: 4, hp: 3, icon: "💣", flavor: "Elite assault", rarity: "common", battleCry: null, effect: null, history: "Elite grenadier companies" },
-                    { id: "british_dragoon", name: "Dragoon", faction: "british", type: "unit", cost: 3, atk: 3, hp: 3, icon: "🐴", flavor: "Fast cavalry", rarity: "common", battleCry: null, effect: null, history: "Mounted cavalry troops" },
-                    { id: "british_hessian", name: "Hessian Mercenary", faction: "british", type: "unit", cost: 4, atk: 5, hp: 3, icon: "⚔", flavor: "Hired soldier", rarity: "common", battleCry: null, effect: null, history: "German mercenaries hired by Britain" },
-                    { id: "british_guards", name: "Royal Guards", faction: "british", type: "unit", cost: 5, atk: 5, hp: 5, icon: "🛡", flavor: "Elite guardians", rarity: "rare", battleCry: null, effect: null, history: "The King's elite guard units" },
-                    { id: "british_cornwallis", name: "Lord Cornwallis", faction: "british", type: "unit", cost: 6, atk: 6, hp: 7, icon: "🎖", flavor: "Field marshal", rarity: "legendary", battleCry: function(instance) { _dealDamage(2, "player"); }, effect: null, history: "Commanded British southern campaign" },
-                    { id: "british_howe", name: "General Howe", faction: "british", type: "unit", cost: 5, atk: 5, hp: 6, icon: "🗽", flavor: "Strategic general", rarity: "rare", battleCry: function(instance) { _drawCards(1); }, effect: null, history: "Commander of New York campaign" },
-                    { id: "british_tarleton", name: "Banastre Tarleton", faction: "british", type: "unit", cost: 4, atk: 5, hp: 3, icon: "🐴", flavor: "Cavalry colonel", rarity: "rare", battleCry: function(instance) { _dealDamage(1, "player"); }, effect: null, history: "Brutal dragoon commander" },
+                    { id: "british_redcoat", name: "British Redcoat", faction: "british", type: "unit", cost: 2, atk: 3, hp: 2, icon: "🪖", flavor: "Professional soldier", rarity: "common", blitz: false, guard: false, battleCry: null, effect: null, history: "Red-uniformed British regulars" },
+                    { id: "british_grenadier", name: "Grenadier", faction: "british", type: "unit", cost: 3, atk: 4, hp: 3, icon: "💣", flavor: "Elite assault", rarity: "common", blitz: false, guard: false, battleCry: null, effect: null, history: "Elite grenadier companies" },
+                    { id: "british_dragoon", name: "Dragoon", faction: "british", type: "unit", cost: 3, atk: 3, hp: 3, icon: "🐴", flavor: "Fast cavalry", rarity: "common", blitz: true, guard: false, battleCry: null, effect: null, history: "Mounted cavalry troops" },
+                    { id: "british_hessian", name: "Hessian Mercenary", faction: "british", type: "unit", cost: 4, atk: 5, hp: 3, icon: "⚔", flavor: "Hired soldier", rarity: "common", blitz: false, guard: false, battleCry: null, effect: null, history: "German mercenaries hired by Britain" },
+                    { id: "british_guards", name: "Royal Guards", faction: "british", type: "unit", cost: 5, atk: 5, hp: 5, icon: "🛡", flavor: "Elite guardians", rarity: "rare", blitz: false, guard: true, battleCry: null, effect: null, history: "The King's elite guard units" },
+                    { id: "british_cornwallis", name: "Lord Cornwallis", faction: "british", type: "unit", cost: 6, atk: 6, hp: 7, icon: "🎖", flavor: "Field marshal", rarity: "legendary", blitz: false, guard: false, battleCry: function(instance) { _dealDamage(2, "player"); }, effect: null, history: "Commanded British southern campaign" },
+                    { id: "british_howe", name: "General Howe", faction: "british", type: "unit", cost: 5, atk: 5, hp: 6, icon: "🗽", flavor: "Strategic general", rarity: "rare", blitz: false, guard: false, battleCry: function(instance) { _drawCards(1); }, effect: null, history: "Commander of New York campaign" },
+                    { id: "british_tarleton", name: "Banastre Tarleton", faction: "british", type: "unit", cost: 4, atk: 5, hp: 3, icon: "🐴", flavor: "Cavalry colonel", rarity: "rare", blitz: true, guard: false, battleCry: function(instance) { _dealDamage(1, "player"); }, effect: null, history: "Brutal dragoon commander" },
                     { id: "british_stamp", name: "Stamp Tax", faction: "british", type: "order", cost: 2, atk: 0, hp: 0, icon: "💰", flavor: "Tax colonists", rarity: "common", battleCry: function() { G.enemy.supply += 2; }, effect: null, history: "Sparked colonial outrage in 1765" },
                     { id: "british_bunker", name: "Assault on Bunker Hill", faction: "british", type: "order", cost: 4, atk: 0, hp: 0, icon: "🏔", flavor: "Hill battle", rarity: "rare", battleCry: function() { _dealDamage(3, "player"); }, effect: null, history: "Early major battle of the war" },
                     { id: "british_blockade", name: "Royal Navy Blockade", faction: "british", type: "order", cost: 3, atk: 0, hp: 0, icon: "⛵", flavor: "Naval blockade", rarity: "common", battleCry: function() { _drawCards(2); }, effect: null, history: "British navy controlled the coast" },
                     // Naval & expansion cards (Andy's designs)
-                    { id: "british_frigate", name: "HMS Frigate", faction: "british", type: "unit", cost: 3, atk: 3, hp: 4, icon: "🚢", flavor: "Warship", rarity: "common", battleCry: function(instance) { _dealDamage(1, "player"); }, effect: null, history: "British warships patrolled the Atlantic" },
-                    { id: "british_admiral", name: "Admiral Graves", faction: "british", type: "unit", cost: 5, atk: 4, hp: 6, icon: "⚓", flavor: "Fleet commander", rarity: "legendary", battleCry: function(instance) { _dealDamage(2, "player"); _drawCards(1); }, effect: null, history: "Commanded the British North American fleet" },
-                    { id: "british_artillery", name: "Royal Artillery", faction: "british", type: "unit", cost: 2, atk: 4, hp: 1, icon: "💥", flavor: "Heavy guns", rarity: "common", battleCry: null, effect: null, history: "British field cannons were feared in battle" },
+                    { id: "british_frigate", name: "HMS Frigate", faction: "british", type: "unit", cost: 3, atk: 3, hp: 4, icon: "🚢", flavor: "Warship", rarity: "common", blitz: false, guard: true, battleCry: function(instance) { _dealDamage(1, "player"); }, effect: null, history: "British warships patrolled the Atlantic" },
+                    { id: "british_admiral", name: "Admiral Graves", faction: "british", type: "unit", cost: 5, atk: 4, hp: 6, icon: "⚓", flavor: "Fleet commander", rarity: "legendary", blitz: false, guard: false, battleCry: function(instance) { _dealDamage(2, "player"); _drawCards(1); }, effect: null, history: "Commanded the British North American fleet" },
+                    { id: "british_artillery", name: "Royal Artillery", faction: "british", type: "unit", cost: 2, atk: 4, hp: 1, icon: "💥", flavor: "Heavy guns", rarity: "common", blitz: true, guard: false, battleCry: null, effect: null, history: "British field cannons were feared in battle" },
                     { id: "british_burning", name: "Burning of Norfolk", faction: "british", type: "order", cost: 5, atk: 0, hp: 0, icon: "🔥", flavor: "Total destruction", rarity: "legendary", battleCry: function() { _dealDamage(5, "player"); }, effect: null, history: "British burned Norfolk, Virginia in January 1776" },
                     { id: "british_intel", name: "British Intelligence", faction: "british", type: "order", cost: 3, atk: 0, hp: 0, icon: "🕵", flavor: "Spy network", rarity: "rare", battleCry: function() { _drawCards(3); }, effect: null, history: "Major Andre ran British spy operations" }
                 ];
@@ -1196,7 +1363,8 @@
                     atk: cardDef.atk,
                     hp: cardDef.hp,
                     exhausted: false,
-                    dead: false
+                    dead: false,
+                    zone: "reserve" // "reserve" or "frontline"
                 };
             }
 
@@ -1247,9 +1415,11 @@
                 _activeSide = G.player;
 
                 if (instance.def.type === "unit") {
+                    instance.zone = instance.def.blitz ? "frontline" : "reserve";
+                    instance.exhausted = !instance.def.blitz; // Blitz units can act immediately
                     G.player.board.push(instance);
                     _playSound("card");
-                    _log("Played " + instance.def.name + ".");
+                    _log("Played " + instance.def.name + (instance.def.blitz ? " (Blitz!)" : " to reserve") + ".");
                     if (instance.def.history) _log("📖 " + instance.def.history);
 
                     try {
@@ -1321,11 +1491,39 @@
                 }
             }
 
+            // ========== FRONTLINE MOVEMENT ==========
+            function moveToFrontline(instance) {
+                if (G.phase !== "player") return false;
+                if (instance.zone !== "reserve") return false;
+                if (G.player.supply < 1) return false;
+
+                G.player.supply -= 1;
+                instance.zone = "frontline";
+                instance.exhausted = false; // Can attack after moving
+                _log(instance.def.name + " advances to the frontline!");
+                _playSound("card");
+                return true;
+            }
+
             // ========== PLAYER TURN ==========
             function playerAttack(attacker, defender) {
                 if (G.phase !== "player") return;
                 if (attacker.exhausted) return;
+                if (attacker.zone !== "frontline") return; // Must be on frontline to attack
                 if (G.player.board.indexOf(attacker) === -1) return;
+
+                // Guard check: must attack guard units first
+                var enemyFrontline = getUnitsInZone(G.enemy.board, "frontline");
+                var guards = [];
+                for (var i = 0; i < enemyFrontline.length; i++) {
+                    if (enemyFrontline[i].def.guard && !enemyFrontline[i].dead) {
+                        guards.push(enemyFrontline[i]);
+                    }
+                }
+                if (guards.length > 0 && guards.indexOf(defender) === -1) {
+                    _log("Must attack Guard unit first!");
+                    return;
+                }
 
                 resolveCombat(attacker, defender);
                 sweepDead();
@@ -1333,6 +1531,21 @@
                 if (G.gameOver) {
                     endGame();
                 }
+            }
+
+            function getUnitsInZone(board, zone) {
+                var result = [];
+                for (var i = 0; i < board.length; i++) {
+                    if (board[i].zone === zone) result.push(board[i]);
+                }
+                return result;
+            }
+
+            function hasGuardOnFrontline(board) {
+                for (var i = 0; i < board.length; i++) {
+                    if (board[i].zone === "frontline" && board[i].def.guard && !board[i].dead) return true;
+                }
+                return false;
             }
 
             function endTurn() {
@@ -1415,8 +1628,10 @@
                             G.enemy.supply -= bestCard.def.cost;
 
                             if (bestCard.def.type === "unit") {
+                                bestCard.zone = bestCard.def.blitz ? "frontline" : "reserve";
+                                bestCard.exhausted = !bestCard.def.blitz;
                                 G.enemy.board.push(bestCard);
-                                _log("Enemy plays " + bestCard.def.name + ".");
+                                _log("Enemy plays " + bestCard.def.name + (bestCard.def.blitz ? " (Blitz!)" : "") + ".");
 
                                 try {
                                     if (bestCard.def.battleCry) {
@@ -1442,31 +1657,44 @@
                     }
                 }
 
-                // Attack
+                // Move reserve units to frontline (costs nothing for AI to keep things fair/fun)
+                for (var i = 0; i < G.enemy.board.length; i++) {
+                    if (G.enemy.board[i].zone === "reserve") {
+                        G.enemy.board[i].zone = "frontline";
+                        G.enemy.board[i].exhausted = false;
+                        _log("Enemy " + G.enemy.board[i].def.name + " advances to frontline.");
+                    }
+                }
+
+                // Attack (only from frontline)
                 var effectiveDiff = _campaignMode ? BATTLES[_currentBattle].difficulty : _difficulty;
                 for (var i = 0; i < G.enemy.board.length; i++) {
                     var attacker = G.enemy.board[i];
                     if (attacker.exhausted) continue;
+                    if (attacker.zone !== "frontline") continue;
 
-                    // Find target based on difficulty
-                    if (G.player.board.length > 0) {
-                        var target = G.player.board[0];
+                    // Find valid targets: frontline first, then check guards
+                    var playerFront = getUnitsInZone(G.player.board, "frontline");
+                    var targets = playerFront.length > 0 ? playerFront : G.player.board;
+
+                    // Must attack guard units first
+                    var guards = [];
+                    for (var g = 0; g < targets.length; g++) {
+                        if (targets[g].def.guard && !targets[g].dead) guards.push(targets[g]);
+                    }
+                    if (guards.length > 0) targets = guards;
+
+                    if (targets.length > 0) {
+                        var target = targets[0];
                         if (effectiveDiff === "hard") {
-                            // Hard: target highest attack threat
-                            for (var j = 1; j < G.player.board.length; j++) {
-                                if (G.player.board[j].atk > target.atk) {
-                                    target = G.player.board[j];
-                                }
+                            for (var j = 1; j < targets.length; j++) {
+                                if (targets[j].atk > target.atk) target = targets[j];
                             }
                         } else if (effectiveDiff === "easy") {
-                            // Easy: random target
-                            target = G.player.board[Math.floor(Math.random() * G.player.board.length)];
+                            target = targets[Math.floor(Math.random() * targets.length)];
                         } else {
-                            // Normal: target weakest
-                            for (var j = 1; j < G.player.board.length; j++) {
-                                if (G.player.board[j].hp < target.hp) {
-                                    target = G.player.board[j];
-                                }
+                            for (var j = 1; j < targets.length; j++) {
+                                if (targets[j].hp < target.hp) target = targets[j];
                             }
                         }
                         resolveCombat(attacker, target);
@@ -1474,7 +1702,11 @@
                         G.player.hp -= attacker.atk;
                         attacker.exhausted = true;
                         _playSound("damage");
-                        _log("Enemy " + attacker.def.name + " attacks you for " + attacker.atk + " damage!");
+                        _log("Enemy " + attacker.def.name + " attacks your HQ for " + attacker.atk + " damage!");
+                        if (G.player.hp <= 0) {
+                            G.gameOver = true;
+                            G.winner = "enemy";
+                        }
                     }
                 }
 
@@ -1670,26 +1902,39 @@
             }
 
             function renderBoard() {
-                var playerBoard = document.getElementById("playerBoard");
-                var enemyBoard = document.getElementById("enemyBoard");
+                var enemyReserve = document.getElementById("enemyReserve");
+                var enemyFrontline = document.getElementById("enemyFrontline");
+                var playerFrontline = document.getElementById("playerFrontline");
+                var playerReserve = document.getElementById("playerReserve");
 
-                if (!playerBoard || !enemyBoard) return;
+                if (!enemyReserve || !enemyFrontline || !playerFrontline || !playerReserve) return;
 
-                playerBoard.innerHTML = "";
-                enemyBoard.innerHTML = "";
+                enemyReserve.innerHTML = "";
+                enemyFrontline.innerHTML = "";
+                playerFrontline.innerHTML = "";
+                playerReserve.innerHTML = "";
 
-                // Enemy board
+                // Enemy units
                 for (var i = 0; i < G.enemy.board.length; i++) {
                     var unit = G.enemy.board[i];
-                    var card = createCardElement(unit, false);
-                    enemyBoard.appendChild(card);
+                    var card = createCardElement(unit, false, false);
+                    if (unit.zone === "frontline") {
+                        enemyFrontline.appendChild(card);
+                    } else {
+                        enemyReserve.appendChild(card);
+                    }
                 }
 
-                // Player board
+                // Player units
                 for (var i = 0; i < G.player.board.length; i++) {
                     var unit = G.player.board[i];
-                    var card = createCardElement(unit, true);
-                    playerBoard.appendChild(card);
+                    var isPlayerUnit = true;
+                    var card = createCardElement(unit, isPlayerUnit, unit.zone === "reserve");
+                    if (unit.zone === "frontline") {
+                        playerFrontline.appendChild(card);
+                    } else {
+                        playerReserve.appendChild(card);
+                    }
                 }
             }
 
@@ -1738,7 +1983,7 @@
                 log.scrollTop = log.scrollHeight;
             }
 
-            function createCardElement(instance, isUnit) {
+            function createCardElement(instance, isPlayerUnit, inReserve) {
                 var card = document.createElement("div");
                 card.className = "card";
                 card.className += " " + instance.def.faction;
@@ -1755,14 +2000,25 @@
                     card.className += " dead";
                 }
 
-                if (instance.exhausted && isUnit) {
+                if (instance.exhausted && isPlayerUnit) {
                     card.className += " exhausted";
                 }
 
-                if (isUnit) {
+                if (instance.def.guard && instance.zone === "frontline") {
+                    card.className += " guard-unit";
+                }
+
+                if (inReserve) {
+                    card.className += " in-reserve";
+                }
+
+                if (isPlayerUnit) {
                     card.className += " unit-card";
-                    if (!instance.exhausted && G.phase === "player") {
+                    if (instance.zone === "frontline" && !instance.exhausted && G.phase === "player") {
                         card.className += " can-attack";
+                    }
+                    if (instance.zone === "reserve" && G.phase === "player" && G.player.supply >= 1) {
+                        card.className += " can-move";
                     }
                 }
 
@@ -1798,22 +2054,57 @@
                 flavor.textContent = instance.def.flavor;
                 card.appendChild(flavor);
 
+                // Keywords
+                if (instance.def.type === "unit" && (instance.def.guard || instance.def.blitz)) {
+                    var keywords = document.createElement("div");
+                    keywords.className = "card-keywords";
+                    if (instance.def.guard) {
+                        var gb = document.createElement("span");
+                        gb.className = "keyword-badge guard";
+                        gb.textContent = "Guard";
+                        keywords.appendChild(gb);
+                    }
+                    if (instance.def.blitz) {
+                        var bb = document.createElement("span");
+                        bb.className = "keyword-badge blitz";
+                        bb.textContent = "Blitz";
+                        keywords.appendChild(bb);
+                    }
+                    card.appendChild(keywords);
+                }
+
                 // Stats (only for units)
                 if (instance.def.type === "unit") {
                     var stats = document.createElement("div");
                     stats.className = "card-stats";
 
                     var atkBox = document.createElement("div");
-                    atkBox.className = "stat-box";
+                    atkBox.className = "stat-box atk";
                     atkBox.textContent = instance.atk;
 
                     var hpBox = document.createElement("div");
-                    hpBox.className = "stat-box";
+                    hpBox.className = "stat-box hp";
                     hpBox.textContent = instance.hp;
 
                     stats.appendChild(atkBox);
                     stats.appendChild(hpBox);
                     card.appendChild(stats);
+                }
+
+                // Move to frontline button (for player reserve units)
+                if (isPlayerUnit && inReserve && G.phase === "player" && G.player.supply >= 1) {
+                    var moveBtn = document.createElement("button");
+                    moveBtn.className = "move-btn";
+                    moveBtn.textContent = "Advance (1)";
+                    moveBtn.addEventListener("click", (function(inst) {
+                        return function(e) {
+                            e.stopPropagation();
+                            if (moveToFrontline(inst)) {
+                                render();
+                            }
+                        };
+                    })(instance));
+                    card.appendChild(moveBtn);
                 }
 
                 // Tooltip
@@ -1841,20 +2132,38 @@
 
                 card.appendChild(tooltip);
 
-                // Unit-specific interactions
-                if (isUnit && G.phase === "player") {
+                // Unit-specific interactions: select own frontline units to attack, click enemy to target
+                if (isPlayerUnit && G.phase === "player" && instance.zone === "frontline") {
                     card.addEventListener("click", (function(unit, el) {
-                        return function() {
+                        return function(e) {
+                            e.stopPropagation();
                             if (G.phase !== "player" || G.gameOver) return;
                             if (unit.exhausted) return;
-
-                            if (selectedCard && selectedCard.def.type === "unit") {
-                                playerAttack(selectedCard, unit);
+                            // Toggle selection
+                            if (selectedCard === unit) {
                                 selectedCard = null;
-                                render();
+                            } else {
+                                selectedCard = unit;
                             }
+                            render();
                         };
                     })(instance, card));
+                    if (selectedCard === instance) {
+                        addClass(card, "selected");
+                    }
+                }
+
+                // Enemy unit: click to attack with selected unit
+                if (!isPlayerUnit && G.phase === "player") {
+                    card.addEventListener("click", (function(unit) {
+                        return function() {
+                            if (G.phase !== "player" || G.gameOver) return;
+                            if (!selectedCard) return;
+                            playerAttack(selectedCard, unit);
+                            selectedCard = null;
+                            render();
+                        };
+                    })(instance));
                 }
 
                 return card;
@@ -2006,6 +2315,39 @@
                 if (campaignMenuBtn) {
                     campaignMenuBtn.addEventListener("click", function() {
                         showCampaignScreen();
+                    });
+                }
+
+                // Click enemy HQ to attack directly
+                var enemyInfoBar = document.getElementById("enemyInfoBar");
+                if (enemyInfoBar) {
+                    enemyInfoBar.addEventListener("click", function() {
+                        if (!G || G.phase !== "player" || G.gameOver || !selectedCard) return;
+                        if (selectedCard.zone !== "frontline" || selectedCard.exhausted) return;
+                        // Can't attack HQ if guard units exist on enemy frontline
+                        if (hasGuardOnFrontline(G.enemy.board)) {
+                            _log("Must attack Guard unit first!");
+                            render();
+                            return;
+                        }
+                        // Can't attack HQ if enemy has any frontline units
+                        var enemyFront = getUnitsInZone(G.enemy.board, "frontline");
+                        if (enemyFront.length > 0) {
+                            _log("Must clear enemy frontline first!");
+                            render();
+                            return;
+                        }
+                        G.enemy.hp -= selectedCard.atk;
+                        selectedCard.exhausted = true;
+                        _playSound("damage");
+                        _log(selectedCard.def.name + " attacks enemy HQ for " + selectedCard.atk + " damage!");
+                        if (G.enemy.hp <= 0) {
+                            G.gameOver = true;
+                            G.winner = "player";
+                            endGame();
+                        }
+                        selectedCard = null;
+                        render();
                     });
                 }
 
