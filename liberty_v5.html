@@ -1846,7 +1846,8 @@
                 <button class="menu-btn" id="campaignBtn">Campaign</button>
                 <button class="menu-btn" id="skirmishPatriotsBtn">Skirmish — Patriots</button>
                 <button class="menu-btn" id="skirmishBritishBtn">Skirmish — British</button>
-                <button class="menu-btn" id="deckBuilderBtn" style="background: linear-gradient(180deg, #1B4F72 0%, #154360 100%);">Deck Builder</button>
+                <button class="menu-btn" id="deckBuilderPatriotsBtn" style="background: linear-gradient(180deg, #1B4F72 0%, #154360 100%);">Deck Builder — Patriots</button>
+                <button class="menu-btn" id="deckBuilderBritishBtn" style="background: linear-gradient(180deg, #8B1A1A 0%, #6B1010 100%);">Deck Builder — British</button>
                 <button class="menu-btn" id="draftBtn" style="background: linear-gradient(180deg, #6B2D8B 0%, #4A235A 100%);">Draft Mode</button>
                 <button class="help-menu-btn" id="helpMenuBtn">How to Play</button>
             </div>
@@ -3966,11 +3967,17 @@
                     });
                 }
 
-                // Deck Builder button
-                var deckBuilderBtn = document.getElementById("deckBuilderBtn");
-                if (deckBuilderBtn) {
-                    deckBuilderBtn.addEventListener("click", function() {
-                        showDeckBuilder();
+                // Deck Builder buttons
+                var deckBuilderPatriotsBtn = document.getElementById("deckBuilderPatriotsBtn");
+                if (deckBuilderPatriotsBtn) {
+                    deckBuilderPatriotsBtn.addEventListener("click", function() {
+                        showDeckBuilder("patriots");
+                    });
+                }
+                var deckBuilderBritishBtn = document.getElementById("deckBuilderBritishBtn");
+                if (deckBuilderBritishBtn) {
+                    deckBuilderBritishBtn.addEventListener("click", function() {
+                        showDeckBuilder("british");
                     });
                 }
 
@@ -4285,10 +4292,12 @@
             var _customDeck = [];
             var _deckBuildMode = false;
 
-            function showDeckBuilder() {
+            function showDeckBuilder(faction) {
                 hideAllScreens();
-                _deckBuilderFaction = "patriots"; // default
+                _deckBuilderFaction = faction || "patriots";
                 _customDeck = [];
+                var deckTitle = document.querySelector(".deck-builder-title");
+                if (deckTitle) deckTitle.textContent = "Deck Builder (" + (_deckBuilderFaction === "patriots" ? "Patriots" : "British") + ")";
                 renderDeckBuilder();
                 renderSavedDecks();
                 var el = document.getElementById("deckBuilderScreen");
