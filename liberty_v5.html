@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2C1810">
+    <title>Liberty 1776 v5</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            font-family: "Georgia", serif;
+            background-color: #2C1810;
+            color: #F5DEB3;
+            overflow: hidden;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        /* Screens */
+        #menuScreen, #gameScreen, #gameOverScreen {
+            display: none;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 10;
+        }
+
+        #menuScreen.active, #gameScreen.active, #gameOverScreen.active {
+            display: flex;
+        }
+
+        /* Menu Screen */
+        #menuScreen {
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #2C1810 0%, #1A0F0A 100%);
+        }
+
+        .menu-container {
+            text-align: center;
+            padding: 20px;
+            max-width: 600px;
+        }
+
+        .menu-title {
+            font-size: 4em;
+            font-weight: bold;
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            margin-bottom: 20px;
+            letter-spacing: 3px;
+        }
+
+        .menu-subtitle {
+            font-size: 1.2em;
+            color: #F5DEB3;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .menu-btn {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            background-color: #8B4513;
+            color: #F5DEB3;
+            border: 3px solid #DAA520;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            font-family: "Georgia", serif;
+        }
+
+        .menu-btn:hover {
+            background-color: #A0522D;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(218, 165, 32, 0.5);
+        }
+
+        /* Game Screen */
+        #gameScreen {
+            flex-direction: column;
+            align-items: stretch;
+            justify-content: space-between;
+            background: linear-gradient(135deg, #2C1810 0%, #1A0F0A 100%);
+            padding: 10px;
+            gap: 10px;
+        }
+
+        .enemy-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background-color: rgba(0, 0, 0, 0.3);
+            border: 2px solid #DC143C;
+            border-radius: 6px;
+            font-size: 0.95em;
+        }
+
+        .info-section {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .info-label {
+            color: #FFD700;
+            font-weight: bold;
+            min-width: 80px;
+        }
+
+        .info-value {
+            color: #F5DEB3;
+        }
+
+        .enemy-board {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 6px;
+            flex-wrap: wrap;
+            min-height: 180px;
+            align-content: flex-start;
+        }
+
+        .player-board {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 6px;
+            flex-wrap: wrap;
+            min-height: 180px;
+            align-content: flex-end;
+        }
+
+        .player-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background-color: rgba(0, 0, 0, 0.3);
+            border: 2px solid #4169E1;
+            border-radius: 6px;
+            font-size: 0.95em;
+        }
+
+        .player-hand {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 6px;
+            min-height: 180px;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            overflow-y: auto;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding: 10px;
+        }
+
+        .control-btn {
+            padding: 12px 24px;
+            font-size: 1em;
+            background-color: #8B4513;
+            color: #F5DEB3;
+            border: 2px solid #DAA520;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            font-family: "Georgia", serif;
+        }
+
+        .control-btn:hover:not(:disabled) {
+            background-color: #A0522D;
+            transform: scale(1.05);
+        }
+
+        .control-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .game-log {
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.3);
+            border: 2px solid #DAA520;
+            border-radius: 6px;
+            font-size: 0.85em;
+            overflow-y: auto;
+            max-height: 80px;
+            color: #F5DEB3;
+            line-height: 1.4;
+        }
+
+        .log-entry {
+            padding: 3px 0;
+            border-bottom: 1px solid rgba(245, 222, 179, 0.2);
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        /* Cards */
+        .card {
+            width: 110px;
+            height: 160px;
+            border-radius: 8px;
+            padding: 6px;
+            background: linear-gradient(135deg, #3A3A3A 0%, #1A1A1A 100%);
+            border: 3px solid;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            transition: all 0.2s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .card.patriot {
+            border-color: #4169E1;
+        }
+
+        .card.british {
+            border-color: #DC143C;
+        }
+
+        .card.order {
+            border-color: #FFD700;
+        }
+
+        .card.hero {
+            border-color: #FFD700;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+        }
+
+        .card.disabled {
+            opacity: 0.5;
+            filter: grayscale(100%);
+            cursor: not-allowed;
+        }
+
+        .card.selected {
+            transform: scale(1.1) translateY(-10px);
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.8);
+            border-color: #FFD700;
+        }
+
+        .card.exhausted {
+            opacity: 0.6;
+            filter: brightness(0.8);
+        }
+
+        .card.dead {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .card-cost {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            width: 24px;
+            height: 24px;
+            background-color: #8B4513;
+            border: 2px solid #DAA520;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9em;
+            color: #FFD700;
+        }
+
+        .card-name {
+            font-size: 0.75em;
+            font-weight: bold;
+            color: #F5DEB3;
+            text-align: center;
+            margin-top: 2px;
+            line-height: 1.1;
+        }
+
+        .card-icon {
+            font-size: 2.5em;
+            text-align: center;
+            margin: 4px 0;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-flavor {
+            font-size: 0.6em;
+            color: #C9A961;
+            text-align: center;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .card-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 4px;
+            font-weight: bold;
+            font-size: 0.9em;
+            color: #FFD700;
+            margin-top: auto;
+        }
+
+        .stat-box {
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(0, 0, 0, 0.5);
+            border: 1px solid #DAA520;
+            border-radius: 3px;
+            font-size: 0.8em;
+        }
+
+        .card-type-badge {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            font-size: 0.7em;
+            color: #FFD700;
+            font-weight: bold;
+            background-color: rgba(139, 69, 19, 0.8);
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        /* Unit cards on board */
+        .unit-card {
+            position: relative;
+        }
+
+        .unit-card.can-attack {
+            cursor: grab;
+        }
+
+        .unit-card.can-attack:active {
+            cursor: grabbing;
+        }
+
+        /* Tooltip */
+        .card-tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.95);
+            color: #F5DEB3;
+            padding: 8px 12px;
+            border: 2px solid #FFD700;
+            border-radius: 6px;
+            font-size: 0.75em;
+            white-space: nowrap;
+            z-index: 1000;
+            pointer-events: none;
+            display: none;
+            margin-bottom: 10px;
+            max-width: 200px;
+            white-space: normal;
+            text-align: center;
+            line-height: 1.3;
+        }
+
+        .card-tooltip.visible {
+            display: block;
+        }
+
+        /* Game Over Screen */
+        #gameOverScreen {
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #2C1810 0%, #1A0F0A 100%);
+        }
+
+        .game-over-container {
+            text-align: center;
+            padding: 40px;
+            max-width: 600px;
+        }
+
+        .game-over-title {
+            font-size: 3em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        .game-over-title.victory {
+            color: #FFD700;
+        }
+
+        .game-over-title.defeat {
+            color: #DC143C;
+        }
+
+        .game-over-text {
+            font-size: 1.1em;
+            color: #F5DEB3;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .game-over-btn {
+            padding: 15px 40px;
+            font-size: 1.2em;
+            background-color: #8B4513;
+            color: #F5DEB3;
+            border: 3px solid #DAA520;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            font-family: "Georgia", serif;
+        }
+
+        .game-over-btn:hover {
+            background-color: #A0522D;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(218, 165, 32, 0.5);
+        }
+
+        /* Animations */
+        @keyframes slideInCard {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-3px); }
+            75% { transform: translateX(3px); }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: scale(1);
+            }
+            to {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+        }
+
+        @keyframes floatUp {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+        }
+
+        .card.playing {
+            animation: slideInCard 0.3s ease-out;
+        }
+
+        .card.attacking {
+            animation: shake 0.4s ease-in-out;
+        }
+
+        .card.dying {
+            animation: fadeOut 0.5s ease-out forwards;
+        }
+
+        .damage-popup {
+            position: absolute;
+            font-weight: bold;
+            font-size: 1.2em;
+            color: #DC143C;
+            pointer-events: none;
+            animation: floatUp 0.6s ease-out forwards;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Phase indicator */
+        .phase-indicator {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 10px 15px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border: 2px solid #FFD700;
+            border-radius: 6px;
+            color: #FFD700;
+            font-weight: bold;
+            font-size: 0.9em;
+            z-index: 100;
+        }
+
+        /* Responsive */
+        @media (max-width: 800px) {
+            .menu-title {
+                font-size: 2.5em;
+            }
+
+            .card {
+                width: 90px;
+                height: 130px;
+            }
+
+            .card-name {
+                font-size: 0.65em;
+            }
+
+            .card-icon {
+                font-size: 2em;
+            }
+
+            .card-flavor {
+                font-size: 0.55em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Menu Screen -->
+    <div id="menuScreen" class="active">
+        <div class="menu-container">
+            <div class="menu-title">Liberty 1776</div>
+            <div class="menu-subtitle">
+                Command your forces through the American Revolution. Choose your faction and claim victory!
+            </div>
+            <div class="menu-buttons">
+                <button class="menu-btn" id="playPatriotsBtn">Play as Patriots</button>
+                <button class="menu-btn" id="playBritishBtn">Play as British</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="gameScreen">
+        <div class="enemy-info">
+            <div class="info-section">
+                <div class="info-label">Enemy:</div>
+                <div class="info-value" id="enemyName">-</div>
+            </div>
+            <div class="info-section">
+                <div class="info-label">HP:</div>
+                <div class="info-value" id="enemyHP">-</div>
+            </div>
+            <div class="info-section">
+                <div class="info-label">Hand:</div>
+                <div class="info-value" id="enemyHandCount">-</div>
+            </div>
+            <div class="info-section">
+                <div class="info-label">Deck:</div>
+                <div class="info-value" id="enemyDeckCount">-</div>
+            </div>
+            <div class="info-section">
+                <div class="info-label">Supply:</div>
+                <div class="info-value" id="enemySupply">-</div>
+            </div>
+        </div>
+
+        <div class="enemy-board" id="enemyBoard"></div>
+
+        <div class="player-board" id="playerBoard"></div>
+
+        <div class="player-info">
+            <div class="info-section">
+                <div class="info-label">Player:</div>
+                <div class="info-value" id="playerName">-</div>
+            </div>
+            <div class="info-section">
+                <div class="info-label">HP:</div>
+                <div class="info-value" id="playerHP">-</div>
+            </div>
+            <div class="info-section">
+                <div class="info-label">Hand:</div>
+                <div class="info-value" id="playerHandCount">-</div>
+            </div>
+            <div class="info-section">
+                <div class="info-label">Deck:</div>
+                <div class="info-value" id="playerDeckCount">-</div>
+            </div>
+            <div class="info-section">
+                <div class="info-label">Supply:</div>
+                <div class="info-value" id="playerSupply">-</div>
+            </div>
+        </div>
+
+        <div class="player-hand" id="playerHand"></div>
+
+        <div class="controls">
+            <button class="control-btn" id="endTurnBtn">End Turn</button>
+        </div>
+
+        <div class="game-log" id="gameLog"></div>
+
+        <div class="phase-indicator" id="phaseIndicator">-</div>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="gameOverScreen">
+        <div class="game-over-container">
+            <div class="game-over-title" id="gameOverTitle">-</div>
+            <div class="game-over-text" id="gameOverText">-</div>
+            <button class="game-over-btn" id="playAgainBtn">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        "use strict";
+
+        var Liberty = (function() {
+            // ========== STATE ==========
+            var G = null;
+            var cardDefs = [];
+            var audioContext = null;
+            var selectedCard = null;
+            var _activeSide = null; // tracks which side is currently acting (for battleCry context)
+
+            // ========== CARD DEFINITIONS ==========
+            function initCardDefs() {
+                cardDefs = [
+                    // Patriots
+                    { id: "patriot_minuteman", name: "Minuteman", faction: "patriots", type: "unit", cost: 1, atk: 2, hp: 1, icon: "🪖", flavor: "Militia ready", rarity: "common", battleCry: null, effect: null, history: "Colonial militia could muster in minutes" },
+                    { id: "patriot_militia", name: "Patriot Militia", faction: "patriots", type: "unit", cost: 2, atk: 2, hp: 3, icon: "⚔", flavor: "Steady fighters", rarity: "common", battleCry: null, effect: null, history: "Local volunteers formed the backbone" },
+                    { id: "patriot_rifleman", name: "Frontier Rifleman", faction: "patriots", type: "unit", cost: 3, atk: 4, hp: 2, icon: "🎯", flavor: "Sharpshooter", rarity: "common", battleCry: null, effect: null, history: "Frontier marksmen were deadly accurate" },
+                    { id: "patriot_regular", name: "Continental Regular", faction: "patriots", type: "unit", cost: 4, atk: 4, hp: 4, icon: "🪖", flavor: "Professional soldier", rarity: "common", battleCry: null, effect: null, history: "Regular army troops strengthened forces" },
+                    { id: "patriot_french", name: "French Infantry", faction: "patriots", type: "unit", cost: 5, atk: 5, hp: 5, icon: "⚜", flavor: "Allied forces", rarity: "rare", battleCry: null, effect: null, history: "France joined the war in 1778" },
+                    { id: "patriot_washington", name: "George Washington", faction: "patriots", type: "unit", cost: 6, atk: 6, hp: 7, icon: "🎖", flavor: "Commander in Chief", rarity: "legendary", battleCry: function(instance) { _drawCards(2); }, effect: null, history: "Washington led the Continental Army" },
+                    { id: "patriot_lafayette", name: "Lafayette", faction: "patriots", type: "unit", cost: 4, atk: 4, hp: 5, icon: "🗽", flavor: "Young general", rarity: "rare", battleCry: function(instance) { G.player.supply += 1; }, effect: null, history: "Lafayette served without pay" },
+                    { id: "patriot_franklin", name: "Benjamin Franklin", faction: "patriots", type: "unit", cost: 3, atk: 1, hp: 4, icon: "🔑", flavor: "Diplomat & sage", rarity: "rare", battleCry: function(instance) { _drawCards(1); G.player.supply += 1; }, effect: null, history: "Franklin secured French alliance" },
+                    { id: "patriot_delaware", name: "Crossing Delaware", faction: "patriots", type: "order", cost: 3, atk: 0, hp: 0, icon: "🌊", flavor: "Surprise attack", rarity: "common", battleCry: function() { _dealDamage(3, "enemy"); }, effect: null, history: "Famous 1776 surprise attack" },
+                    { id: "patriot_declaration", name: "Declaration of Independence", faction: "patriots", type: "order", cost: 2, atk: 0, hp: 0, icon: "📜", flavor: "Independence declared", rarity: "common", battleCry: function() { _drawCards(2); }, effect: null, history: "Declared independence July 4, 1776" },
+                    { id: "patriot_saratoga", name: "Victory at Saratoga", faction: "patriots", type: "order", cost: 4, atk: 0, hp: 0, icon: "🏆", flavor: "Major victory", rarity: "rare", battleCry: function() { _drawCards(2); G.player.supply += 1; }, effect: null, history: "Turning point battle in 1777" },
+
+                    // British
+                    { id: "british_redcoat", name: "British Redcoat", faction: "british", type: "unit", cost: 2, atk: 3, hp: 2, icon: "🪖", flavor: "Professional soldier", rarity: "common", battleCry: null, effect: null, history: "Red-uniformed British regulars" },
+                    { id: "british_grenadier", name: "Grenadier", faction: "british", type: "unit", cost: 3, atk: 4, hp: 3, icon: "💣", flavor: "Elite assault", rarity: "common", battleCry: null, effect: null, history: "Elite grenadier companies" },
+                    { id: "british_dragoon", name: "Dragoon", faction: "british", type: "unit", cost: 3, atk: 3, hp: 3, icon: "🐴", flavor: "Fast cavalry", rarity: "common", battleCry: null, effect: null, history: "Mounted cavalry troops" },
+                    { id: "british_hessian", name: "Hessian Mercenary", faction: "british", type: "unit", cost: 4, atk: 5, hp: 3, icon: "⚔", flavor: "Hired soldier", rarity: "common", battleCry: null, effect: null, history: "German mercenaries hired by Britain" },
+                    { id: "british_guards", name: "Royal Guards", faction: "british", type: "unit", cost: 5, atk: 5, hp: 5, icon: "🛡", flavor: "Elite guardians", rarity: "rare", battleCry: null, effect: null, history: "The King's elite guard units" },
+                    { id: "british_cornwallis", name: "Lord Cornwallis", faction: "british", type: "unit", cost: 6, atk: 6, hp: 7, icon: "🎖", flavor: "Field marshal", rarity: "legendary", battleCry: function(instance) { _dealDamage(2, "player"); }, effect: null, history: "Commanded British southern campaign" },
+                    { id: "british_howe", name: "General Howe", faction: "british", type: "unit", cost: 5, atk: 5, hp: 6, icon: "🗽", flavor: "Strategic general", rarity: "rare", battleCry: function(instance) { _drawCards(1); }, effect: null, history: "Commander of New York campaign" },
+                    { id: "british_tarleton", name: "Banastre Tarleton", faction: "british", type: "unit", cost: 4, atk: 5, hp: 3, icon: "🐴", flavor: "Cavalry colonel", rarity: "rare", battleCry: function(instance) { _dealDamage(1, "player"); }, effect: null, history: "Brutal dragoon commander" },
+                    { id: "british_stamp", name: "Stamp Tax", faction: "british", type: "order", cost: 2, atk: 0, hp: 0, icon: "💰", flavor: "Tax colonists", rarity: "common", battleCry: function() { G.enemy.supply += 2; }, effect: null, history: "Sparked colonial outrage in 1765" },
+                    { id: "british_bunker", name: "Assault on Bunker Hill", faction: "british", type: "order", cost: 4, atk: 0, hp: 0, icon: "🏔", flavor: "Hill battle", rarity: "rare", battleCry: function() { _dealDamage(3, "player"); }, effect: null, history: "Early major battle of the war" },
+                    { id: "british_blockade", name: "Royal Navy Blockade", faction: "british", type: "order", cost: 3, atk: 0, hp: 0, icon: "⛵", flavor: "Naval blockade", rarity: "common", battleCry: function() { _drawCards(2); }, effect: null, history: "British navy controlled the coast" }
+                ];
+            }
+
+            // ========== GAME STATE ==========
+            function initGameState(playerFaction) {
+                var enemyFaction = playerFaction === "patriots" ? "british" : "patriots";
+                var deck = createDeck(playerFaction);
+                var enemyDeck = createDeck(enemyFaction);
+
+                G = {
+                    phase: "player",
+                    playerFaction: playerFaction,
+                    enemyFaction: enemyFaction,
+                    player: {
+                        name: playerFaction === "patriots" ? "Continental Army" : "British Empire",
+                        hp: 30,
+                        maxHP: 30,
+                        hand: [],
+                        board: [],
+                        deck: deck,
+                        supply: 0,
+                        maxSupply: 0
+                    },
+                    enemy: {
+                        name: enemyFaction === "patriots" ? "Continental Army" : "British Empire",
+                        hp: 30,
+                        maxHP: 30,
+                        hand: [],
+                        board: [],
+                        deck: enemyDeck,
+                        supply: 0,
+                        maxSupply: 0
+                    },
+                    log: [],
+                    gameOver: false,
+                    winner: null
+                };
+
+                _drawCards(3);
+                _log("Game started! You play as " + playerFaction + ".");
+            }
+
+            function createDeck(faction) {
+                var cards = [];
+                for (var i = 0; i < cardDefs.length; i++) {
+                    if (cardDefs[i].faction === faction) {
+                        cards.push(cardDefs[i]);
+                    }
+                }
+                // Shuffle
+                for (var i = cards.length - 1; i > 0; i--) {
+                    var j = Math.floor(Math.random() * (i + 1));
+                    var temp = cards[i];
+                    cards[i] = cards[j];
+                    cards[j] = temp;
+                }
+                return cards;
+            }
+
+            // ========== CARD INSTANCE HELPERS ==========
+            function createCardInstance(cardDef) {
+                return {
+                    uid: Math.random().toString(36).substring(7),
+                    def: cardDef,
+                    atk: cardDef.atk,
+                    hp: cardDef.hp,
+                    exhausted: false,
+                    dead: false
+                };
+            }
+
+            // ========== DRAWING & HAND ==========
+            function _drawCards(count) {
+                var side = _activeSide || G.player;
+                for (var i = 0; i < count; i++) {
+                    if (side.deck.length === 0) {
+                        if (side === G.player) {
+                            side.hp -= 2;
+                            _log("Fatigue! You take 2 damage.");
+                        } else {
+                            side.hp -= 2;
+                            _log("Enemy fatigue! 2 damage.");
+                        }
+                        break;
+                    }
+                    if (side.hand.length >= 7) {
+                        side.deck.shift(); // burn card
+                        _log((side === G.player ? "Your" : "Enemy") + " hand is full — card burned!");
+                        continue;
+                    }
+                    var cardDef = side.deck.shift();
+                    var instance = createCardInstance(cardDef);
+                    side.hand.push(instance);
+                }
+            }
+
+            function canPlayCard(instance) {
+                if (G.player.supply < instance.def.cost) return false;
+                if (instance.def.type === "order") return true; // orders don't need board space
+                return G.player.board.length < 5;
+            }
+
+            // ========== PLAYING CARDS ==========
+            function playCard(instance) {
+                if (!canPlayCard(instance)) {
+                    return false;
+                }
+
+                var idx = G.player.hand.indexOf(instance);
+                if (idx === -1) {
+                    return false;
+                }
+
+                G.player.hand.splice(idx, 1);
+                G.player.supply -= instance.def.cost;
+                _activeSide = G.player;
+
+                if (instance.def.type === "unit") {
+                    G.player.board.push(instance);
+                    _playSound("card");
+                    _log("Played " + instance.def.name + ".");
+                    if (instance.def.history) _log("📖 " + instance.def.history);
+
+                    try {
+                        if (instance.def.battleCry) {
+                            instance.def.battleCry(instance);
+                        }
+                    } catch (e) {
+                        // Silent fail
+                    }
+                } else if (instance.def.type === "order") {
+                    _playSound("card");
+                    _log("Played " + instance.def.name + ".");
+                    if (instance.def.history) _log("📖 " + instance.def.history);
+
+                    try {
+                        if (instance.def.battleCry) {
+                            instance.def.battleCry();
+                        }
+                    } catch (e) {
+                        // Silent fail
+                    }
+                }
+
+                _activeSide = null;
+
+                return true;
+            }
+
+            // ========== COMBAT (MARK-AND-SWEEP) ==========
+            function resolveCombat(attacker, defender) {
+                defender.hp -= attacker.atk;
+                attacker.hp -= defender.atk;
+                attacker.exhausted = true;
+
+                // Mark dead (don't remove yet!)
+                if (defender.hp <= 0) {
+                    defender.dead = true;
+                }
+                if (attacker.hp <= 0) {
+                    attacker.dead = true;
+                }
+
+                _playSound("attack");
+                _log(attacker.def.name + " attacks " + defender.def.name + "!");
+            }
+
+            function sweepDead() {
+                G.player.board = G.player.board.filter(function(u) { return !u.dead; });
+                G.enemy.board = G.enemy.board.filter(function(u) { return !u.dead; });
+            }
+
+            // ========== DAMAGE HELPERS ==========
+            function _dealDamage(amount, target) {
+                if (target === "player") {
+                    G.player.hp -= amount;
+                    _playSound("damage");
+                    _log("Enemy deals " + amount + " damage to player!");
+                } else if (target === "enemy") {
+                    G.enemy.hp -= amount;
+                    _playSound("damage");
+                    _log("You deal " + amount + " damage to enemy!");
+                }
+                if (G.player.hp <= 0) {
+                    G.gameOver = true;
+                    G.winner = "enemy";
+                } else if (G.enemy.hp <= 0) {
+                    G.gameOver = true;
+                    G.winner = "player";
+                }
+            }
+
+            // ========== PLAYER TURN ==========
+            function playerAttack(attacker, defender) {
+                if (G.phase !== "player") return;
+                if (attacker.exhausted) return;
+                if (G.player.board.indexOf(attacker) === -1) return;
+
+                resolveCombat(attacker, defender);
+                sweepDead();
+
+                if (G.gameOver) {
+                    endGame();
+                }
+            }
+
+            function endTurn() {
+                if (G.phase !== "player" || G.gameOver) return;
+
+                G.phase = "animating";
+                setTimeout(function() {
+                    G.phase = "enemy";
+                    _log("Enemy's turn...");
+
+                    // Reset enemy board states
+                    for (var i = 0; i < G.enemy.board.length; i++) {
+                        G.enemy.board[i].exhausted = false;
+                    }
+
+                    setTimeout(function() {
+                        enemyTurn();
+                    }, 500);
+                }, 300);
+            }
+
+            // ========== ENEMY AI ==========
+            function enemyTurn() {
+                if (G.gameOver) return;
+                _activeSide = G.enemy;
+
+                // Draw
+                if (G.enemy.deck.length > 0) {
+                    var cardDef = G.enemy.deck.shift();
+                    var instance = createCardInstance(cardDef);
+                    G.enemy.hand.push(instance);
+                }
+
+                G.enemy.maxSupply = Math.min(G.enemy.maxSupply + 1, 8);
+                G.enemy.supply = G.enemy.maxSupply;
+
+                // Play cards (with safety counter)
+                var played = true;
+                var safetyCounter = 0;
+                while (played && G.enemy.hand.length > 0 && safetyCounter < 12) {
+                    played = false;
+                    safetyCounter++;
+
+                    // Find best card to play (prioritize high-cost units > heroes > orders)
+                    var bestCard = null;
+                    var bestPriority = -1;
+
+                    for (var i = 0; i < G.enemy.hand.length; i++) {
+                        var c = G.enemy.hand[i];
+                        if (G.enemy.supply < c.def.cost) continue;
+
+                        var priority = 0;
+                        if (c.def.type === "unit") {
+                            // Units get high priority (cost * 2), prefer expensive units
+                            priority = c.def.cost * 2;
+                            if (c.def.rarity === "legendary") priority += 5;
+                            if (c.def.rarity === "rare") priority += 2;
+                            // Can't play if board full
+                            if (G.enemy.board.length >= 5) priority = -1;
+                        } else if (c.def.type === "order") {
+                            // Orders get base priority of cost
+                            priority = c.def.cost + 1;
+                        }
+
+                        if (priority > bestPriority) {
+                            bestPriority = priority;
+                            bestCard = c;
+                        }
+                    }
+
+                    // Board check: units need space, orders don't
+                    var canPlace = bestCard && bestCard.def.cost <= G.enemy.supply;
+                    if (canPlace && bestCard.def.type === "unit" && G.enemy.board.length >= 5) canPlace = false;
+                    if (canPlace) {
+                        var idx = G.enemy.hand.indexOf(bestCard);
+                        if (idx !== -1) {
+                            G.enemy.hand.splice(idx, 1);
+                            G.enemy.supply -= bestCard.def.cost;
+
+                            if (bestCard.def.type === "unit") {
+                                G.enemy.board.push(bestCard);
+                                _log("Enemy plays " + bestCard.def.name + ".");
+
+                                try {
+                                    if (bestCard.def.battleCry) {
+                                        bestCard.def.battleCry(bestCard);
+                                    }
+                                } catch (e) {
+                                    // Silent fail
+                                }
+                            } else if (bestCard.def.type === "order") {
+                                _log("Enemy plays " + bestCard.def.name + ".");
+
+                                try {
+                                    if (bestCard.def.battleCry) {
+                                        bestCard.def.battleCry();
+                                    }
+                                } catch (e) {
+                                    // Silent fail
+                                }
+                            }
+
+                            played = true;
+                        }
+                    }
+                }
+
+                // Attack
+                for (var i = 0; i < G.enemy.board.length; i++) {
+                    var attacker = G.enemy.board[i];
+                    if (attacker.exhausted) continue;
+
+                    // Find target
+                    if (G.player.board.length > 0) {
+                        var weakest = G.player.board[0];
+                        for (var j = 1; j < G.player.board.length; j++) {
+                            if (G.player.board[j].hp < weakest.hp) {
+                                weakest = G.player.board[j];
+                            }
+                        }
+                        resolveCombat(attacker, weakest);
+                    } else {
+                        G.player.hp -= attacker.atk;
+                        attacker.exhausted = true;
+                        _playSound("damage");
+                        _log("Enemy " + attacker.def.name + " attacks you for " + attacker.atk + " damage!");
+                    }
+                }
+
+                sweepDead();
+
+                if (G.gameOver) {
+                    endGame();
+                    return;
+                }
+
+                // Reset player units for new turn
+                for (var r = 0; r < G.player.board.length; r++) {
+                    G.player.board[r].exhausted = false;
+                }
+
+                // Increase player supply
+                G.player.maxSupply = Math.min(G.player.maxSupply + 1, 8);
+                G.player.supply = G.player.maxSupply;
+
+                // Draw for player
+                _activeSide = G.player;
+                _drawCards(1);
+                _activeSide = null;
+
+                G.turn += 1;
+                G.phase = "player";
+                _log("— Turn " + G.turn + " — Your turn!");
+            }
+
+            // ========== GAME OVER ==========
+            function endGame() {
+                G.gameOver = true;
+                G.phase = "over";
+            }
+
+            // ========== LOGGING ==========
+            function _log(msg) {
+                if (!G) return;
+                G.log.push(msg);
+                if (G.log.length > 20) {
+                    G.log.shift();
+                }
+            }
+
+            // ========== SOUND ==========
+            function initAudio() {
+                if (!audioContext) {
+                    try {
+                        var AC = window.AudioContext || window.webkitAudioContext;
+                        audioContext = new AC();
+                    } catch (e) {
+                        // Silent fail
+                    }
+                }
+            }
+
+            function _playSound(type) {
+                if (!audioContext) {
+                    initAudio();
+                }
+                if (!audioContext) return;
+
+                try {
+                    var ctx = audioContext;
+                    var now = ctx.currentTime;
+
+                    if (type === "card") {
+                        var osc = ctx.createOscillator();
+                        var gain = ctx.createGain();
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.frequency.setValueAtTime(800, now);
+                        osc.frequency.linearRampToValueAtTime(1200, now + 0.15);
+                        gain.gain.setValueAtTime(0.1, now);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                        osc.start(now);
+                        osc.stop(now + 0.15);
+                    } else if (type === "attack") {
+                        var osc = ctx.createOscillator();
+                        var gain = ctx.createGain();
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.frequency.setValueAtTime(600, now);
+                        osc.frequency.exponentialRampToValueAtTime(100, now + 0.2);
+                        gain.gain.setValueAtTime(0.1, now);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                        osc.start(now);
+                        osc.stop(now + 0.2);
+                    } else if (type === "damage") {
+                        var osc = ctx.createOscillator();
+                        var gain = ctx.createGain();
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.frequency.setValueAtTime(150, now);
+                        osc.frequency.exponentialRampToValueAtTime(50, now + 0.3);
+                        gain.gain.setValueAtTime(0.1, now);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                        osc.start(now);
+                        osc.stop(now + 0.3);
+                    } else if (type === "victory") {
+                        var freqs = [523, 659, 784];
+                        for (var i = 0; i < freqs.length; i++) {
+                            var osc = ctx.createOscillator();
+                            var gain = ctx.createGain();
+                            osc.connect(gain);
+                            gain.connect(ctx.destination);
+                            osc.frequency.setValueAtTime(freqs[i], now + (i * 0.15));
+                            gain.gain.setValueAtTime(0, now + (i * 0.15));
+                            gain.gain.linearRampToValueAtTime(0.1, now + (i * 0.15) + 0.05);
+                            gain.gain.exponentialRampToValueAtTime(0.01, now + (i * 0.15) + 0.4);
+                            osc.start(now + (i * 0.15));
+                            osc.stop(now + (i * 0.15) + 0.4);
+                        }
+                    } else if (type === "defeat") {
+                        var freqs = [349, 329, 293];
+                        for (var i = 0; i < freqs.length; i++) {
+                            var osc = ctx.createOscillator();
+                            var gain = ctx.createGain();
+                            osc.connect(gain);
+                            gain.connect(ctx.destination);
+                            osc.frequency.setValueAtTime(freqs[i], now + (i * 0.15));
+                            gain.gain.setValueAtTime(0, now + (i * 0.15));
+                            gain.gain.linearRampToValueAtTime(0.1, now + (i * 0.15) + 0.05);
+                            gain.gain.exponentialRampToValueAtTime(0.01, now + (i * 0.15) + 0.4);
+                            osc.start(now + (i * 0.15));
+                            osc.stop(now + (i * 0.15) + 0.4);
+                        }
+                    }
+                } catch (e) {
+                    // Silent fail
+                }
+            }
+
+            // ========== DOM HELPERS ==========
+            function setTxt(id, val) {
+                var el = document.getElementById(id);
+                if (el) {
+                    el.textContent = val;
+                }
+            }
+
+            function setDisplay(id, display) {
+                var el = document.getElementById(id);
+                if (el) {
+                    el.style.display = display;
+                }
+            }
+
+            function addClass(el, cls) {
+                if (el && !el.classList.contains(cls)) {
+                    el.classList.add(cls);
+                }
+            }
+
+            function removeClass(el, cls) {
+                if (el) {
+                    el.classList.remove(cls);
+                }
+            }
+
+            // ========== RENDERING ==========
+            function render() {
+                if (!G) return;
+
+                // Update info
+                setTxt("playerName", G.player.name);
+                setTxt("playerHP", G.player.hp + " / " + G.player.maxHP);
+                setTxt("playerHandCount", G.player.hand.length);
+                setTxt("playerDeckCount", G.player.deck.length);
+                setTxt("playerSupply", G.player.supply + " / " + G.player.maxSupply);
+
+                setTxt("enemyName", G.enemy.name);
+                setTxt("enemyHP", G.enemy.hp + " / " + G.enemy.maxHP);
+                setTxt("enemyHandCount", G.enemy.hand.length);
+                setTxt("enemyDeckCount", G.enemy.deck.length);
+                setTxt("enemySupply", G.enemy.supply + " / " + G.enemy.maxSupply);
+
+                setTxt("phaseIndicator", "Phase: " + G.phase);
+
+                // Render boards
+                renderBoard();
+
+                // Render hand
+                renderHand();
+
+                // Render log
+                renderLog();
+
+                // Check game over
+                if (G.gameOver) {
+                    showGameOver();
+                }
+            }
+
+            function renderBoard() {
+                var playerBoard = document.getElementById("playerBoard");
+                var enemyBoard = document.getElementById("enemyBoard");
+
+                if (!playerBoard || !enemyBoard) return;
+
+                playerBoard.innerHTML = "";
+                enemyBoard.innerHTML = "";
+
+                // Enemy board
+                for (var i = 0; i < G.enemy.board.length; i++) {
+                    var unit = G.enemy.board[i];
+                    var card = createCardElement(unit, false);
+                    enemyBoard.appendChild(card);
+                }
+
+                // Player board
+                for (var i = 0; i < G.player.board.length; i++) {
+                    var unit = G.player.board[i];
+                    var card = createCardElement(unit, true);
+                    playerBoard.appendChild(card);
+                }
+            }
+
+            function renderHand() {
+                var hand = document.getElementById("playerHand");
+                if (!hand) return;
+
+                hand.innerHTML = "";
+
+                for (var i = 0; i < G.player.hand.length; i++) {
+                    var instance = G.player.hand[i];
+                    var card = createCardElement(instance, false);
+
+                    if (!canPlayCard(instance)) {
+                        addClass(card, "disabled");
+                    }
+
+                    card.addEventListener("click", (function(inst) {
+                        return function() {
+                            if (G.phase !== "player" || G.gameOver) return;
+                            if (!canPlayCard(inst)) return;
+
+                            if (selectedCard === inst) {
+                                selectedCard = null;
+                                removeClass(card, "selected");
+                            } else {
+                                selectedCard = inst;
+                                // Deselect old card
+                                var oldCards = hand.querySelectorAll(".card.selected");
+                                for (var j = 0; j < oldCards.length; j++) {
+                                    removeClass(oldCards[j], "selected");
+                                }
+                                addClass(card, "selected");
+                            }
+                        };
+                    })(instance));
+
+                    hand.appendChild(card);
+                }
+            }
+
+            function renderLog() {
+                var log = document.getElementById("gameLog");
+                if (!log) return;
+
+                log.innerHTML = "";
+
+                for (var i = Math.max(0, G.log.length - 10); i < G.log.length; i++) {
+                    var entry = document.createElement("div");
+                    entry.className = "log-entry";
+                    entry.textContent = G.log[i];
+                    log.appendChild(entry);
+                }
+
+                log.scrollTop = log.scrollHeight;
+            }
+
+            function createCardElement(instance, isUnit) {
+                var card = document.createElement("div");
+                card.className = "card";
+                card.className += " " + instance.def.faction;
+
+                if (instance.def.type === "order") {
+                    card.className += " order";
+                }
+
+                if (instance.def.rarity === "legendary") {
+                    card.className += " hero";
+                }
+
+                if (instance.dead) {
+                    card.className += " dead";
+                }
+
+                if (instance.exhausted && isUnit) {
+                    card.className += " exhausted";
+                }
+
+                if (isUnit) {
+                    card.className += " unit-card";
+                    if (!instance.exhausted && G.phase === "player") {
+                        card.className += " can-attack";
+                    }
+                }
+
+                // Cost
+                var cost = document.createElement("div");
+                cost.className = "card-cost";
+                cost.textContent = instance.def.cost;
+                card.appendChild(cost);
+
+                // Type badge
+                if (instance.def.type === "order") {
+                    var badge = document.createElement("div");
+                    badge.className = "card-type-badge";
+                    badge.textContent = "ORDER";
+                    card.appendChild(badge);
+                }
+
+                // Name
+                var name = document.createElement("div");
+                name.className = "card-name";
+                name.textContent = instance.def.name;
+                card.appendChild(name);
+
+                // Icon
+                var icon = document.createElement("div");
+                icon.className = "card-icon";
+                icon.textContent = instance.def.icon;
+                card.appendChild(icon);
+
+                // Flavor
+                var flavor = document.createElement("div");
+                flavor.className = "card-flavor";
+                flavor.textContent = instance.def.flavor;
+                card.appendChild(flavor);
+
+                // Stats (only for units)
+                if (instance.def.type === "unit") {
+                    var stats = document.createElement("div");
+                    stats.className = "card-stats";
+
+                    var atkBox = document.createElement("div");
+                    atkBox.className = "stat-box";
+                    atkBox.textContent = instance.atk;
+
+                    var hpBox = document.createElement("div");
+                    hpBox.className = "stat-box";
+                    hpBox.textContent = instance.hp;
+
+                    stats.appendChild(atkBox);
+                    stats.appendChild(hpBox);
+                    card.appendChild(stats);
+                }
+
+                // Tooltip
+                var tooltip = document.createElement("div");
+                tooltip.className = "card-tooltip";
+                tooltip.textContent = instance.def.history;
+
+                card.addEventListener("mouseenter", function() {
+                    addClass(tooltip, "visible");
+                });
+
+                card.addEventListener("mouseleave", function() {
+                    removeClass(tooltip, "visible");
+                });
+
+                card.addEventListener("touchstart", function(e) {
+                    addClass(tooltip, "visible");
+                    e.preventDefault();
+                });
+
+                card.addEventListener("touchend", function(e) {
+                    removeClass(tooltip, "visible");
+                    e.preventDefault();
+                });
+
+                card.appendChild(tooltip);
+
+                // Unit-specific interactions
+                if (isUnit && G.phase === "player") {
+                    card.addEventListener("click", (function(unit, el) {
+                        return function() {
+                            if (G.phase !== "player" || G.gameOver) return;
+                            if (unit.exhausted) return;
+
+                            if (selectedCard && selectedCard.def.type === "unit") {
+                                playerAttack(selectedCard, unit);
+                                selectedCard = null;
+                                render();
+                            }
+                        };
+                    })(instance, card));
+                }
+
+                return card;
+            }
+
+            function showGameOver() {
+                var screen = document.getElementById("gameOverScreen");
+                var gameScreen = document.getElementById("gameScreen");
+
+                if (!screen || !gameScreen) return;
+
+                var isVictory = G.winner === "player";
+                var title = document.getElementById("gameOverTitle");
+                var text = document.getElementById("gameOverText");
+
+                if (isVictory) {
+                    addClass(title, "victory");
+                    removeClass(title, "defeat");
+                    title.textContent = "VICTORY!";
+                    text.textContent = "You've secured independence! The British have surrendered.";
+                    _playSound("victory");
+                } else {
+                    addClass(title, "defeat");
+                    removeClass(title, "victory");
+                    title.textContent = "DEFEAT";
+                    text.textContent = "Your forces have been defeated. The revolution has failed.";
+                    _playSound("defeat");
+                }
+
+                removeClass(gameScreen, "active");
+                addClass(screen, "active");
+            }
+
+            // ========== UI EVENTS ==========
+            function setupEventListeners() {
+                var playPatriotsBtn = document.getElementById("playPatriotsBtn");
+                var playBritishBtn = document.getElementById("playBritishBtn");
+                var endTurnBtn = document.getElementById("endTurnBtn");
+                var playAgainBtn = document.getElementById("playAgainBtn");
+
+                if (playPatriotsBtn) {
+                    playPatriotsBtn.addEventListener("click", function() {
+                        startGame("patriots");
+                    });
+                }
+
+                if (playBritishBtn) {
+                    playBritishBtn.addEventListener("click", function() {
+                        startGame("british");
+                    });
+                }
+
+                if (endTurnBtn) {
+                    endTurnBtn.addEventListener("click", function() {
+                        if (G && G.phase === "player" && !G.gameOver) {
+                            endTurn();
+                        }
+                    });
+                }
+
+                if (playAgainBtn) {
+                    playAgainBtn.addEventListener("click", function() {
+                        showMenu();
+                    });
+                }
+
+                // Audio init on first click
+                document.addEventListener("click", function() {
+                    initAudio();
+                }, { once: true });
+            }
+
+            function startGame(faction) {
+                initGameState(faction);
+
+                var menuScreen = document.getElementById("menuScreen");
+                var gameScreen = document.getElementById("gameScreen");
+                var gameOverScreen = document.getElementById("gameOverScreen");
+
+                if (menuScreen) removeClass(menuScreen, "active");
+                if (gameScreen) addClass(gameScreen, "active");
+                if (gameOverScreen) removeClass(gameOverScreen, "active");
+
+                selectedCard = null;
+                render();
+            }
+
+            function showMenu() {
+                var menuScreen = document.getElementById("menuScreen");
+                var gameScreen = document.getElementById("gameScreen");
+                var gameOverScreen = document.getElementById("gameOverScreen");
+
+                if (menuScreen) addClass(menuScreen, "active");
+                if (gameScreen) removeClass(gameScreen, "active");
+                if (gameOverScreen) removeClass(gameOverScreen, "active");
+
+                selectedCard = null;
+                G = null;
+            }
+
+            // ========== PUBLIC API ==========
+            function start() {
+                initCardDefs();
+                setupEventListeners();
+            }
+
+            return {
+                start: start,
+                startGame: startGame,
+                endTurn: endTurn,
+                _draw: _drawCards,
+                _log: _log
+            };
+        })();
+
+        // Register service worker if available
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", function() {
+                navigator.serviceWorker.register("sw.js").catch(function(e) {
+                    // Silent fail
+                });
+            });
+        }
+
+        // Start the game
+        window.addEventListener("DOMContentLoaded", function() {
+            Liberty.start();
+        });
+    </script>
+</body>
+</html>

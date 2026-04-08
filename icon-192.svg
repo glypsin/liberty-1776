@@ -1,0 +1,36 @@
+<svg viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="192" height="192" fill="#1a120a"/>
+
+  <!-- Outer border circle -->
+  <circle cx="96" cy="96" r="88" fill="none" stroke="#d4af37" stroke-width="3"/>
+
+  <!-- Inner decorative circle -->
+  <circle cx="96" cy="96" r="80" fill="none" stroke="#d4af37" stroke-width="1" opacity="0.5"/>
+
+  <!-- Liberty Bell shape (simplified) -->
+  <g transform="translate(96, 65)">
+    <!-- Bell body -->
+    <path d="M -20 -8 Q -24 0 -24 12 Q -24 20 -16 24 L 16 24 Q 24 20 24 12 Q 24 0 20 -8 Z"
+          fill="none" stroke="#d4af37" stroke-width="2" stroke-linejoin="round"/>
+    <!-- Bell clapper -->
+    <rect x="-2" y="20" width="4" height="8" fill="#d4af37"/>
+    <!-- Top connection -->
+    <rect x="-4" y="-12" width="8" height="4" fill="#d4af37" rx="1"/>
+  </g>
+
+  <!-- Star burst above bell -->
+  <g transform="translate(96, 40)">
+    <!-- Five-pointed star -->
+    <path d="M 0,-12 L 3.6,-3.6 L 12,-1.5 L 4.8,4.8 L 7.2,13 L 0,7.5 L -7.2,13 L -4.8,4.8 L -12,-1.5 L -3.6,-3.6 Z"
+          fill="#d4af37"/>
+  </g>
+
+  <!-- Year "1776" -->
+  <text x="96" y="145" font-family="Georgia, serif" font-size="32" font-weight="bold"
+        fill="#d4af37" text-anchor="middle" letter-spacing="2">1776</text>
+
+  <!-- Decorative flourish lines -->
+  <line x1="50" y1="155" x2="70" y2="155" stroke="#d4af37" stroke-width="1.5" opacity="0.6"/>
+  <line x1="122" y1="155" x2="142" y2="155" stroke="#d4af37" stroke-width="1.5" opacity="0.6"/>
+</svg>
