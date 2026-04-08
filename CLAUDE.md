@@ -1,3 +1,19 @@
+## Git Workflow
+
+NEVER commit directly to main. Always:
+1. Create a feature branch: `git checkout -b feat/description`
+2. Make changes and commit to the branch
+3. Push the branch and create a PR via `gh pr create`
+4. CI must pass before merging
+5. Merge via `gh pr merge --squash`
+
+Main branch is protected: requires PR + CI passing.
+
+## Testing
+
+Run tests: `node tests/test_game.js`
+Tests must pass before creating a PR.
+
 ## Skill routing
 
 When the user's request matches an available skill, ALWAYS invoke it using the Skill
