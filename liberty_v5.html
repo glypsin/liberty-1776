@@ -903,6 +903,7 @@
                 if (G.phase !== "player" || G.gameOver) return;
 
                 G.phase = "animating";
+                render();
                 setTimeout(function() {
                     G.phase = "enemy";
                     _log("Enemy's turn...");
@@ -914,6 +915,7 @@
 
                     setTimeout(function() {
                         enemyTurn();
+                        render();
                     }, 500);
                 }, 300);
             }
