@@ -525,9 +525,11 @@
             color: #F5DEB3;
             text-align: center;
             margin-top: 2px;
-            padding-left: 14px;
+            padding: 0 22px 0 14px;
             line-height: 1.15;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
 
         .card-icon {
@@ -2122,7 +2124,7 @@
                     dead: false,
                     zone: "reserve", // "reserve" or "frontline"
                     attacksThisTurn: 0,
-                    hasSmokescreen: !!cardDef.smokescreen,
+                    hasSmokescreen: false,
                     combatsSurvived: 0,
                     upgraded: false
                 };
@@ -2191,7 +2193,7 @@
                     G.player.board.push(instance);
                     _playSound("card");
 
-                    var zoneMsg = instance.zone === "frontline" ? (instance.def.blitz ? " (Blitz!)" : " (Cavalry!)") : " to reserve";
+                    var zoneMsg = instance.zone === "frontline" ? (instance.def.blitz ? " (Blitz!)" : (instance.def.unitType === "cavalry" ? " (Cavalry!)" : " to frontline")) : " to reserve";
                     _log("Played " + instance.def.name + zoneMsg + ".");
                     if (instance.def.history) _log("\uD83D\uDCD6 " + instance.def.history);
 
@@ -2273,12 +2275,6 @@
                         if (defender.def.veteran > 0) {
                             defender.combatsSurvived++;
                             _checkVeteranUpgrade(defender);
-                        }
-                        attacker.attacksThisTurn++;
-                        if (attacker.def.fury && attacker.attacksThisTurn < 2) {
-                            // Fury: don't exhaust yet
-                        } else {
-                            attacker.exhausted = true;
                         }
                         return;
                     }
@@ -3856,29 +3852,30 @@
                 }
 
                 // Show deck list
-                _customDeck.sort(function(a, b) { return a.cost - b.cost; });
-                for (var i = 0; i < _customDeck.length; i++) {
+                var sortedDeck = _customDeck.slice().sort(function(a, b) { return a.cost - b.cost; });
+                for (var i = 0; i < sortedDeck.length; i++) {
                     var item = document.createElement("div");
                     item.className = "deck-list-item";
 
                     var costSpan = document.createElement("span");
                     costSpan.className = "dl-cost";
-                    costSpan.textContent = _customDeck[i].cost;
+                    costSpan.textContent = sortedDeck[i].cost;
 
                     var nameSpan = document.createElement("span");
                     nameSpan.className = "dl-name";
-                    nameSpan.textContent = _customDeck[i].name;
+                    nameSpan.textContent = sortedDeck[i].name;
 
                     var removeSpan = document.createElement("span");
                     removeSpan.className = "dl-remove";
                     removeSpan.textContent = "\u2715";
-                    removeSpan.addEventListener("click", (function(idx) {
+                    removeSpan.addEventListener("click", (function(card) {
                         return function(e) {
                             e.stopPropagation();
-                            _customDeck.splice(idx, 1);
+                            var realIdx = _customDeck.indexOf(card);
+                            if (realIdx !== -1) _customDeck.splice(realIdx, 1);
                             renderDeckBuilder();
                         };
-                    })(i));
+                    })(sortedDeck[i]));
 
                     item.appendChild(costSpan);
                     item.appendChild(nameSpan);
