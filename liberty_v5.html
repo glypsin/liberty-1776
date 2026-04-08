@@ -128,7 +128,7 @@
             padding: 5px 10px;
             border-radius: 4px;
             font-size: 0.8em;
-            gap: 4px;
+            gap: 8px;
             flex-wrap: wrap;
         }
 
@@ -137,6 +137,72 @@
             border: 1px solid rgba(220, 20, 60, 0.35);
             padding-right: 100px;
         }
+
+        /* HQ Card */
+        .hq-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 64px;
+            min-height: 80px;
+            background: linear-gradient(180deg, #3B2415 0%, #2C1810 100%);
+            border: 2px solid #DAA520;
+            border-radius: 6px;
+            padding: 4px 2px;
+            flex-shrink: 0;
+            position: relative;
+        }
+        .hq-card.enemy-hq { border-color: #DC143C; }
+        .hq-card.player-hq { border-color: #4169E1; }
+        .hq-name {
+            font-size: 0.55em;
+            font-weight: bold;
+            color: #FFD700;
+            text-align: center;
+            line-height: 1.1;
+            margin-bottom: 2px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+        .hq-shield {
+            position: relative;
+            width: 40px;
+            height: 46px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .hq-shield svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .hq-shield .hq-hp {
+            position: relative;
+            z-index: 1;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #F5DEB3;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+        }
+        .hq-card.enemy-hq .hq-shield svg path { fill: rgba(220,20,60,0.35); stroke: #DC143C; }
+        .hq-card.player-hq .hq-shield svg path { fill: rgba(65,105,225,0.35); stroke: #4169E1; }
+        .hq-bar-mini {
+            width: 52px;
+            height: 4px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 2px;
+        }
+        .hq-bar-mini-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.3s;
+        }
+        .hq-bar-mini-fill.enemy { background: #DC143C; }
+        .hq-bar-mini-fill.player { background: #4169E1; }
 
         .info-section {
             display: flex;
@@ -459,6 +525,31 @@
         .card.disabled:hover {
             transform: none;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+        }
+
+        /* Drag and drop */
+        .card.dragging {
+            position: fixed;
+            z-index: 1000;
+            pointer-events: none;
+            transform: rotate(3deg) scale(1.1);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.9), 0 0 20px rgba(255, 215, 0, 0.3);
+            opacity: 0.92;
+            transition: none;
+        }
+        .card.drag-ghost {
+            opacity: 0.2;
+            transform: none;
+        }
+        .drop-zone-highlight {
+            outline: 2px dashed rgba(255, 215, 0, 0.6);
+            outline-offset: -2px;
+            background: rgba(255, 215, 0, 0.08) !important;
+            transition: all 0.15s;
+        }
+        .drop-zone-hover {
+            outline-color: #FFD700;
+            background: rgba(255, 215, 0, 0.18) !important;
         }
 
         .card.selected {
@@ -1787,17 +1878,6 @@
     <div id="gameScreen">
         <div class="enemy-info" id="enemyInfoBar" style="cursor: pointer;">
             <div class="info-section">
-                <div class="info-label">Enemy:</div>
-                <div class="info-value" id="enemyName">-</div>
-            </div>
-            <div class="info-section">
-                <div class="info-label">HP:</div>
-                <div class="hp-bar-container">
-                    <div class="hp-bar"><div class="hp-bar-fill enemy" id="enemyHPBar"></div></div>
-                    <div class="hp-text enemy" id="enemyHP">-</div>
-                </div>
-            </div>
-            <div class="info-section">
                 <div class="info-label">Hand:</div>
                 <div class="info-value" id="enemyHandCount">-</div>
             </div>
@@ -1814,7 +1894,16 @@
         <div class="trap-zone" id="enemyTrapZone"></div>
         <div class="board-zone enemy-support-zone">
             <div class="zone-label">Enemy Reserve</div>
-            <div class="zone-cards" id="enemyReserve"></div>
+            <div class="zone-cards" id="enemyReserve">
+                <div class="hq-card enemy-hq">
+                    <div class="hq-name" id="enemyName">-</div>
+                    <div class="hq-shield">
+                        <svg viewBox="0 0 40 46"><path d="M20 2 L38 10 L38 26 Q38 40 20 44 Q2 40 2 26 L2 10 Z" fill="rgba(220,20,60,0.35)" stroke="#DC143C" stroke-width="2"/></svg>
+                        <span class="hq-hp" id="enemyHP">-</span>
+                    </div>
+                    <div class="hq-bar-mini"><div class="hq-bar-mini-fill enemy" id="enemyHPBar"></div></div>
+                </div>
+            </div>
         </div>
 
         <div class="frontline-divider">
@@ -1832,22 +1921,20 @@
 
         <div class="board-zone player-support-zone">
             <div class="zone-label">Your Reserve</div>
-            <div class="zone-cards" id="playerReserve"></div>
+            <div class="zone-cards" id="playerReserve">
+                <div class="hq-card player-hq">
+                    <div class="hq-name" id="playerName">-</div>
+                    <div class="hq-shield">
+                        <svg viewBox="0 0 40 46"><path d="M20 2 L38 10 L38 26 Q38 40 20 44 Q2 40 2 26 L2 10 Z" fill="rgba(65,105,225,0.35)" stroke="#4169E1" stroke-width="2"/></svg>
+                        <span class="hq-hp" id="playerHP">-</span>
+                    </div>
+                    <div class="hq-bar-mini"><div class="hq-bar-mini-fill player" id="playerHPBar"></div></div>
+                </div>
+            </div>
         </div>
         <div class="trap-zone" id="playerTrapZone"></div>
 
         <div class="player-info">
-            <div class="info-section">
-                <div class="info-label">Player:</div>
-                <div class="info-value" id="playerName">-</div>
-            </div>
-            <div class="info-section">
-                <div class="info-label">HP:</div>
-                <div class="hp-bar-container">
-                    <div class="hp-bar"><div class="hp-bar-fill player" id="playerHPBar"></div></div>
-                    <div class="hp-text player" id="playerHP">-</div>
-                </div>
-            </div>
             <div class="info-section">
                 <div class="info-label">Hand:</div>
                 <div class="info-value" id="playerHandCount">-</div>
@@ -2292,7 +2379,7 @@
                     playerFaction: playerFaction,
                     enemyFaction: enemyFaction,
                     player: {
-                        name: playerFaction === "patriots" ? "Continental Army" : "British Empire",
+                        name: playerFaction === "patriots" ? "Washington" : "Cornwallis",
                         hp: playerHP,
                         maxHP: playerHP,
                         hand: [],
@@ -2303,7 +2390,7 @@
                         traps: []
                     },
                     enemy: {
-                        name: enemyFaction === "patriots" ? "Continental Army" : "British Empire",
+                        name: enemyFaction === "patriots" ? "Washington" : "Cornwallis",
                         hp: enemyHP,
                         maxHP: enemyHP,
                         hand: [],
@@ -3160,7 +3247,7 @@
                 var bar = document.getElementById(barId);
                 var txt = document.getElementById(textId);
                 if (bar) bar.style.width = Math.max(0, (hp / maxHP) * 100) + "%";
-                if (txt) txt.textContent = hp + " / " + maxHP;
+                if (txt) txt.textContent = hp;
             }
 
             function renderSupplyDots(containerId, current, max) {
@@ -3218,10 +3305,19 @@
 
                 if (!enemyReserve || !enemyFrontline || !playerFrontline || !playerReserve) return;
 
-                enemyReserve.innerHTML = "";
+                // Clear zones but preserve HQ cards
+                function clearZoneKeepHQ(zone) {
+                    var children = zone.children;
+                    for (var i = children.length - 1; i >= 0; i--) {
+                        if (!children[i].classList.contains("hq-card")) {
+                            zone.removeChild(children[i]);
+                        }
+                    }
+                }
+                clearZoneKeepHQ(enemyReserve);
                 enemyFrontline.innerHTML = "";
                 playerFrontline.innerHTML = "";
-                playerReserve.innerHTML = "";
+                clearZoneKeepHQ(playerReserve);
 
                 // Enemy units
                 for (var i = 0; i < G.enemy.board.length; i++) {
@@ -3275,6 +3371,124 @@
                 }
             }
 
+            // ========== DRAG AND DROP ==========
+            var _drag = null; // { el, ghostEl, inst, startX, startY, offsetX, offsetY }
+
+            function initDrag(card, inst, e) {
+                if (G.phase !== "player" || G.gameOver) return;
+                if (!canPlayCard(inst)) return;
+                e.preventDefault();
+
+                var touch = e.touches ? e.touches[0] : e;
+                var rect = card.getBoundingClientRect();
+
+                // Create floating copy
+                var clone = card.cloneNode(true);
+                clone.className = card.className;
+                addClass(clone, "dragging");
+                clone.style.width = rect.width + "px";
+                clone.style.height = rect.height + "px";
+                clone.style.left = rect.left + "px";
+                clone.style.top = rect.top + "px";
+                document.body.appendChild(clone);
+
+                // Ghost in hand
+                addClass(card, "drag-ghost");
+
+                // Show drop zones
+                var dropZones = getDropZones(inst);
+                for (var i = 0; i < dropZones.length; i++) {
+                    addClass(dropZones[i], "drop-zone-highlight");
+                }
+
+                _drag = {
+                    el: clone,
+                    ghostEl: card,
+                    inst: inst,
+                    offsetX: touch.clientX - rect.left,
+                    offsetY: touch.clientY - rect.top,
+                    dropZones: dropZones
+                };
+            }
+
+            function moveDrag(e) {
+                if (!_drag) return;
+                e.preventDefault();
+                var touch = e.touches ? e.touches[0] : e;
+                _drag.el.style.left = (touch.clientX - _drag.offsetX) + "px";
+                _drag.el.style.top = (touch.clientY - _drag.offsetY) + "px";
+
+                // Highlight zone under cursor
+                var target = getDropZoneAt(touch.clientX, touch.clientY);
+                for (var i = 0; i < _drag.dropZones.length; i++) {
+                    if (_drag.dropZones[i] === target) {
+                        addClass(_drag.dropZones[i], "drop-zone-hover");
+                    } else {
+                        removeClass(_drag.dropZones[i], "drop-zone-hover");
+                    }
+                }
+            }
+
+            function endDrag(e) {
+                if (!_drag) return;
+                var touch = e.changedTouches ? e.changedTouches[0] : e;
+                var target = getDropZoneAt(touch.clientX, touch.clientY);
+
+                // Clean up visuals
+                if (_drag.el.parentNode) _drag.el.parentNode.removeChild(_drag.el);
+                removeClass(_drag.ghostEl, "drag-ghost");
+                for (var i = 0; i < _drag.dropZones.length; i++) {
+                    removeClass(_drag.dropZones[i], "drop-zone-highlight");
+                    removeClass(_drag.dropZones[i], "drop-zone-hover");
+                }
+
+                // Play card if dropped on valid zone
+                if (target) {
+                    playCard(_drag.inst);
+                    selectedCard = null;
+                    render();
+                }
+
+                _drag = null;
+            }
+
+            function getDropZones(inst) {
+                var zones = [];
+                // Units go to reserve/frontline zones
+                if (inst.def.type === "unit") {
+                    var pReserve = document.querySelector(".player-support-zone");
+                    var fZone = document.querySelector(".frontline-zone");
+                    if (pReserve) zones.push(pReserve);
+                    if (fZone) zones.push(fZone);
+                } else {
+                    // Orders and traps: any board area
+                    var pReserve = document.querySelector(".player-support-zone");
+                    var fZone = document.querySelector(".frontline-zone");
+                    var eReserve = document.querySelector(".enemy-support-zone");
+                    if (pReserve) zones.push(pReserve);
+                    if (fZone) zones.push(fZone);
+                    if (eReserve) zones.push(eReserve);
+                }
+                return zones;
+            }
+
+            function getDropZoneAt(x, y) {
+                if (!_drag) return null;
+                for (var i = 0; i < _drag.dropZones.length; i++) {
+                    var r = _drag.dropZones[i].getBoundingClientRect();
+                    if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) {
+                        return _drag.dropZones[i];
+                    }
+                }
+                return null;
+            }
+
+            // Global listeners
+            document.addEventListener("mousemove", moveDrag);
+            document.addEventListener("mouseup", endDrag);
+            document.addEventListener("touchmove", moveDrag, { passive: false });
+            document.addEventListener("touchend", endDrag);
+
             function renderHand() {
                 var hand = document.getElementById("playerHand");
                 if (!hand) return;
@@ -3289,6 +3503,13 @@
                         addClass(card, "disabled");
                     }
 
+                    // Drag to play
+                    (function(cardEl, inst) {
+                        cardEl.addEventListener("mousedown", function(e) { initDrag(cardEl, inst, e); });
+                        cardEl.addEventListener("touchstart", function(e) { initDrag(cardEl, inst, e); }, { passive: false });
+                    })(card, instance);
+
+                    // Click to play (fallback)
                     card.addEventListener("click", (function(inst) {
                         return function() {
                             if (G.phase !== "player" || G.gameOver) return;
@@ -3778,13 +3999,13 @@
                             playerFaction: faction,
                             enemyFaction: enemyFaction,
                             player: {
-                                name: faction === "patriots" ? "Continental Army" : "British Empire",
+                                name: faction === "patriots" ? "Washington" : "Cornwallis",
                                 hp: 30, maxHP: 30,
                                 hand: [], board: [], deck: playerDeck,
                                 supply: 1, maxSupply: 1, traps: []
                             },
                             enemy: {
-                                name: enemyFaction === "patriots" ? "Continental Army" : "British Empire",
+                                name: enemyFaction === "patriots" ? "Washington" : "Cornwallis",
                                 hp: 30, maxHP: 30,
                                 hand: [], board: [], deck: enemyDeck,
                                 supply: 0, maxSupply: 0, traps: []
@@ -4435,7 +4656,7 @@
                     playerFaction: faction,
                     enemyFaction: enemyFaction,
                     player: {
-                        name: faction === "patriots" ? "Continental Army" : "British Empire",
+                        name: faction === "patriots" ? "Washington" : "Cornwallis",
                         hp: playerHP,
                         maxHP: playerHP,
                         hand: [],
@@ -4446,7 +4667,7 @@
                         traps: []
                     },
                     enemy: {
-                        name: enemyFaction === "patriots" ? "Continental Army" : "British Empire",
+                        name: enemyFaction === "patriots" ? "Washington" : "Cornwallis",
                         hp: enemyHP,
                         maxHP: enemyHP,
                         hand: [],
