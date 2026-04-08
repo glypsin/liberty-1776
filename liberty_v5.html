@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#2C1810">
-    <title>Liberty 1776 v5</title>
+    <title>Liberty 1776 v6</title>
     <link rel="manifest" href="manifest.json">
     <style>
         * {
@@ -30,7 +30,7 @@
         }
 
         /* Screens */
-        #menuScreen, #gameScreen, #gameOverScreen, #campaignScreen {
+        #menuScreen, #gameScreen, #gameOverScreen, #campaignScreen, #deckBuilderScreen, #draftScreen {
             display: none;
             width: 100%;
             height: 100%;
@@ -40,7 +40,7 @@
             z-index: 10;
         }
 
-        #menuScreen.active, #gameScreen.active, #gameOverScreen.active, #campaignScreen.active {
+        #menuScreen.active, #gameScreen.active, #gameOverScreen.active, #campaignScreen.active, #deckBuilderScreen.active, #draftScreen.active {
             display: flex;
         }
 
@@ -1176,6 +1176,252 @@
             font-weight: bold;
         }
 
+        /* Deck Builder Screen */
+        #deckBuilderScreen {
+            flex-direction: column;
+            background: linear-gradient(135deg, #2C1810 0%, #1A0F0A 100%);
+            padding: 10px;
+            overflow-y: auto;
+        }
+        .deck-builder-container {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .deck-builder-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+        }
+        .deck-builder-title {
+            font-size: 1.8em;
+            color: #FFD700;
+            font-weight: bold;
+        }
+        .deck-builder-count {
+            font-size: 1.1em;
+            color: #DAA520;
+            font-weight: bold;
+        }
+        .deck-builder-body {
+            display: flex;
+            gap: 10px;
+            flex: 1;
+            overflow: hidden;
+        }
+        .card-pool {
+            flex: 1;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            overflow-y: auto;
+            padding: 6px;
+            align-content: flex-start;
+            background: rgba(0,0,0,0.2);
+            border-radius: 6px;
+        }
+        .deck-list-panel {
+            width: 200px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .deck-list-title {
+            font-size: 1em;
+            color: #DAA520;
+            text-align: center;
+            font-weight: bold;
+        }
+        .deck-list {
+            flex: 1;
+            overflow-y: auto;
+            background: rgba(0,0,0,0.3);
+            border-radius: 6px;
+            padding: 4px;
+        }
+        .deck-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px 8px;
+            font-size: 0.75em;
+            color: #F5DEB3;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            cursor: pointer;
+        }
+        .deck-list-item:hover {
+            background: rgba(255,255,255,0.05);
+        }
+        .deck-list-item .dl-cost {
+            color: #4FC3F7;
+            font-weight: bold;
+            min-width: 16px;
+        }
+        .deck-list-item .dl-name {
+            flex: 1;
+            margin-left: 4px;
+        }
+        .deck-list-item .dl-remove {
+            color: #DC3545;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .deck-builder-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .card-pool .card.in-deck {
+            opacity: 0.4;
+        }
+        .card-pool .card.maxed {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        /* Draft Screen */
+        #draftScreen {
+            flex-direction: column;
+            align-items: center;
+            background: linear-gradient(135deg, #2C1810 0%, #1A0F0A 100%);
+            padding: 15px;
+            overflow-y: auto;
+        }
+        .draft-container {
+            text-align: center;
+            max-width: 700px;
+            width: 100%;
+        }
+        .draft-title {
+            font-size: 2em;
+            color: #FFD700;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .draft-progress {
+            font-size: 1em;
+            color: #DAA520;
+            margin-bottom: 6px;
+        }
+        .draft-record {
+            font-size: 1.1em;
+            margin-bottom: 12px;
+            color: #F5DEB3;
+        }
+        .draft-choices {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .draft-choices .card {
+            width: 120px;
+            height: 170px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .draft-choices .card:hover {
+            transform: scale(1.08);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+        .draft-deck-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+        .draft-deck-mini {
+            font-size: 0.65em;
+            padding: 2px 6px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #555;
+            border-radius: 3px;
+            color: #C9A961;
+        }
+        .draft-win { color: #4CAF50; }
+        .draft-loss { color: #DC3545; }
+
+        /* Unit type badges */
+        .unit-type-cavalry { background: #8B6914 !important; color: #FFE0A0 !important; }
+        .unit-type-artillery { background: #6B3410 !important; color: #FFB074 !important; }
+        .unit-type-naval { background: #1B4F72 !important; color: #AED6F1 !important; }
+        .trap-badge { background: #6B2D8B !important; color: #E8DAEF !important; }
+
+        /* Keyword badges */
+        .keyword-badge.fury { background: #DC3545; color: #fff; }
+        .keyword-badge.smokescreen { background: #6C757D; color: #E0E0E0; }
+        .keyword-badge.heavy-armor { background: #4682B4; color: #E0F0FF; }
+        .keyword-badge.ambush { background: #2D5016; color: #C8E6C9; }
+        .keyword-badge.veteran { background: #B8860B; color: #FFF8E1; }
+        .keyword-badge.pincer { background: #6B2D8B; color: #E8DAEF; }
+
+        /* Op cost badge */
+        .op-cost-badge {
+            position: absolute;
+            bottom: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.55em;
+            color: #DAA520;
+            background: rgba(0,0,0,0.6);
+            padding: 1px 4px;
+            border-radius: 3px;
+        }
+
+        /* Smokescreen visual */
+        .card.smokescreen-active {
+            filter: brightness(0.7) contrast(0.9);
+            box-shadow: 0 0 8px rgba(128, 128, 128, 0.6) !important;
+        }
+        .card.smokescreen-active::after {
+            content: "\uD83C\uDF2B\uFE0F";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5em;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* Veteran upgraded */
+        .card.veteran-upgraded {
+            box-shadow: 0 0 12px rgba(255, 215, 0, 0.6) !important;
+        }
+
+        /* Buffed/damaged stat indicators */
+        .stat-box.buffed { color: #4CAF50 !important; text-shadow: 0 0 4px rgba(76, 175, 80, 0.5); }
+        .stat-box.damaged { color: #DC3545 !important; text-shadow: 0 0 4px rgba(220, 53, 69, 0.5); }
+
+        /* Trap card styling */
+        .card.trap {
+            border-color: #6B2D8B;
+            background: linear-gradient(180deg, rgba(107, 45, 139, 0.3), rgba(0, 0, 0, 0.4));
+        }
+
+        /* Trap zone on board */
+        .trap-zone {
+            display: flex;
+            gap: 4px;
+            padding: 2px 6px;
+            min-height: 24px;
+            align-items: center;
+        }
+        .trap-indicator {
+            font-size: 0.7em;
+            color: #9B59B6;
+            background: rgba(107, 45, 139, 0.2);
+            border: 1px solid rgba(107, 45, 139, 0.4);
+            border-radius: 4px;
+            padding: 1px 6px;
+        }
+
         /* Responsive */
         @media (max-width: 800px) {
             .menu-title {
@@ -1314,6 +1560,8 @@
                 <button class="menu-btn" id="campaignBtn">Campaign</button>
                 <button class="menu-btn" id="skirmishPatriotsBtn">Skirmish — Patriots</button>
                 <button class="menu-btn" id="skirmishBritishBtn">Skirmish — British</button>
+                <button class="menu-btn" id="deckBuilderBtn" style="background: linear-gradient(180deg, #1B4F72 0%, #154360 100%);">Deck Builder</button>
+                <button class="menu-btn" id="draftBtn" style="background: linear-gradient(180deg, #6B2D8B 0%, #4A235A 100%);">Draft Mode</button>
             </div>
             <div class="difficulty-label">Skirmish Difficulty:</div>
             <div class="difficulty-selector">
@@ -1367,6 +1615,7 @@
             </div>
         </div>
 
+        <div class="trap-zone" id="enemyTrapZone"></div>
         <div class="board-zone enemy-support-zone">
             <div class="zone-label">Enemy Reserve</div>
             <div class="zone-cards" id="enemyReserve"></div>
@@ -1389,6 +1638,7 @@
             <div class="zone-label">Your Reserve</div>
             <div class="zone-cards" id="playerReserve"></div>
         </div>
+        <div class="trap-zone" id="playerTrapZone"></div>
 
         <div class="player-info">
             <div class="info-section">
@@ -1438,6 +1688,40 @@
                 <br>
                 <button class="campaign-menu-btn" id="campaignMenuBtn">Campaign Menu</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Deck Builder Screen -->
+    <div id="deckBuilderScreen">
+        <div class="deck-builder-container">
+            <div class="deck-builder-header">
+                <div class="deck-builder-title">Deck Builder</div>
+                <div class="deck-builder-count" id="deckCount">0 / 15 cards</div>
+            </div>
+            <div class="deck-builder-body">
+                <div class="card-pool" id="cardPool"></div>
+                <div class="deck-list-panel">
+                    <div class="deck-list-title">Your Deck</div>
+                    <div class="deck-list" id="deckList"></div>
+                    <div class="deck-builder-actions">
+                        <button class="menu-btn" id="deckStartBtn" style="opacity:0.5" disabled>Start Game</button>
+                        <button class="campaign-back-btn" id="deckBackBtn">Back</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Draft Screen -->
+    <div id="draftScreen">
+        <div class="draft-container">
+            <div class="draft-title">Draft Mode</div>
+            <div class="draft-progress" id="draftProgress">Pick 1 of 3 cards (0/15)</div>
+            <div class="draft-record" id="draftRecord"></div>
+            <div class="draft-choices" id="draftChoices"></div>
+            <div class="draft-deck-preview" id="draftDeckPreview"></div>
+            <button class="menu-btn" id="draftStartBtn" style="display:none">Start Battle!</button>
+            <button class="campaign-back-btn" id="draftBackBtn">Back</button>
         </div>
     </div>
 
@@ -1691,42 +1975,55 @@
             function initCardDefs() {
                 cardDefs = [
                     // Patriots
-                    { id: "patriot_minuteman", name: "Minuteman", faction: "patriots", type: "unit", cost: 1, atk: 2, hp: 1, icon: "🪖", flavor: "Militia ready", rarity: "common", blitz: true, guard: false, battleCry: null, effect: null, history: "Colonial militia could muster in minutes" },
-                    { id: "patriot_militia", name: "Patriot Militia", faction: "patriots", type: "unit", cost: 2, atk: 2, hp: 3, icon: "⚔", flavor: "Steady fighters", rarity: "common", blitz: false, guard: true, battleCry: null, effect: null, history: "Local volunteers formed the backbone" },
-                    { id: "patriot_rifleman", name: "Frontier Rifleman", faction: "patriots", type: "unit", cost: 3, atk: 4, hp: 2, icon: "🎯", flavor: "Sharpshooter", rarity: "common", blitz: false, guard: false, battleCry: null, effect: null, history: "Frontier marksmen were deadly accurate" },
-                    { id: "patriot_regular", name: "Continental Regular", faction: "patriots", type: "unit", cost: 4, atk: 4, hp: 4, icon: "🪖", flavor: "Professional soldier", rarity: "common", blitz: false, guard: true, battleCry: null, effect: null, history: "Regular army troops strengthened forces" },
-                    { id: "patriot_french", name: "French Infantry", faction: "patriots", type: "unit", cost: 5, atk: 5, hp: 5, icon: "⚜", flavor: "Allied forces", rarity: "rare", blitz: false, guard: false, battleCry: null, effect: null, history: "France joined the war in 1778" },
-                    { id: "patriot_washington", name: "George Washington", faction: "patriots", type: "unit", cost: 6, atk: 6, hp: 7, icon: "🎖", flavor: "Commander in Chief", rarity: "legendary", blitz: false, guard: false, battleCry: function(instance) { _drawCards(2); }, effect: null, history: "Washington led the Continental Army" },
-                    { id: "patriot_lafayette", name: "Lafayette", faction: "patriots", type: "unit", cost: 4, atk: 4, hp: 5, icon: "🗽", flavor: "Young general", rarity: "rare", blitz: false, guard: false, battleCry: function(instance) { G.player.supply += 1; }, effect: null, history: "Lafayette served without pay" },
-                    { id: "patriot_franklin", name: "Benjamin Franklin", faction: "patriots", type: "unit", cost: 3, atk: 1, hp: 4, icon: "🔑", flavor: "Diplomat & sage", rarity: "rare", blitz: false, guard: false, battleCry: function(instance) { _drawCards(1); G.player.supply += 1; }, effect: null, history: "Franklin secured French alliance" },
-                    { id: "patriot_delaware", name: "Crossing Delaware", faction: "patriots", type: "order", cost: 3, atk: 0, hp: 0, icon: "🌊", flavor: "Surprise attack", rarity: "common", battleCry: function() { _dealDamage(3, "enemy"); }, effect: null, history: "Famous 1776 surprise attack" },
-                    { id: "patriot_declaration", name: "Declaration of Independence", faction: "patriots", type: "order", cost: 2, atk: 0, hp: 0, icon: "📜", flavor: "Independence declared", rarity: "common", battleCry: function() { _drawCards(2); }, effect: null, history: "Declared independence July 4, 1776" },
-                    { id: "patriot_saratoga", name: "Victory at Saratoga", faction: "patriots", type: "order", cost: 4, atk: 0, hp: 0, icon: "🏆", flavor: "Major victory", rarity: "rare", battleCry: function() { _drawCards(2); G.player.supply += 1; }, effect: null, history: "Turning point battle in 1777" },
-                    // Naval & expansion cards (Andy's designs)
-                    { id: "patriot_privateer", name: "Privateer Ship", faction: "patriots", type: "unit", cost: 3, atk: 3, hp: 4, icon: "🚢", flavor: "Licensed raider", rarity: "common", blitz: false, guard: false, battleCry: function(instance) { _dealDamage(1, "enemy"); }, effect: null, history: "Congress authorized privateers to raid British ships" },
-                    { id: "patriot_jones", name: "John Paul Jones", faction: "patriots", type: "unit", cost: 5, atk: 5, hp: 4, icon: "⚓", flavor: "Naval hero", rarity: "legendary", blitz: true, guard: false, battleCry: function(instance) { _dealDamage(3, "enemy"); _drawCards(1); }, effect: null, history: "I have not yet begun to fight!" },
-                    { id: "patriot_cannon", name: "Hidden Cannon", faction: "patriots", type: "unit", cost: 2, atk: 4, hp: 1, icon: "💥", flavor: "Ambush artillery", rarity: "common", blitz: true, guard: false, battleCry: null, effect: null, history: "Colonial cannon concealed behind fortifications" },
-                    { id: "patriot_yorktown", name: "Siege of Yorktown", faction: "patriots", type: "order", cost: 5, atk: 0, hp: 0, icon: "🏰", flavor: "Final siege", rarity: "legendary", battleCry: function() { _dealDamage(5, "enemy"); _drawCards(1); }, effect: null, history: "The final major battle that won the war in 1781" },
-                    { id: "patriot_spyring", name: "Culper Spy Ring", faction: "patriots", type: "order", cost: 3, atk: 0, hp: 0, icon: "🕵", flavor: "Secret intel", rarity: "rare", battleCry: function() { _drawCards(3); }, effect: null, history: "Washington's spy network on Long Island" },
+                    { id: "patriot_minuteman", name: "Minuteman", faction: "patriots", type: "unit", unitType: "infantry", cost: 1, atk: 2, hp: 1, opCost: 1, icon: "\uD83E\uDE96", flavor: "Militia ready", rarity: "common", blitz: true, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, pincer: false, battleCry: null, effect: null, history: "Colonial militia could muster in minutes" },
+                    { id: "patriot_militia", name: "Patriot Militia", faction: "patriots", type: "unit", unitType: "infantry", cost: 2, atk: 2, hp: 3, opCost: 1, icon: "\u2694", flavor: "Steady fighters", rarity: "common", blitz: false, guard: true, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, pincer: false, battleCry: null, effect: null, history: "Local volunteers formed the backbone" },
+                    { id: "patriot_rifleman", name: "Frontier Rifleman", faction: "patriots", type: "unit", unitType: "infantry", cost: 3, atk: 4, hp: 2, opCost: 1, icon: "\uD83C\uDFAF", flavor: "Sharpshooter", rarity: "common", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: true, veteran: 0, pincer: false, battleCry: null, effect: null, history: "Frontier marksmen were deadly accurate" },
+                    { id: "patriot_regular", name: "Continental Regular", faction: "patriots", type: "unit", unitType: "infantry", cost: 4, atk: 4, hp: 4, opCost: 1, icon: "\uD83E\uDE96", flavor: "Professional soldier", rarity: "common", blitz: false, guard: true, fury: false, smokescreen: false, heavyArmor: 1, ambush: false, veteran: 0, pincer: false, battleCry: null, effect: null, history: "Regular army troops strengthened forces" },
+                    { id: "patriot_french", name: "French Infantry", faction: "patriots", type: "unit", unitType: "infantry", cost: 5, atk: 5, hp: 5, opCost: 1, icon: "\u269C", flavor: "Allied forces", rarity: "rare", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 3, pincer: true, battleCry: null, effect: null, history: "France joined the war in 1778" },
+                    { id: "patriot_washington", name: "George Washington", faction: "patriots", type: "unit", unitType: "infantry", cost: 6, atk: 6, hp: 7, opCost: 2, icon: "\uD83C\uDF96", flavor: "Commander in Chief", rarity: "legendary", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 1, ambush: false, veteran: 0, pincer: false, battleCry: function(instance) { _drawCards(2); }, effect: null, history: "Washington led the Continental Army" },
+                    { id: "patriot_lafayette", name: "Lafayette", faction: "patriots", type: "unit", unitType: "cavalry", cost: 4, atk: 4, hp: 5, opCost: 1, icon: "\uD83D\uDDFD", flavor: "Young general", rarity: "rare", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, pincer: false, battleCry: function(instance) { var side = _activeSide || G.player; side.supply += 1; }, effect: null, history: "Lafayette served without pay" },
+                    { id: "patriot_franklin", name: "Benjamin Franklin", faction: "patriots", type: "unit", unitType: "infantry", cost: 3, atk: 1, hp: 4, opCost: 1, icon: "\uD83D\uDD11", flavor: "Diplomat & sage", rarity: "rare", blitz: false, guard: false, fury: false, smokescreen: true, heavyArmor: 0, ambush: false, veteran: 0, pincer: false, battleCry: function(instance) { _drawCards(1); var side = _activeSide || G.player; side.supply += 1; }, effect: null, history: "Franklin secured French alliance" },
+                    { id: "patriot_lighthorse", name: "Light Horse Harry", faction: "patriots", type: "unit", unitType: "cavalry", cost: 3, atk: 3, hp: 3, opCost: 1, icon: "\uD83D\uDC0E", flavor: "Swift raider", rarity: "common", blitz: false, guard: false, fury: true, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, pincer: false, battleCry: null, effect: null, history: "Henry Lee's cavalry raided British supply lines" },
+                    { id: "patriot_knox", name: "Henry Knox", faction: "patriots", type: "unit", unitType: "artillery", cost: 4, atk: 5, hp: 3, opCost: 1, icon: "\uD83D\uDCA5", flavor: "Artillery chief", rarity: "rare", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, pincer: false, battleCry: function(instance) { _dealDamage(2, "enemy"); }, effect: null, history: "Knox hauled cannons from Fort Ticonderoga" },
+                    { id: "patriot_morgan", name: "Daniel Morgan", faction: "patriots", type: "unit", unitType: "infantry", cost: 4, atk: 3, hp: 4, opCost: 1, icon: "\uD83C\uDFAF", flavor: "Riflemen leader", rarity: "rare", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: true, veteran: 2, pincer: false, battleCry: null, effect: null, history: "Morgan's riflemen won the Battle of Cowpens" },
+                    { id: "patriot_delaware", name: "Crossing Delaware", faction: "patriots", type: "order", cost: 3, atk: 0, hp: 0, opCost: 0, icon: "\uD83C\uDF0A", flavor: "Surprise attack", rarity: "common", battleCry: function() { _dealDamage(3, "enemy"); }, effect: null, history: "Famous 1776 surprise attack" },
+                    { id: "patriot_declaration", name: "Declaration of Independence", faction: "patriots", type: "order", cost: 2, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDCDC", flavor: "Independence declared", rarity: "common", battleCry: function() { _drawCards(2); }, effect: null, history: "Declared independence July 4, 1776" },
+                    { id: "patriot_saratoga", name: "Victory at Saratoga", faction: "patriots", type: "order", cost: 4, atk: 0, hp: 0, opCost: 0, icon: "\uD83C\uDFC6", flavor: "Major victory", rarity: "rare", battleCry: function() { _drawCards(2); var side = _activeSide || G.player; side.supply += 1; }, effect: null, history: "Turning point battle in 1777" },
+                    // Naval & expansion cards
+                    { id: "patriot_privateer", name: "Privateer Ship", faction: "patriots", type: "unit", unitType: "naval", cost: 3, atk: 3, hp: 4, opCost: 1, icon: "\uD83D\uDEA2", flavor: "Licensed raider", rarity: "common", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, pincer: false, battleCry: function(instance) { _dealDamage(1, "enemy"); }, effect: null, history: "Congress authorized privateers to raid British ships" },
+                    { id: "patriot_jones", name: "John Paul Jones", faction: "patriots", type: "unit", unitType: "naval", cost: 5, atk: 5, hp: 4, opCost: 2, icon: "\u2693", flavor: "Naval hero", rarity: "legendary", blitz: true, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, pincer: false, battleCry: function(instance) { _dealDamage(3, "enemy"); _drawCards(1); }, effect: null, history: "I have not yet begun to fight!" },
+                    { id: "patriot_cannon", name: "Hidden Cannon", faction: "patriots", type: "unit", unitType: "artillery", cost: 2, atk: 4, hp: 1, opCost: 1, icon: "\uD83D\uDCA5", flavor: "Ambush artillery", rarity: "common", blitz: false, guard: false, fury: false, smokescreen: true, heavyArmor: 0, ambush: false, veteran: 0, pincer: false, battleCry: null, effect: null, history: "Colonial cannon concealed behind fortifications" },
+                    { id: "patriot_yorktown", name: "Siege of Yorktown", faction: "patriots", type: "order", cost: 5, atk: 0, hp: 0, opCost: 0, icon: "\uD83C\uDFF0", flavor: "Final siege", rarity: "legendary", battleCry: function() { _dealDamage(5, "enemy"); _drawCards(1); }, effect: null, history: "The final major battle that won the war in 1781" },
+                    { id: "patriot_spyring", name: "Culper Spy Ring", faction: "patriots", type: "order", cost: 3, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDD75", flavor: "Secret intel", rarity: "rare", battleCry: function() { _drawCards(3); }, effect: null, history: "Washington's spy network on Long Island" },
+                    // Patriot traps
+                    { id: "patriot_trap_bridge", name: "Ambush at the Bridge", faction: "patriots", type: "trap", cost: 2, atk: 0, hp: 0, opCost: 0, icon: "\uD83C\uDF09", flavor: "Hidden trap", rarity: "common", triggerCondition: "enemy_play_unit", trapEffect: function(ctx) { if (ctx.unit) { ctx.unit.hp -= 2; if (ctx.unit.hp <= 0) ctx.unit.dead = true; _log("Ambush at the Bridge deals 2 damage to " + ctx.unit.def.name + "!"); } }, history: "Militia ambushed British at Concord's North Bridge" },
+                    { id: "patriot_trap_rally", name: "Militia Rally", faction: "patriots", type: "trap", cost: 3, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDCEF", flavor: "Call to arms", rarity: "rare", triggerCondition: "hq_damage", trapEffect: function(ctx) { var militia = createCardInstance({ id: "token_militia", name: "Rally Militia", faction: ctx.side === G.player ? G.playerFaction : G.enemyFaction, type: "unit", unitType: "infantry", cost: 0, atk: 2, hp: 2, opCost: 1, icon: "\u2694", flavor: "Rallied", rarity: "common", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, pincer: false, battleCry: null, effect: null, history: "Militia rallied to defend their homeland" }); militia.zone = "frontline"; militia.exhausted = true; if (ctx.side.board.length < 5) { ctx.side.board.push(militia); _log("Militia Rally summons a 2/2 Militia!"); } }, history: "Word spread fast and minutemen rallied to fight" },
+                    { id: "patriot_trap_powder", name: "Powder Keg", faction: "patriots", type: "trap", cost: 2, atk: 0, hp: 0, opCost: 0, icon: "\uD83E\uDDE8", flavor: "Explosive trap", rarity: "common", triggerCondition: "enemy_attack", trapEffect: function(ctx) { if (ctx.attacker) { ctx.attacker.hp -= 3; if (ctx.attacker.hp <= 0) ctx.attacker.dead = true; _log("Powder Keg explodes, dealing 3 damage to " + ctx.attacker.def.name + "!"); } }, history: "Colonists sabotaged British supply routes with explosives" },
 
                     // British
-                    { id: "british_redcoat", name: "British Redcoat", faction: "british", type: "unit", cost: 2, atk: 3, hp: 2, icon: "🪖", flavor: "Professional soldier", rarity: "common", blitz: false, guard: false, battleCry: null, effect: null, history: "Red-uniformed British regulars" },
-                    { id: "british_grenadier", name: "Grenadier", faction: "british", type: "unit", cost: 3, atk: 4, hp: 3, icon: "💣", flavor: "Elite assault", rarity: "common", blitz: false, guard: false, battleCry: null, effect: null, history: "Elite grenadier companies" },
-                    { id: "british_dragoon", name: "Dragoon", faction: "british", type: "unit", cost: 3, atk: 3, hp: 3, icon: "🐴", flavor: "Fast cavalry", rarity: "common", blitz: true, guard: false, battleCry: null, effect: null, history: "Mounted cavalry troops" },
-                    { id: "british_hessian", name: "Hessian Mercenary", faction: "british", type: "unit", cost: 4, atk: 5, hp: 3, icon: "⚔", flavor: "Hired soldier", rarity: "common", blitz: false, guard: false, battleCry: null, effect: null, history: "German mercenaries hired by Britain" },
-                    { id: "british_guards", name: "Royal Guards", faction: "british", type: "unit", cost: 5, atk: 5, hp: 5, icon: "🛡", flavor: "Elite guardians", rarity: "rare", blitz: false, guard: true, battleCry: null, effect: null, history: "The King's elite guard units" },
-                    { id: "british_cornwallis", name: "Lord Cornwallis", faction: "british", type: "unit", cost: 6, atk: 6, hp: 7, icon: "🎖", flavor: "Field marshal", rarity: "legendary", blitz: false, guard: false, battleCry: function(instance) { _dealDamage(2, "player"); }, effect: null, history: "Commanded British southern campaign" },
-                    { id: "british_howe", name: "General Howe", faction: "british", type: "unit", cost: 5, atk: 5, hp: 6, icon: "🗽", flavor: "Strategic general", rarity: "rare", blitz: false, guard: false, battleCry: function(instance) { _drawCards(1); }, effect: null, history: "Commander of New York campaign" },
-                    { id: "british_tarleton", name: "Banastre Tarleton", faction: "british", type: "unit", cost: 4, atk: 5, hp: 3, icon: "🐴", flavor: "Cavalry colonel", rarity: "rare", blitz: true, guard: false, battleCry: function(instance) { _dealDamage(1, "player"); }, effect: null, history: "Brutal dragoon commander" },
-                    { id: "british_stamp", name: "Stamp Tax", faction: "british", type: "order", cost: 2, atk: 0, hp: 0, icon: "💰", flavor: "Tax colonists", rarity: "common", battleCry: function() { G.enemy.supply += 2; }, effect: null, history: "Sparked colonial outrage in 1765" },
-                    { id: "british_bunker", name: "Assault on Bunker Hill", faction: "british", type: "order", cost: 4, atk: 0, hp: 0, icon: "🏔", flavor: "Hill battle", rarity: "rare", battleCry: function() { _dealDamage(3, "player"); }, effect: null, history: "Early major battle of the war" },
-                    { id: "british_blockade", name: "Royal Navy Blockade", faction: "british", type: "order", cost: 3, atk: 0, hp: 0, icon: "⛵", flavor: "Naval blockade", rarity: "common", battleCry: function() { _drawCards(2); }, effect: null, history: "British navy controlled the coast" },
-                    // Naval & expansion cards (Andy's designs)
-                    { id: "british_frigate", name: "HMS Frigate", faction: "british", type: "unit", cost: 3, atk: 3, hp: 4, icon: "🚢", flavor: "Warship", rarity: "common", blitz: false, guard: true, battleCry: function(instance) { _dealDamage(1, "player"); }, effect: null, history: "British warships patrolled the Atlantic" },
-                    { id: "british_admiral", name: "Admiral Graves", faction: "british", type: "unit", cost: 5, atk: 4, hp: 6, icon: "⚓", flavor: "Fleet commander", rarity: "legendary", blitz: false, guard: false, battleCry: function(instance) { _dealDamage(2, "player"); _drawCards(1); }, effect: null, history: "Commanded the British North American fleet" },
-                    { id: "british_artillery", name: "Royal Artillery", faction: "british", type: "unit", cost: 2, atk: 4, hp: 1, icon: "💥", flavor: "Heavy guns", rarity: "common", blitz: true, guard: false, battleCry: null, effect: null, history: "British field cannons were feared in battle" },
-                    { id: "british_burning", name: "Burning of Norfolk", faction: "british", type: "order", cost: 5, atk: 0, hp: 0, icon: "🔥", flavor: "Total destruction", rarity: "legendary", battleCry: function() { _dealDamage(5, "player"); }, effect: null, history: "British burned Norfolk, Virginia in January 1776" },
-                    { id: "british_intel", name: "British Intelligence", faction: "british", type: "order", cost: 3, atk: 0, hp: 0, icon: "🕵", flavor: "Spy network", rarity: "rare", battleCry: function() { _drawCards(3); }, effect: null, history: "Major Andre ran British spy operations" }
+                    { id: "british_redcoat", name: "British Redcoat", faction: "british", type: "unit", unitType: "infantry", cost: 2, atk: 3, hp: 2, opCost: 1, icon: "\uD83E\uDE96", flavor: "Professional soldier", rarity: "common", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, pincer: true, battleCry: null, effect: null, history: "Red-uniformed British regulars" },
+                    { id: "british_grenadier", name: "Grenadier", faction: "british", type: "unit", unitType: "infantry", cost: 3, atk: 4, hp: 3, opCost: 1, icon: "\uD83D\uDCA3", flavor: "Elite assault", rarity: "common", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 1, ambush: false, veteran: 0, pincer: false, battleCry: null, effect: null, history: "Elite grenadier companies" },
+                    { id: "british_dragoon", name: "Dragoon", faction: "british", type: "unit", unitType: "cavalry", cost: 3, atk: 3, hp: 3, opCost: 1, icon: "\uD83D\uDC0E", flavor: "Fast cavalry", rarity: "common", blitz: false, guard: false, fury: true, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, pincer: false, battleCry: null, effect: null, history: "Mounted cavalry troops" },
+                    { id: "british_hessian", name: "Hessian Mercenary", faction: "british", type: "unit", unitType: "infantry", cost: 4, atk: 5, hp: 3, opCost: 1, icon: "\u2694", flavor: "Hired soldier", rarity: "common", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 2, pincer: false, battleCry: null, effect: null, history: "German mercenaries hired by Britain" },
+                    { id: "british_guards", name: "Royal Guards", faction: "british", type: "unit", unitType: "infantry", cost: 5, atk: 5, hp: 5, opCost: 1, icon: "\uD83D\uDEE1", flavor: "Elite guardians", rarity: "rare", blitz: false, guard: true, fury: false, smokescreen: false, heavyArmor: 2, ambush: false, veteran: 0, pincer: false, battleCry: null, effect: null, history: "The King's elite guard units" },
+                    { id: "british_cornwallis", name: "Lord Cornwallis", faction: "british", type: "unit", unitType: "infantry", cost: 6, atk: 6, hp: 7, opCost: 2, icon: "\uD83C\uDF96", flavor: "Field marshal", rarity: "legendary", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 1, ambush: false, veteran: 0, pincer: false, battleCry: function(instance) { _dealDamage(2, "player"); }, effect: null, history: "Commanded British southern campaign" },
+                    { id: "british_howe", name: "General Howe", faction: "british", type: "unit", unitType: "infantry", cost: 5, atk: 5, hp: 6, opCost: 2, icon: "\uD83D\uDDFD", flavor: "Strategic general", rarity: "rare", blitz: false, guard: false, fury: false, smokescreen: true, heavyArmor: 0, ambush: false, veteran: 0, pincer: false, battleCry: function(instance) { _drawCards(1); }, effect: null, history: "Commander of New York campaign" },
+                    { id: "british_tarleton", name: "Banastre Tarleton", faction: "british", type: "unit", unitType: "cavalry", cost: 4, atk: 5, hp: 3, opCost: 1, icon: "\uD83D\uDC0E", flavor: "Cavalry colonel", rarity: "rare", blitz: true, guard: false, fury: true, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, pincer: false, battleCry: function(instance) { _dealDamage(1, "player"); }, effect: null, history: "Brutal dragoon commander" },
+                    { id: "british_highlander", name: "Highland Soldier", faction: "british", type: "unit", unitType: "infantry", cost: 3, atk: 3, hp: 4, opCost: 1, icon: "\u2694", flavor: "Fierce warrior", rarity: "common", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: true, veteran: 0, pincer: false, battleCry: null, effect: null, history: "Scottish Highlanders served in the British Army" },
+                    { id: "british_cannon_royal", name: "Royal Horse Artillery", faction: "british", type: "unit", unitType: "artillery", cost: 4, atk: 5, hp: 2, opCost: 1, icon: "\uD83D\uDCA5", flavor: "Mobile guns", rarity: "rare", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, pincer: false, battleCry: function(instance) { _dealDamage(1, "player"); }, effect: null, history: "Horse artillery could rapidly deploy on the battlefield" },
+                    { id: "british_stamp", name: "Stamp Tax", faction: "british", type: "order", cost: 2, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDCB0", flavor: "Tax colonists", rarity: "common", battleCry: function() { var side = _activeSide || G.enemy; side.supply += 2; }, effect: null, history: "Sparked colonial outrage in 1765" },
+                    { id: "british_bunker", name: "Assault on Bunker Hill", faction: "british", type: "order", cost: 4, atk: 0, hp: 0, opCost: 0, icon: "\uD83C\uDFD4", flavor: "Hill battle", rarity: "rare", battleCry: function() { _dealDamage(3, "player"); }, effect: null, history: "Early major battle of the war" },
+                    { id: "british_blockade", name: "Royal Navy Blockade", faction: "british", type: "order", cost: 3, atk: 0, hp: 0, opCost: 0, icon: "\u26F5", flavor: "Naval blockade", rarity: "common", battleCry: function() { _drawCards(2); }, effect: null, history: "British navy controlled the coast" },
+                    // Naval & expansion cards
+                    { id: "british_frigate", name: "HMS Frigate", faction: "british", type: "unit", unitType: "naval", cost: 3, atk: 3, hp: 4, opCost: 1, icon: "\uD83D\uDEA2", flavor: "Warship", rarity: "common", blitz: false, guard: true, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, pincer: false, battleCry: function(instance) { _dealDamage(1, "player"); }, effect: null, history: "British warships patrolled the Atlantic" },
+                    { id: "british_admiral", name: "Admiral Graves", faction: "british", type: "unit", unitType: "naval", cost: 5, atk: 4, hp: 6, opCost: 2, icon: "\u2693", flavor: "Fleet commander", rarity: "legendary", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, pincer: false, battleCry: function(instance) { _dealDamage(2, "player"); _drawCards(1); }, effect: null, history: "Commanded the British North American fleet" },
+                    { id: "british_artillery", name: "Royal Artillery", faction: "british", type: "unit", unitType: "artillery", cost: 2, atk: 4, hp: 1, opCost: 1, icon: "\uD83D\uDCA5", flavor: "Heavy guns", rarity: "common", blitz: false, guard: false, fury: false, smokescreen: true, heavyArmor: 0, ambush: false, veteran: 0, pincer: false, battleCry: null, effect: null, history: "British field cannons were feared in battle" },
+                    { id: "british_burning", name: "Burning of Norfolk", faction: "british", type: "order", cost: 5, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDD25", flavor: "Total destruction", rarity: "legendary", battleCry: function() { _dealDamage(5, "player"); }, effect: null, history: "British burned Norfolk, Virginia in January 1776" },
+                    { id: "british_intel", name: "British Intelligence", faction: "british", type: "order", cost: 3, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDD75", flavor: "Spy network", rarity: "rare", battleCry: function() { _drawCards(3); }, effect: null, history: "Major Andre ran British spy operations" },
+                    // British traps
+                    { id: "british_trap_loyalty", name: "Loyalty Oath", faction: "british", type: "trap", cost: 2, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDC51", flavor: "Enforced loyalty", rarity: "common", triggerCondition: "enemy_play_unit", trapEffect: function(ctx) { if (ctx.unit) { ctx.unit.atk = Math.max(0, ctx.unit.atk - 2); _log("Loyalty Oath reduces " + ctx.unit.def.name + "'s ATK by 2!"); } }, history: "Loyalists pressured colonists to stay faithful to the Crown" },
+                    { id: "british_trap_reinforce", name: "Redcoat Reinforcements", faction: "british", type: "trap", cost: 3, atk: 0, hp: 0, opCost: 0, icon: "\uD83E\uDE96", flavor: "Fresh troops", rarity: "rare", triggerCondition: "hq_damage", trapEffect: function(ctx) { var redcoat = createCardInstance({ id: "token_redcoat", name: "Reinforcement", faction: ctx.side === G.player ? G.playerFaction : G.enemyFaction, type: "unit", unitType: "infantry", cost: 0, atk: 2, hp: 3, opCost: 1, icon: "\uD83E\uDE96", flavor: "Reinforced", rarity: "common", blitz: false, guard: true, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, pincer: false, battleCry: null, effect: null, history: "British reinforcements arrived from across the sea" }); redcoat.zone = "frontline"; redcoat.exhausted = true; if (ctx.side.board.length < 5) { ctx.side.board.push(redcoat); _log("Redcoat Reinforcements summons a 2/3 Guard!"); } }, history: "Britain sent waves of reinforcements to the colonies" },
+                    { id: "british_trap_mines", name: "Naval Mines", faction: "british", type: "trap", cost: 2, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDCA3", flavor: "Hidden danger", rarity: "common", triggerCondition: "enemy_attack", trapEffect: function(ctx) { if (ctx.attacker) { ctx.attacker.hp -= 3; if (ctx.attacker.hp <= 0) ctx.attacker.dead = true; _log("Naval Mines explode, dealing 3 damage to " + ctx.attacker.def.name + "!"); } }, history: "The British mined harbors to prevent colonial ships" }
                 ];
             }
 
@@ -1759,7 +2056,8 @@
                         board: [],
                         deck: deck,
                         supply: 1,
-                        maxSupply: 1
+                        maxSupply: 1,
+                        traps: []
                     },
                     enemy: {
                         name: enemyFaction === "patriots" ? "Continental Army" : "British Empire",
@@ -1769,7 +2067,8 @@
                         board: [],
                         deck: enemyDeck,
                         supply: 0,
-                        maxSupply: 0
+                        maxSupply: 0,
+                        traps: []
                     },
                     turn: 1,
                     log: [],
@@ -1821,7 +2120,11 @@
                     hp: cardDef.hp,
                     exhausted: false,
                     dead: false,
-                    zone: "reserve" // "reserve" or "frontline"
+                    zone: "reserve", // "reserve" or "frontline"
+                    attacksThisTurn: 0,
+                    hasSmokescreen: !!cardDef.smokescreen,
+                    combatsSurvived: 0,
+                    upgraded: false
                 };
             }
 
@@ -1852,9 +2155,12 @@
 
             function canPlayCard(instance) {
                 if (G.player.supply < instance.def.cost) return false;
-                if (instance.def.type === "order") return true; // orders don't need board space
+                if (instance.def.type === "order") return true;
+                if (instance.def.type === "trap") return G.player.traps.length < 2; // max 2 traps
                 return G.player.board.length < 5;
             }
+
+            var _unitsPlayedThisTurn = [];
 
             // ========== PLAYING CARDS ==========
             function playCard(instance) {
@@ -1873,12 +2179,34 @@
                 _activeSide = G.player;
 
                 if (instance.def.type === "unit") {
-                    instance.zone = instance.def.blitz ? "frontline" : "reserve";
-                    instance.exhausted = !instance.def.blitz; // Blitz units can act immediately
+                    var unitType = instance.def.unitType || "infantry";
+                    // Cavalry and Blitz go to frontline; Artillery stays in reserve
+                    if (instance.def.blitz || unitType === "cavalry") {
+                        instance.zone = "frontline";
+                        instance.exhausted = false;
+                    } else {
+                        instance.zone = "reserve";
+                        instance.exhausted = true;
+                    }
                     G.player.board.push(instance);
                     _playSound("card");
-                    _log("Played " + instance.def.name + (instance.def.blitz ? " (Blitz!)" : " to reserve") + ".");
-                    if (instance.def.history) _log("📖 " + instance.def.history);
+
+                    var zoneMsg = instance.zone === "frontline" ? (instance.def.blitz ? " (Blitz!)" : " (Cavalry!)") : " to reserve";
+                    _log("Played " + instance.def.name + zoneMsg + ".");
+                    if (instance.def.history) _log("\uD83D\uDCD6 " + instance.def.history);
+
+                    // Pincer: buff both units if another was played this turn
+                    if (instance.def.pincer && _unitsPlayedThisTurn.length > 0) {
+                        var partner = _unitsPlayedThisTurn[_unitsPlayedThisTurn.length - 1];
+                        if (!partner.dead) {
+                            instance.atk += 1;
+                            instance.hp += 1;
+                            partner.atk += 1;
+                            partner.hp += 1;
+                            _log("Pincer! " + instance.def.name + " and " + partner.def.name + " both get +1/+1!");
+                        }
+                    }
+                    _unitsPlayedThisTurn.push(instance);
 
                     try {
                         if (instance.def.battleCry) {
@@ -1887,10 +2215,13 @@
                     } catch (e) {
                         // Silent fail
                     }
+
+                    // Check enemy traps for unit played
+                    checkTraps("enemy_play_unit", { unit: instance, side: G.enemy });
                 } else if (instance.def.type === "order") {
                     _playSound("card");
                     _log("Played " + instance.def.name + ".");
-                    if (instance.def.history) _log("📖 " + instance.def.history);
+                    if (instance.def.history) _log("\uD83D\uDCD6 " + instance.def.history);
 
                     try {
                         if (instance.def.battleCry) {
@@ -1899,34 +2230,157 @@
                     } catch (e) {
                         // Silent fail
                     }
+                } else if (instance.def.type === "trap") {
+                    // Set trap face-down
+                    G.player.traps.push(instance);
+                    _playSound("card");
+                    _log("Set a trap face-down.");
                 }
 
                 _activeSide = null;
+
+                if (G.gameOver) {
+                    endGame();
+                }
 
                 return true;
             }
 
             // ========== COMBAT (MARK-AND-SWEEP) ==========
+            function calculateDamage(rawDamage, target) {
+                var armor = target.def.heavyArmor || 0;
+                if (armor > 0) {
+                    return Math.max(1, rawDamage - armor);
+                }
+                return rawDamage;
+            }
+
             function resolveCombat(attacker, defender) {
-                defender.hp -= attacker.atk;
-                attacker.hp -= defender.atk;
-                attacker.exhausted = true;
+                var atkType = attacker.def.unitType || "infantry";
+                var defType = defender.def.unitType || "infantry";
 
-                // Mark dead (don't remove yet!)
-                if (defender.hp <= 0) {
-                    defender.dead = true;
-                }
-                if (attacker.hp <= 0) {
-                    attacker.dead = true;
+                // Ambush: defender strikes first
+                if (defender.def.ambush && !defender.dead) {
+                    var ambushDmg = calculateDamage(defender.atk, attacker);
+                    attacker.hp -= ambushDmg;
+                    _log(defender.def.name + " ambushes " + attacker.def.name + " for " + ambushDmg + "!");
+                    if (attacker.hp <= 0) {
+                        attacker.dead = true;
+                        // Attacker dies before striking
+                        _playSound("attack");
+                        _log(attacker.def.name + " is destroyed by ambush!");
+                        // Track veteran for defender
+                        if (defender.def.veteran > 0) {
+                            defender.combatsSurvived++;
+                            _checkVeteranUpgrade(defender);
+                        }
+                        attacker.attacksThisTurn++;
+                        if (attacker.def.fury && attacker.attacksThisTurn < 2) {
+                            // Fury: don't exhaust yet
+                        } else {
+                            attacker.exhausted = true;
+                        }
+                        return;
+                    }
+                    // Attacker survives ambush, now deals damage
+                    var atkDmg = calculateDamage(attacker.atk, defender);
+                    defender.hp -= atkDmg;
+                    _playSound("attack");
+                    _log(attacker.def.name + " attacks " + defender.def.name + " for " + atkDmg + "!");
+                } else {
+                    // Normal combat: attacker strikes
+                    var atkDmg = calculateDamage(attacker.atk, defender);
+                    defender.hp -= atkDmg;
+                    _playSound("attack");
+                    _log(attacker.def.name + " attacks " + defender.def.name + " for " + atkDmg + "!");
+
+                    // Retaliation check
+                    var takesRetaliation = true;
+                    if (atkType === "artillery") {
+                        takesRetaliation = false; // Artillery: no retaliation
+                    } else if (atkType === "naval" && defType !== "naval") {
+                        takesRetaliation = false; // Naval: only from other naval
+                    }
+
+                    if (takesRetaliation) {
+                        var retDmg = calculateDamage(defender.atk, attacker);
+                        attacker.hp -= retDmg;
+                    }
                 }
 
-                _playSound("attack");
-                _log(attacker.def.name + " attacks " + defender.def.name + "!");
+                // Mark dead
+                if (defender.hp <= 0) defender.dead = true;
+                if (attacker.hp <= 0) attacker.dead = true;
+
+                // Track Fury + exhaustion
+                attacker.attacksThisTurn++;
+                if (attacker.def.fury && attacker.attacksThisTurn < 2) {
+                    // Fury: can attack again, don't exhaust
+                } else {
+                    attacker.exhausted = true;
+                }
+
+                // Remove smokescreen after attacking
+                if (attacker.hasSmokescreen) attacker.hasSmokescreen = false;
+
+                // Track veteran upgrades
+                if (attacker.def.veteran > 0 && !attacker.dead) {
+                    attacker.combatsSurvived++;
+                    _checkVeteranUpgrade(attacker);
+                }
+                if (defender.def.veteran > 0 && !defender.dead) {
+                    defender.combatsSurvived++;
+                    _checkVeteranUpgrade(defender);
+                }
+            }
+
+            function _checkVeteranUpgrade(unit) {
+                if (unit.upgraded) return;
+                if (unit.combatsSurvived >= unit.def.veteran) {
+                    unit.atk += 2;
+                    unit.hp += 2;
+                    unit.upgraded = true;
+                    _log(unit.def.name + " becomes a Veteran! +2/+2!");
+                }
             }
 
             function sweepDead() {
                 G.player.board = G.player.board.filter(function(u) { return !u.dead; });
                 G.enemy.board = G.enemy.board.filter(function(u) { return !u.dead; });
+            }
+
+            // ========== TRAP SYSTEM ==========
+            function checkTraps(trigger, context) {
+                if (!G) return;
+                // Determine which side's traps to check
+                var traps;
+                if (trigger === "enemy_play_unit" || trigger === "enemy_attack") {
+                    // Check the opposing side's traps
+                    traps = context.side === G.enemy ? G.player.traps : G.enemy.traps;
+                } else if (trigger === "hq_damage") {
+                    // The side that took damage checks its own traps
+                    traps = context.side ? context.side.traps : [];
+                } else {
+                    return;
+                }
+
+                var triggered = [];
+                for (var i = 0; i < traps.length; i++) {
+                    if (traps[i].def.triggerCondition === trigger) {
+                        triggered.push(i);
+                        try {
+                            _log("\u26A0 Trap triggered: " + traps[i].def.name + "!");
+                            traps[i].def.trapEffect(context);
+                        } catch (e) {
+                            // Silent fail
+                        }
+                    }
+                }
+                // Remove triggered traps (reverse order)
+                for (var j = triggered.length - 1; j >= 0; j--) {
+                    traps.splice(triggered[j], 1);
+                }
+                sweepDead();
             }
 
             // ========== DAMAGE HELPERS ==========
@@ -1935,10 +2389,12 @@
                     G.player.hp -= amount;
                     _playSound("damage");
                     _log("Enemy deals " + amount + " damage to player!");
+                    checkTraps("hq_damage", { side: G.player, amount: amount });
                 } else if (target === "enemy") {
                     G.enemy.hp -= amount;
                     _playSound("damage");
                     _log("You deal " + amount + " damage to enemy!");
+                    checkTraps("hq_damage", { side: G.enemy, amount: amount });
                 }
                 if (G.player.hp <= 0) {
                     G.gameOver = true;
@@ -1953,11 +2409,13 @@
             function moveToFrontline(instance) {
                 if (G.phase !== "player") return false;
                 if (instance.zone !== "reserve") return false;
-                if (G.player.supply < 1) return false;
+                var moveCost = instance.def.opCost || 1;
+                if (G.player.supply < moveCost) return false;
 
-                G.player.supply -= 1;
+                G.player.supply -= moveCost;
                 instance.zone = "frontline";
-                instance.exhausted = false; // Can attack after moving
+                instance.exhausted = false;
+                if (instance.hasSmokescreen) instance.hasSmokescreen = false;
                 _log(instance.def.name + " advances to the frontline!");
                 _playSound("card");
                 return true;
@@ -1967,19 +2425,48 @@
             function playerAttack(attacker, defender) {
                 if (G.phase !== "player") return;
                 if (attacker.exhausted) return;
-                if (attacker.zone !== "frontline") return; // Must be on frontline to attack
                 if (G.player.board.indexOf(attacker) === -1) return;
 
-                // Guard check: must attack guard units first
+                var atkType = attacker.def.unitType || "infantry";
+
+                // Zone check: Artillery and Naval can attack from reserve, others need frontline
+                if (attacker.zone !== "frontline" && atkType !== "artillery" && atkType !== "naval") return;
+
+                // Operation cost check
+                var opCost = attacker.def.opCost || 1;
+                if (G.player.supply < opCost) {
+                    _log("Not enough supply to operate " + attacker.def.name + " (need " + opCost + ")!");
+                    return;
+                }
+
+                // Smokescreen check: can't target units with active smokescreen
+                if (defender.hasSmokescreen) {
+                    _log(defender.def.name + " is hidden by Smokescreen!");
+                    return;
+                }
+
+                // Guard check: must attack guard units first (Naval bypasses for reserve targets)
                 var enemyFrontline = getUnitsInZone(G.enemy.board, "frontline");
                 var guards = [];
                 for (var i = 0; i < enemyFrontline.length; i++) {
-                    if (enemyFrontline[i].def.guard && !enemyFrontline[i].dead) {
+                    if (enemyFrontline[i].def.guard && !enemyFrontline[i].dead && !enemyFrontline[i].hasSmokescreen) {
                         guards.push(enemyFrontline[i]);
                     }
                 }
-                if (guards.length > 0 && guards.indexOf(defender) === -1) {
+                // Naval can target reserve, bypassing guards (like Bombers in KARDS)
+                if (atkType !== "naval" && guards.length > 0 && guards.indexOf(defender) === -1) {
                     _log("Must attack Guard unit first!");
+                    return;
+                }
+
+                // Deduct operation cost
+                G.player.supply -= opCost;
+
+                // Check enemy traps for attack
+                checkTraps("enemy_attack", { attacker: attacker, side: G.enemy });
+                if (attacker.dead || G.gameOver) {
+                    sweepDead();
+                    if (G.gameOver) endGame();
                     return;
                 }
 
@@ -2012,6 +2499,7 @@
                 // Card Storm achievement
                 if (_cardsPlayedThisTurn >= 5) unlockAchievement("card_storm");
                 _cardsPlayedThisTurn = 0;
+                _unitsPlayedThisTurn = [];
 
                 G.phase = "animating";
                 render();
@@ -2022,6 +2510,7 @@
                     // Reset enemy board states
                     for (var i = 0; i < G.enemy.board.length; i++) {
                         G.enemy.board[i].exhausted = false;
+                        G.enemy.board[i].attacksThisTurn = 0;
                     }
 
                     setTimeout(function() {
@@ -2035,6 +2524,7 @@
             function enemyTurn() {
                 if (G.gameOver) return;
                 _activeSide = G.enemy;
+                var _enemyUnitsPlayedThisTurn = [];
 
                 // Draw
                 if (G.enemy.deck.length > 0) {
@@ -2043,8 +2533,22 @@
                     G.enemy.hand.push(instance);
                 }
 
-                G.enemy.maxSupply = Math.min(G.enemy.maxSupply + 1, 8);
+                G.enemy.maxSupply = Math.min(G.enemy.maxSupply + 1, 10);
                 G.enemy.supply = G.enemy.maxSupply;
+
+                // Reserve some supply for attacks on hard difficulty
+                var effectiveDiff = _campaignMode ? BATTLES[_currentBattle].difficulty : _difficulty;
+                var reserveSupply = 0;
+                if (effectiveDiff === "hard") {
+                    // Reserve supply for best attacker's opCost
+                    for (var r = 0; r < G.enemy.board.length; r++) {
+                        var u = G.enemy.board[r];
+                        if (!u.exhausted && u.atk > 0) {
+                            var oc = u.def.opCost || 1;
+                            if (oc > reserveSupply) reserveSupply = oc;
+                        }
+                    }
+                }
 
                 // Play cards (with safety counter)
                 var played = true;
@@ -2053,25 +2557,27 @@
                     played = false;
                     safetyCounter++;
 
-                    // Find best card to play (prioritize high-cost units > heroes > orders)
                     var bestCard = null;
                     var bestPriority = -1;
+                    var availableSupply = G.enemy.supply - reserveSupply;
 
                     for (var i = 0; i < G.enemy.hand.length; i++) {
                         var c = G.enemy.hand[i];
-                        if (G.enemy.supply < c.def.cost) continue;
+                        if (availableSupply < c.def.cost) continue;
 
                         var priority = 0;
                         if (c.def.type === "unit") {
-                            // Units get high priority (cost * 2), prefer expensive units
                             priority = c.def.cost * 2;
                             if (c.def.rarity === "legendary") priority += 5;
                             if (c.def.rarity === "rare") priority += 2;
-                            // Can't play if board full
+                            if (c.def.fury) priority += 3;
+                            if (c.def.ambush) priority += 2;
                             if (G.enemy.board.length >= 5) priority = -1;
                         } else if (c.def.type === "order") {
-                            // Orders get base priority of cost
                             priority = c.def.cost + 1;
+                        } else if (c.def.type === "trap") {
+                            priority = c.def.cost;
+                            if (G.enemy.traps.length >= 2) priority = -1;
                         }
 
                         if (priority > bestPriority) {
@@ -2080,9 +2586,9 @@
                         }
                     }
 
-                    // Board check: units need space, orders don't
                     var canPlace = bestCard && bestCard.def.cost <= G.enemy.supply;
                     if (canPlace && bestCard.def.type === "unit" && G.enemy.board.length >= 5) canPlace = false;
+                    if (canPlace && bestCard.def.type === "trap" && G.enemy.traps.length >= 2) canPlace = false;
                     if (canPlace) {
                         var idx = G.enemy.hand.indexOf(bestCard);
                         if (idx !== -1) {
@@ -2090,28 +2596,47 @@
                             G.enemy.supply -= bestCard.def.cost;
 
                             if (bestCard.def.type === "unit") {
-                                bestCard.zone = bestCard.def.blitz ? "frontline" : "reserve";
-                                bestCard.exhausted = !bestCard.def.blitz;
+                                var uType = bestCard.def.unitType || "infantry";
+                                if (bestCard.def.blitz || uType === "cavalry") {
+                                    bestCard.zone = "frontline";
+                                    bestCard.exhausted = false;
+                                } else {
+                                    bestCard.zone = "reserve";
+                                    bestCard.exhausted = true;
+                                }
                                 G.enemy.board.push(bestCard);
-                                _log("Enemy plays " + bestCard.def.name + (bestCard.def.blitz ? " (Blitz!)" : "") + ".");
+                                var zMsg = bestCard.zone === "frontline" ? (bestCard.def.blitz ? " (Blitz!)" : " (Cavalry!)") : "";
+                                _log("Enemy plays " + bestCard.def.name + zMsg + ".");
+
+                                // Pincer
+                                if (bestCard.def.pincer && _enemyUnitsPlayedThisTurn.length > 0) {
+                                    var partner = _enemyUnitsPlayedThisTurn[_enemyUnitsPlayedThisTurn.length - 1];
+                                    if (!partner.dead) {
+                                        bestCard.atk += 1; bestCard.hp += 1;
+                                        partner.atk += 1; partner.hp += 1;
+                                        _log("Pincer! " + bestCard.def.name + " and " + partner.def.name + " get +1/+1!");
+                                    }
+                                }
+                                _enemyUnitsPlayedThisTurn.push(bestCard);
+
+                                // Check player traps for enemy unit played
+                                checkTraps("enemy_play_unit", { unit: bestCard, side: G.player });
 
                                 try {
                                     if (bestCard.def.battleCry) {
                                         bestCard.def.battleCry(bestCard);
                                     }
-                                } catch (e) {
-                                    // Silent fail
-                                }
+                                } catch (e) {}
                             } else if (bestCard.def.type === "order") {
                                 _log("Enemy plays " + bestCard.def.name + ".");
-
                                 try {
                                     if (bestCard.def.battleCry) {
                                         bestCard.def.battleCry();
                                     }
-                                } catch (e) {
-                                    // Silent fail
-                                }
+                                } catch (e) {}
+                            } else if (bestCard.def.type === "trap") {
+                                G.enemy.traps.push(bestCard);
+                                _log("Enemy sets a trap.");
                             }
 
                             played = true;
@@ -2119,55 +2644,111 @@
                     }
                 }
 
-                // Move reserve units to frontline (costs nothing for AI to keep things fair/fun)
+                if (G.gameOver) { endGame(); _activeSide = null; return; }
+
+                // Move reserve units to frontline (Artillery stays in reserve)
                 for (var i = 0; i < G.enemy.board.length; i++) {
-                    if (G.enemy.board[i].zone === "reserve") {
-                        G.enemy.board[i].zone = "frontline";
-                        G.enemy.board[i].exhausted = false;
-                        _log("Enemy " + G.enemy.board[i].def.name + " advances to frontline.");
+                    var unit = G.enemy.board[i];
+                    var ut = unit.def.unitType || "infantry";
+                    if (unit.zone === "reserve" && ut !== "artillery") {
+                        unit.zone = "frontline";
+                        unit.exhausted = false;
+                        if (unit.hasSmokescreen) unit.hasSmokescreen = false;
+                        _log("Enemy " + unit.def.name + " advances to frontline.");
                     }
                 }
 
-                // Attack (only from frontline)
-                var effectiveDiff = _campaignMode ? BATTLES[_currentBattle].difficulty : _difficulty;
+                // Attack: units attack based on zone rules and opCost
                 for (var i = 0; i < G.enemy.board.length; i++) {
+                    if (G.gameOver) break;
                     var attacker = G.enemy.board[i];
-                    if (attacker.exhausted) continue;
-                    if (attacker.zone !== "frontline") continue;
+                    if (attacker.exhausted || attacker.dead) continue;
 
-                    // Find valid targets: frontline first, then check guards
-                    var playerFront = getUnitsInZone(G.player.board, "frontline");
-                    var targets = playerFront.length > 0 ? playerFront : G.player.board;
+                    var aType = attacker.def.unitType || "infantry";
+                    // Zone check: Artillery/Naval can attack from reserve
+                    if (attacker.zone !== "frontline" && aType !== "artillery" && aType !== "naval") continue;
 
-                    // Must attack guard units first
-                    var guards = [];
-                    for (var g = 0; g < targets.length; g++) {
-                        if (targets[g].def.guard && !targets[g].dead) guards.push(targets[g]);
-                    }
-                    if (guards.length > 0) targets = guards;
+                    // Check opCost
+                    var opCost = attacker.def.opCost || 1;
 
-                    if (targets.length > 0) {
-                        var target = targets[0];
-                        if (effectiveDiff === "hard") {
-                            for (var j = 1; j < targets.length; j++) {
-                                if (targets[j].atk > target.atk) target = targets[j];
-                            }
-                        } else if (effectiveDiff === "easy") {
-                            target = targets[Math.floor(Math.random() * targets.length)];
+                    // Fury: allow up to 2 attacks
+                    var maxAttacks = attacker.def.fury ? 2 : 1;
+                    for (var atkRound = 0; atkRound < maxAttacks; atkRound++) {
+                        if (attacker.exhausted || attacker.dead || G.gameOver) break;
+                        if (G.enemy.supply < opCost) break;
+
+                        // Find valid targets
+                        var playerFront = getUnitsInZone(G.player.board, "frontline");
+                        var targets;
+                        if (aType === "naval") {
+                            // Naval can target any unit
+                            targets = G.player.board.filter(function(u) { return !u.dead && !u.hasSmokescreen; });
                         } else {
-                            for (var j = 1; j < targets.length; j++) {
-                                if (targets[j].hp < target.hp) target = targets[j];
-                            }
+                            targets = playerFront.length > 0 ? playerFront : G.player.board;
+                            targets = targets.filter(function(u) { return !u.dead && !u.hasSmokescreen; });
                         }
-                        resolveCombat(attacker, target);
-                    } else {
-                        G.player.hp -= attacker.atk;
-                        attacker.exhausted = true;
-                        _playSound("damage");
-                        _log("Enemy " + attacker.def.name + " attacks your HQ for " + attacker.atk + " damage!");
-                        if (G.player.hp <= 0) {
-                            G.gameOver = true;
-                            G.winner = "enemy";
+
+                        // Guard check (Naval bypasses)
+                        if (aType !== "naval") {
+                            var guards = [];
+                            for (var g = 0; g < targets.length; g++) {
+                                if (targets[g].def.guard && !targets[g].dead && !targets[g].hasSmokescreen) guards.push(targets[g]);
+                            }
+                            if (guards.length > 0) targets = guards;
+                        }
+
+                        if (targets.length > 0) {
+                            var target = targets[0];
+                            if (effectiveDiff === "hard") {
+                                // Hard: target highest ATK (eliminate threats)
+                                for (var j = 1; j < targets.length; j++) {
+                                    if (targets[j].atk > target.atk) target = targets[j];
+                                }
+                                // Avoid ambush units if possible
+                                if (target.def.ambush && targets.length > 1) {
+                                    for (var j = 0; j < targets.length; j++) {
+                                        if (!targets[j].def.ambush) { target = targets[j]; break; }
+                                    }
+                                }
+                            } else if (effectiveDiff === "easy") {
+                                target = targets[Math.floor(Math.random() * targets.length)];
+                            } else {
+                                // Normal: target lowest HP
+                                for (var j = 1; j < targets.length; j++) {
+                                    if (targets[j].hp < target.hp) target = targets[j];
+                                }
+                            }
+                            G.enemy.supply -= opCost;
+
+                            // Check player traps
+                            checkTraps("enemy_attack", { attacker: attacker, side: G.player });
+                            if (attacker.dead || G.gameOver) { sweepDead(); break; }
+
+                            resolveCombat(attacker, target);
+                        } else {
+                            // Attack HQ directly
+                            if (hasGuardOnFrontline(G.player.board)) break;
+                            var pFront = getUnitsInZone(G.player.board, "frontline");
+                            if (pFront.length > 0 && aType !== "artillery" && aType !== "naval") break;
+
+                            G.enemy.supply -= opCost;
+                            G.player.hp -= attacker.atk;
+                            attacker.attacksThisTurn++;
+                            if (attacker.def.fury && attacker.attacksThisTurn < 2) {
+                                // Fury: don't exhaust
+                            } else {
+                                attacker.exhausted = true;
+                            }
+                            _playSound("damage");
+                            _log("Enemy " + attacker.def.name + " attacks your HQ for " + attacker.atk + " damage!");
+
+                            // Check player traps for HQ damage
+                            checkTraps("hq_damage", { side: G.player, amount: attacker.atk });
+
+                            if (G.player.hp <= 0) {
+                                G.gameOver = true;
+                                G.winner = "enemy";
+                            }
                         }
                     }
                 }
@@ -2176,16 +2757,18 @@
 
                 if (G.gameOver) {
                     endGame();
+                    _activeSide = null;
                     return;
                 }
 
                 // Reset player units for new turn
                 for (var r = 0; r < G.player.board.length; r++) {
                     G.player.board[r].exhausted = false;
+                    G.player.board[r].attacksThisTurn = 0;
                 }
 
                 // Increase player supply
-                G.player.maxSupply = Math.min(G.player.maxSupply + 1, 8);
+                G.player.maxSupply = Math.min(G.player.maxSupply + 1, 10);
                 G.player.supply = G.player.maxSupply;
 
                 // Draw for player
@@ -2195,7 +2778,7 @@
 
                 G.turn += 1;
                 G.phase = "player";
-                _log("— Turn " + G.turn + " — Your turn!");
+                _log("\u2014 Turn " + G.turn + " \u2014 Your turn!");
             }
 
             // ========== GAME OVER ==========
@@ -2370,6 +2953,9 @@
                 // Render boards
                 renderBoard();
 
+                // Render traps
+                renderTraps();
+
                 // Render hand
                 renderHand();
 
@@ -2415,6 +3001,34 @@
                         playerFrontline.appendChild(card);
                     } else {
                         playerReserve.appendChild(card);
+                    }
+                }
+            }
+
+            function renderTraps() {
+                var playerTrapZone = document.getElementById("playerTrapZone");
+                var enemyTrapZone = document.getElementById("enemyTrapZone");
+                if (playerTrapZone) {
+                    playerTrapZone.innerHTML = "";
+                    if (G.player.traps.length > 0) {
+                        for (var i = 0; i < G.player.traps.length; i++) {
+                            var t = document.createElement("span");
+                            t.className = "trap-indicator";
+                            t.textContent = "\u26A0 " + G.player.traps[i].def.name;
+                            t.title = G.player.traps[i].def.flavor + " (triggers on " + G.player.traps[i].def.triggerCondition.replace(/_/g, " ") + ")";
+                            playerTrapZone.appendChild(t);
+                        }
+                    }
+                }
+                if (enemyTrapZone) {
+                    enemyTrapZone.innerHTML = "";
+                    if (G.enemy.traps.length > 0) {
+                        for (var i = 0; i < G.enemy.traps.length; i++) {
+                            var t = document.createElement("span");
+                            t.className = "trap-indicator";
+                            t.textContent = "\u26A0 Trap Set";
+                            enemyTrapZone.appendChild(t);
+                        }
                     }
                 }
             }
@@ -2471,6 +3085,8 @@
 
                 if (instance.def.type === "order") {
                     card.className += " order";
+                } else if (instance.def.type === "trap") {
+                    card.className += " trap";
                 }
 
                 if (instance.def.rarity === "legendary") {
@@ -2489,17 +3105,35 @@
                     card.className += " guard-unit";
                 }
 
+                if (instance.hasSmokescreen) {
+                    card.className += " smokescreen-active";
+                }
+
+                if (instance.upgraded) {
+                    card.className += " veteran-upgraded";
+                }
+
                 if (inReserve) {
                     card.className += " in-reserve";
                 }
 
-                if (isPlayerUnit) {
+                if (isPlayerUnit && G) {
                     card.className += " unit-card";
-                    if (instance.zone === "frontline" && !instance.exhausted && G.phase === "player") {
+                    var aType = instance.def.unitType || "infantry";
+                    // Can attack: frontline units, or Artillery/Naval from reserve
+                    var canAtk = false;
+                    if (!instance.exhausted && G.phase === "player") {
+                        if (instance.zone === "frontline") canAtk = true;
+                        if ((aType === "artillery" || aType === "naval") && instance.zone === "reserve") canAtk = true;
+                    }
+                    if (canAtk) {
                         card.className += " can-attack";
                     }
-                    if (instance.zone === "reserve" && G.phase === "player" && G.player.supply >= 1) {
-                        card.className += " can-move";
+                    if (instance.zone === "reserve" && G.phase === "player") {
+                        var moveCost = instance.def.opCost || 1;
+                        if (G.player.supply >= moveCost && aType !== "artillery") {
+                            card.className += " can-move";
+                        }
                     }
                 }
 
@@ -2515,6 +3149,25 @@
                     badge.className = "card-type-badge";
                     badge.textContent = "ORDER";
                     card.appendChild(badge);
+                } else if (instance.def.type === "trap") {
+                    var badge = document.createElement("div");
+                    badge.className = "card-type-badge trap-badge";
+                    badge.textContent = "TRAP";
+                    card.appendChild(badge);
+                } else if (instance.def.unitType && instance.def.unitType !== "infantry") {
+                    var badge = document.createElement("div");
+                    badge.className = "card-type-badge unit-type-" + instance.def.unitType;
+                    badge.textContent = instance.def.unitType.toUpperCase();
+                    card.appendChild(badge);
+                }
+
+                // OpCost indicator (for units with opCost > 1)
+                if (instance.def.type === "unit" && (instance.def.opCost || 1) > 1) {
+                    var opBadge = document.createElement("div");
+                    opBadge.className = "op-cost-badge";
+                    opBadge.textContent = "\u2699" + (instance.def.opCost || 1);
+                    opBadge.title = "Operation cost: " + (instance.def.opCost || 1) + " supply to attack/move";
+                    card.appendChild(opBadge);
                 }
 
                 // Name
@@ -2536,20 +3189,41 @@
                 card.appendChild(flavor);
 
                 // Keywords
-                if (instance.def.type === "unit" && (instance.def.guard || instance.def.blitz)) {
+                var hasKeywords = instance.def.type === "unit" && (
+                    instance.def.guard || instance.def.blitz || instance.def.fury ||
+                    instance.def.smokescreen || instance.def.heavyArmor > 0 ||
+                    instance.def.ambush || instance.def.veteran > 0 || instance.def.pincer
+                );
+                if (hasKeywords) {
                     var keywords = document.createElement("div");
                     keywords.className = "card-keywords";
-                    if (instance.def.guard) {
-                        var gb = document.createElement("span");
-                        gb.className = "keyword-badge guard";
-                        gb.textContent = "Guard";
-                        keywords.appendChild(gb);
+                    var kwList = [
+                        { flag: "guard", label: "Guard", cls: "guard" },
+                        { flag: "blitz", label: "Blitz", cls: "blitz" },
+                        { flag: "fury", label: "Fury", cls: "fury" },
+                        { flag: "smokescreen", label: "Smoke", cls: "smokescreen" },
+                        { flag: "ambush", label: "Ambush", cls: "ambush" },
+                        { flag: "pincer", label: "Pincer", cls: "pincer" }
+                    ];
+                    for (var k = 0; k < kwList.length; k++) {
+                        if (instance.def[kwList[k].flag]) {
+                            var kb = document.createElement("span");
+                            kb.className = "keyword-badge " + kwList[k].cls;
+                            kb.textContent = kwList[k].label;
+                            keywords.appendChild(kb);
+                        }
                     }
-                    if (instance.def.blitz) {
-                        var bb = document.createElement("span");
-                        bb.className = "keyword-badge blitz";
-                        bb.textContent = "Blitz";
-                        keywords.appendChild(bb);
+                    if (instance.def.heavyArmor > 0) {
+                        var ab = document.createElement("span");
+                        ab.className = "keyword-badge heavy-armor";
+                        ab.textContent = "Armor " + instance.def.heavyArmor;
+                        keywords.appendChild(ab);
+                    }
+                    if (instance.def.veteran > 0) {
+                        var vb = document.createElement("span");
+                        vb.className = "keyword-badge veteran";
+                        vb.textContent = instance.upgraded ? "\u2605 Vet" : "Vet " + instance.combatsSurvived + "/" + instance.def.veteran;
+                        keywords.appendChild(vb);
                     }
                     card.appendChild(keywords);
                 }
@@ -2562,21 +3236,26 @@
                     var atkBox = document.createElement("div");
                     atkBox.className = "stat-box atk";
                     atkBox.textContent = instance.atk;
+                    if (instance.atk > instance.def.atk) atkBox.className += " buffed";
 
                     var hpBox = document.createElement("div");
                     hpBox.className = "stat-box hp";
                     hpBox.textContent = instance.hp;
+                    if (instance.hp < instance.def.hp) hpBox.className += " damaged";
+                    if (instance.hp > instance.def.hp) hpBox.className += " buffed";
 
                     stats.appendChild(atkBox);
                     stats.appendChild(hpBox);
                     card.appendChild(stats);
                 }
 
-                // Move to frontline button (for player reserve units)
-                if (isPlayerUnit && inReserve && G.phase === "player" && G.player.supply >= 1) {
+                // Move to frontline button (for player reserve units, not artillery)
+                var uType = instance.def.unitType || "infantry";
+                var moveCost = instance.def.opCost || 1;
+                if (G && isPlayerUnit && inReserve && G.phase === "player" && G.player.supply >= moveCost && uType !== "artillery") {
                     var moveBtn = document.createElement("button");
                     moveBtn.className = "move-btn";
-                    moveBtn.textContent = "Advance (1)";
+                    moveBtn.textContent = "Advance (" + moveCost + ")";
                     moveBtn.addEventListener("click", (function(inst) {
                         return function(e) {
                             e.stopPropagation();
@@ -2613,14 +3292,20 @@
 
                 card.appendChild(tooltip);
 
-                // Unit-specific interactions: select own frontline units to attack, click enemy to target
-                if (isPlayerUnit && G.phase === "player" && instance.zone === "frontline") {
+                // Unit-specific interactions: select own units to attack
+                // Frontline units always selectable; Artillery/Naval selectable from reserve too
+                var canSelect = false;
+                if (G && isPlayerUnit && G.phase === "player") {
+                    var iType = instance.def.unitType || "infantry";
+                    if (instance.zone === "frontline") canSelect = true;
+                    if ((iType === "artillery" || iType === "naval") && instance.zone === "reserve") canSelect = true;
+                }
+                if (canSelect) {
                     card.addEventListener("click", (function(unit, el) {
                         return function(e) {
                             e.stopPropagation();
                             if (G.phase !== "player" || G.gameOver) return;
                             if (unit.exhausted) return;
-                            // Toggle selection
                             if (selectedCard === unit) {
                                 selectedCard = null;
                             } else {
@@ -2635,7 +3320,7 @@
                 }
 
                 // Enemy unit: click to attack with selected unit
-                if (!isPlayerUnit && G.phase === "player") {
+                if (G && !isPlayerUnit && G.phase === "player") {
                     card.addEventListener("click", (function(unit) {
                         return function() {
                             if (G.phase !== "player" || G.gameOver) return;
@@ -2662,6 +3347,16 @@
                 var campaignBtns = document.getElementById("campaignButtons");
                 var nextBtn = document.getElementById("nextBattleBtn");
                 var playAgainBtn = document.getElementById("playAgainBtn");
+
+                // Draft mode: route to draft screen
+                if (_draftMode && _draftRun) {
+                    var won = G.winner === "player";
+                    if (won) _playSound("victory"); else _playSound("defeat");
+                    setTimeout(function() {
+                        draftGameOver(won);
+                    }, 1000);
+                    return;
+                }
 
                 if (isVictory) {
                     addClass(title, "victory");
@@ -2799,29 +3494,147 @@
                     });
                 }
 
+                // Deck Builder button
+                var deckBuilderBtn = document.getElementById("deckBuilderBtn");
+                if (deckBuilderBtn) {
+                    deckBuilderBtn.addEventListener("click", function() {
+                        showDeckBuilder();
+                    });
+                }
+
+                // Deck Builder faction toggle (click title to switch)
+                var deckBackBtn = document.getElementById("deckBackBtn");
+                if (deckBackBtn) {
+                    deckBackBtn.addEventListener("click", function() {
+                        showMenu();
+                    });
+                }
+
+                var deckStartBtn = document.getElementById("deckStartBtn");
+                if (deckStartBtn) {
+                    deckStartBtn.addEventListener("click", function() {
+                        if (_customDeck.length !== 15) return;
+                        _deckBuildMode = true;
+                        _campaignMode = false;
+                        _draftMode = false;
+                        var faction = _deckBuilderFaction;
+                        var enemyFaction = faction === "patriots" ? "british" : "patriots";
+                        var playerDeck = createDeckFromSelection(faction, _customDeck);
+                        var enemyDeck = createDeck(enemyFaction);
+
+                        G = {
+                            phase: "player",
+                            playerFaction: faction,
+                            enemyFaction: enemyFaction,
+                            player: {
+                                name: faction === "patriots" ? "Continental Army" : "British Empire",
+                                hp: 30, maxHP: 30,
+                                hand: [], board: [], deck: playerDeck,
+                                supply: 1, maxSupply: 1, traps: []
+                            },
+                            enemy: {
+                                name: enemyFaction === "patriots" ? "Continental Army" : "British Empire",
+                                hp: 30, maxHP: 30,
+                                hand: [], board: [], deck: enemyDeck,
+                                supply: 0, maxSupply: 0, traps: []
+                            },
+                            turn: 1, log: [], gameOver: false, winner: null
+                        };
+                        _drawCards(3);
+                        _log("Custom deck game started!");
+                        hideAllScreens();
+                        var gameScreen = document.getElementById("gameScreen");
+                        if (gameScreen) addClass(gameScreen, "active");
+                        selectedCard = null;
+                        render();
+                    });
+                }
+
+                // Deck Builder faction switch
+                var deckTitle = document.querySelector(".deck-builder-title");
+                if (deckTitle) {
+                    deckTitle.style.cursor = "pointer";
+                    deckTitle.addEventListener("click", function() {
+                        _deckBuilderFaction = _deckBuilderFaction === "patriots" ? "british" : "patriots";
+                        _customDeck = [];
+                        deckTitle.textContent = "Deck Builder (" + (_deckBuilderFaction === "patriots" ? "Patriots" : "British") + ")";
+                        renderDeckBuilder();
+                    });
+                }
+
+                // Draft Mode button
+                var draftBtn = document.getElementById("draftBtn");
+                if (draftBtn) {
+                    draftBtn.addEventListener("click", function() {
+                        showDraftScreen();
+                    });
+                }
+
+                var draftBackBtn = document.getElementById("draftBackBtn");
+                if (draftBackBtn) {
+                    draftBackBtn.addEventListener("click", function() {
+                        _draftMode = false;
+                        showMenu();
+                    });
+                }
+
+                var draftStartBtn = document.getElementById("draftStartBtn");
+                if (draftStartBtn) {
+                    draftStartBtn.addEventListener("click", function() {
+                        if (_draftRun && _draftRun.phase === "playing") {
+                            startDraftGame();
+                        }
+                    });
+                }
+
                 // Click enemy HQ to attack directly
                 var enemyInfoBar = document.getElementById("enemyInfoBar");
                 if (enemyInfoBar) {
                     enemyInfoBar.addEventListener("click", function() {
                         if (!G || G.phase !== "player" || G.gameOver || !selectedCard) return;
-                        if (selectedCard.zone !== "frontline" || selectedCard.exhausted) return;
-                        // Can't attack HQ if guard units exist on enemy frontline
-                        if (hasGuardOnFrontline(G.enemy.board)) {
-                            _log("Must attack Guard unit first!");
+                        if (selectedCard.exhausted) return;
+
+                        var sType = selectedCard.def.unitType || "infantry";
+                        // Zone check: must be on frontline, OR artillery/naval from reserve
+                        if (selectedCard.zone !== "frontline" && sType !== "artillery" && sType !== "naval") return;
+
+                        // OpCost check
+                        var opCost = selectedCard.def.opCost || 1;
+                        if (G.player.supply < opCost) {
+                            _log("Not enough supply to operate " + selectedCard.def.name + "!");
                             render();
                             return;
                         }
-                        // Can't attack HQ if enemy has any frontline units
-                        var enemyFront = getUnitsInZone(G.enemy.board, "frontline");
-                        if (enemyFront.length > 0) {
-                            _log("Must clear enemy frontline first!");
-                            render();
-                            return;
+
+                        // Guard check (Artillery/Naval bypass for HQ attack)
+                        if (sType !== "artillery" && sType !== "naval") {
+                            if (hasGuardOnFrontline(G.enemy.board)) {
+                                _log("Must attack Guard unit first!");
+                                render();
+                                return;
+                            }
+                            var enemyFront = getUnitsInZone(G.enemy.board, "frontline");
+                            if (enemyFront.length > 0) {
+                                _log("Must clear enemy frontline first!");
+                                render();
+                                return;
+                            }
                         }
+
+                        G.player.supply -= opCost;
                         G.enemy.hp -= selectedCard.atk;
-                        selectedCard.exhausted = true;
+                        selectedCard.attacksThisTurn++;
+                        if (selectedCard.def.fury && selectedCard.attacksThisTurn < 2) {
+                            // Fury: don't exhaust
+                        } else {
+                            selectedCard.exhausted = true;
+                        }
                         _playSound("damage");
                         _log(selectedCard.def.name + " attacks enemy HQ for " + selectedCard.atk + " damage!");
+
+                        // Check enemy traps for HQ damage
+                        checkTraps("hq_damage", { side: G.enemy, amount: selectedCard.atk });
+
                         if (G.enemy.hp <= 0) {
                             G.gameOver = true;
                             G.winner = "player";
@@ -2839,7 +3652,7 @@
             }
 
             function hideAllScreens() {
-                var screens = ["menuScreen", "gameScreen", "gameOverScreen", "campaignScreen"];
+                var screens = ["menuScreen", "gameScreen", "gameOverScreen", "campaignScreen", "deckBuilderScreen", "draftScreen"];
                 for (var i = 0; i < screens.length; i++) {
                     var el = document.getElementById(screens[i]);
                     if (el) removeClass(el, "active");
@@ -2970,6 +3783,350 @@
                 selectedCard = null;
                 G = null;
                 renderAchievements();
+            }
+
+            // ========== DECK BUILDER ==========
+            var _deckBuilderFaction = "patriots";
+            var _customDeck = [];
+            var _deckBuildMode = false;
+
+            function showDeckBuilder() {
+                hideAllScreens();
+                _deckBuilderFaction = "patriots"; // default
+                _customDeck = [];
+                renderDeckBuilder();
+                var el = document.getElementById("deckBuilderScreen");
+                if (el) addClass(el, "active");
+            }
+
+            function renderDeckBuilder() {
+                var pool = document.getElementById("cardPool");
+                var list = document.getElementById("deckList");
+                var countEl = document.getElementById("deckCount");
+                var startBtn = document.getElementById("deckStartBtn");
+                if (!pool || !list) return;
+
+                pool.innerHTML = "";
+                list.innerHTML = "";
+
+                // Count how many of each card in deck
+                var deckCounts = {};
+                for (var i = 0; i < _customDeck.length; i++) {
+                    var id = _customDeck[i].id;
+                    deckCounts[id] = (deckCounts[id] || 0) + 1;
+                }
+
+                // Show all faction cards in pool
+                for (var i = 0; i < cardDefs.length; i++) {
+                    var def = cardDefs[i];
+                    if (def.faction !== _deckBuilderFaction) continue;
+                    if (def.id && def.id.indexOf("token_") === 0) continue;
+
+                    var count = deckCounts[def.id] || 0;
+                    var maxCopies = def.rarity === "legendary" ? 1 : 2;
+                    var inst = createCardInstance(def);
+                    var card = createCardElement(inst, false, false);
+
+                    if (count >= maxCopies) {
+                        addClass(card, "maxed");
+                    } else if (count > 0) {
+                        addClass(card, "in-deck");
+                    }
+
+                    // Add count badge
+                    if (count > 0) {
+                        var cb = document.createElement("div");
+                        cb.style.cssText = "position:absolute;top:2px;right:2px;background:#DAA520;color:#000;font-size:0.6em;font-weight:bold;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;";
+                        cb.textContent = count;
+                        card.appendChild(cb);
+                    }
+
+                    card.addEventListener("click", (function(d) {
+                        return function() {
+                            if (_customDeck.length >= 15) return;
+                            var c = deckCounts[d.id] || 0;
+                            var mx = d.rarity === "legendary" ? 1 : 2;
+                            if (c >= mx) return;
+                            _customDeck.push(d);
+                            renderDeckBuilder();
+                        };
+                    })(def));
+
+                    pool.appendChild(card);
+                }
+
+                // Show deck list
+                _customDeck.sort(function(a, b) { return a.cost - b.cost; });
+                for (var i = 0; i < _customDeck.length; i++) {
+                    var item = document.createElement("div");
+                    item.className = "deck-list-item";
+
+                    var costSpan = document.createElement("span");
+                    costSpan.className = "dl-cost";
+                    costSpan.textContent = _customDeck[i].cost;
+
+                    var nameSpan = document.createElement("span");
+                    nameSpan.className = "dl-name";
+                    nameSpan.textContent = _customDeck[i].name;
+
+                    var removeSpan = document.createElement("span");
+                    removeSpan.className = "dl-remove";
+                    removeSpan.textContent = "\u2715";
+                    removeSpan.addEventListener("click", (function(idx) {
+                        return function(e) {
+                            e.stopPropagation();
+                            _customDeck.splice(idx, 1);
+                            renderDeckBuilder();
+                        };
+                    })(i));
+
+                    item.appendChild(costSpan);
+                    item.appendChild(nameSpan);
+                    item.appendChild(removeSpan);
+                    list.appendChild(item);
+                }
+
+                if (countEl) countEl.textContent = _customDeck.length + " / 15 cards";
+                if (startBtn) {
+                    if (_customDeck.length === 15) {
+                        startBtn.disabled = false;
+                        startBtn.style.opacity = "1";
+                    } else {
+                        startBtn.disabled = true;
+                        startBtn.style.opacity = "0.5";
+                    }
+                }
+            }
+
+            function createDeckFromSelection(faction, selectedDefs) {
+                var cards = [];
+                for (var i = 0; i < selectedDefs.length; i++) {
+                    cards.push(selectedDefs[i]);
+                }
+                // Shuffle
+                for (var i = cards.length - 1; i > 0; i--) {
+                    var j = Math.floor(Math.random() * (i + 1));
+                    var temp = cards[i];
+                    cards[i] = cards[j];
+                    cards[j] = temp;
+                }
+                return cards;
+            }
+
+            // ========== DRAFT MODE ==========
+            var _draftMode = false;
+            var _draftRun = null;
+
+            function initDraftRun() {
+                _draftRun = {
+                    wins: 0,
+                    losses: 0,
+                    maxWins: 7,
+                    maxLosses: 3,
+                    deck: [],
+                    picksMade: 0,
+                    picksNeeded: 15,
+                    faction: "patriots",
+                    phase: "picking" // "picking" or "playing" or "done"
+                };
+            }
+
+            function showDraftScreen() {
+                hideAllScreens();
+                initDraftRun();
+                renderDraftPick();
+                var el = document.getElementById("draftScreen");
+                if (el) addClass(el, "active");
+            }
+
+            function generateDraftChoices() {
+                // Pool from all factions (cross-faction draft)
+                var pool = [];
+                for (var i = 0; i < cardDefs.length; i++) {
+                    if (cardDefs[i].type === "trap") continue; // no traps in draft
+                    if (cardDefs[i].id && cardDefs[i].id.indexOf("token_") === 0) continue;
+                    pool.push(cardDefs[i]);
+                }
+
+                // Weighted by rarity
+                var weighted = [];
+                for (var i = 0; i < pool.length; i++) {
+                    var copies = pool[i].rarity === "common" ? 3 : (pool[i].rarity === "rare" ? 2 : 1);
+                    for (var j = 0; j < copies; j++) {
+                        weighted.push(pool[i]);
+                    }
+                }
+
+                // Pick 3 unique cards
+                var choices = [];
+                var used = {};
+                var safety = 0;
+                while (choices.length < 3 && safety < 50) {
+                    safety++;
+                    var idx = Math.floor(Math.random() * weighted.length);
+                    var card = weighted[idx];
+                    if (!used[card.id]) {
+                        used[card.id] = true;
+                        choices.push(card);
+                    }
+                }
+                return choices;
+            }
+
+            function renderDraftPick() {
+                var progress = document.getElementById("draftProgress");
+                var record = document.getElementById("draftRecord");
+                var choices = document.getElementById("draftChoices");
+                var preview = document.getElementById("draftDeckPreview");
+                var startBtn = document.getElementById("draftStartBtn");
+                var backBtn = document.getElementById("draftBackBtn");
+                if (!choices) return;
+
+                choices.innerHTML = "";
+                if (preview) preview.innerHTML = "";
+
+                if (_draftRun.phase === "done") {
+                    if (progress) progress.textContent = "Draft Complete!";
+                    if (record) {
+                        record.innerHTML = "<span class='draft-win'>Wins: " + _draftRun.wins + "</span> / <span class='draft-loss'>Losses: " + _draftRun.losses + "</span>";
+                    }
+                    if (startBtn) startBtn.style.display = "none";
+                    if (backBtn) backBtn.textContent = "Back to Menu";
+                    return;
+                }
+
+                if (_draftRun.phase === "playing") {
+                    if (progress) progress.textContent = "Draft Deck Ready (" + _draftRun.deck.length + " cards)";
+                    if (record) {
+                        record.innerHTML = "<span class='draft-win'>Wins: " + _draftRun.wins + "</span> / <span class='draft-loss'>Losses: " + _draftRun.losses + "</span>";
+                    }
+                    if (startBtn) {
+                        startBtn.style.display = "inline-block";
+                        startBtn.textContent = "Fight! (" + _draftRun.wins + "W-" + _draftRun.losses + "L)";
+                    }
+                    // Show deck preview
+                    for (var i = 0; i < _draftRun.deck.length; i++) {
+                        var mini = document.createElement("span");
+                        mini.className = "draft-deck-mini";
+                        mini.textContent = _draftRun.deck[i].cost + " " + _draftRun.deck[i].name;
+                        if (preview) preview.appendChild(mini);
+                    }
+                    return;
+                }
+
+                // Picking phase
+                if (progress) progress.textContent = "Pick 1 of 3 cards (" + _draftRun.picksMade + "/" + _draftRun.picksNeeded + ")";
+                if (record) record.textContent = "";
+                if (startBtn) startBtn.style.display = "none";
+
+                var draftChoices = generateDraftChoices();
+                for (var i = 0; i < draftChoices.length; i++) {
+                    var inst = createCardInstance(draftChoices[i]);
+                    var card = createCardElement(inst, false, false);
+                    card.style.width = "120px";
+                    card.style.height = "170px";
+                    card.addEventListener("click", (function(def) {
+                        return function() {
+                            _draftRun.deck.push(def);
+                            _draftRun.picksMade++;
+                            if (_draftRun.picksMade >= _draftRun.picksNeeded) {
+                                _draftRun.phase = "playing";
+                                _draftRun.faction = determineDraftFaction();
+                            }
+                            renderDraftPick();
+                        };
+                    })(draftChoices[i]));
+                    choices.appendChild(card);
+                }
+
+                // Show picked cards so far
+                for (var i = 0; i < _draftRun.deck.length; i++) {
+                    var mini = document.createElement("span");
+                    mini.className = "draft-deck-mini";
+                    mini.textContent = _draftRun.deck[i].cost + " " + _draftRun.deck[i].name;
+                    if (preview) preview.appendChild(mini);
+                }
+            }
+
+            function determineDraftFaction() {
+                var pCount = 0, bCount = 0;
+                for (var i = 0; i < _draftRun.deck.length; i++) {
+                    if (_draftRun.deck[i].faction === "patriots") pCount++;
+                    else bCount++;
+                }
+                return pCount >= bCount ? "patriots" : "british";
+            }
+
+            function startDraftGame() {
+                _draftMode = true;
+                _campaignMode = false;
+                var faction = _draftRun.faction;
+                var enemyFaction = faction === "patriots" ? "british" : "patriots";
+
+                // Build player deck from draft picks
+                var playerDeck = createDeckFromSelection(faction, _draftRun.deck);
+
+                // Build random AI deck
+                var enemyDeck = createDeck(enemyFaction);
+
+                var playerHP = 30;
+                var enemyHP = 30;
+
+                G = {
+                    phase: "player",
+                    playerFaction: faction,
+                    enemyFaction: enemyFaction,
+                    player: {
+                        name: faction === "patriots" ? "Continental Army" : "British Empire",
+                        hp: playerHP,
+                        maxHP: playerHP,
+                        hand: [],
+                        board: [],
+                        deck: playerDeck,
+                        supply: 1,
+                        maxSupply: 1,
+                        traps: []
+                    },
+                    enemy: {
+                        name: enemyFaction === "patriots" ? "Continental Army" : "British Empire",
+                        hp: enemyHP,
+                        maxHP: enemyHP,
+                        hand: [],
+                        board: [],
+                        deck: enemyDeck,
+                        supply: 0,
+                        maxSupply: 0,
+                        traps: []
+                    },
+                    turn: 1,
+                    log: [],
+                    gameOver: false,
+                    winner: null
+                };
+
+                _drawCards(3);
+                _log("Draft game started! You play as " + faction + ".");
+
+                hideAllScreens();
+                var gameScreen = document.getElementById("gameScreen");
+                if (gameScreen) addClass(gameScreen, "active");
+                selectedCard = null;
+                render();
+            }
+
+            function draftGameOver(won) {
+                if (won) {
+                    _draftRun.wins++;
+                } else {
+                    _draftRun.losses++;
+                }
+                if (_draftRun.wins >= _draftRun.maxWins || _draftRun.losses >= _draftRun.maxLosses) {
+                    _draftRun.phase = "done";
+                }
+                hideAllScreens();
+                var el = document.getElementById("draftScreen");
+                if (el) addClass(el, "active");
+                renderDraftPick();
             }
 
             // ========== PUBLIC API ==========
