@@ -1260,18 +1260,9 @@
                             if (G.phase !== "player" || G.gameOver) return;
                             if (!canPlayCard(inst)) return;
 
-                            if (selectedCard === inst) {
-                                selectedCard = null;
-                                removeClass(card, "selected");
-                            } else {
-                                selectedCard = inst;
-                                // Deselect old card
-                                var oldCards = hand.querySelectorAll(".card.selected");
-                                for (var j = 0; j < oldCards.length; j++) {
-                                    removeClass(oldCards[j], "selected");
-                                }
-                                addClass(card, "selected");
-                            }
+                            playCard(inst);
+                            selectedCard = null;
+                            render();
                         };
                     })(instance));
 
