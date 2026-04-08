@@ -1,4 +1,4 @@
-const CACHE_NAME = 'liberty-v5-cache';
+const CACHE_NAME = 'liberty-v6-cache';
 const ASSETS_TO_CACHE = [
   './liberty_v5.html',
   './manifest.json',
