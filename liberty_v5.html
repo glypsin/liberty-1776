@@ -1037,6 +1037,134 @@
             box-shadow: 0 0 20px rgba(218, 165, 32, 0.5);
         }
 
+        /* Help modal */
+        .help-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.92);
+            z-index: 500;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .help-overlay.active { display: flex; }
+        .help-box {
+            background: linear-gradient(180deg, #3B2415 0%, #2C1810 100%);
+            border: 2px solid #DAA520;
+            border-radius: 12px;
+            max-width: 640px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 28px 32px;
+            color: #F5DEB3;
+            font-family: "Georgia", serif;
+            position: relative;
+        }
+        .help-box::-webkit-scrollbar { width: 6px; }
+        .help-box::-webkit-scrollbar-thumb { background: #8B4513; border-radius: 3px; }
+        .help-close {
+            position: absolute;
+            top: 12px; right: 16px;
+            font-size: 1.6em;
+            color: #DAA520;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-family: "Georgia", serif;
+            line-height: 1;
+        }
+        .help-close:hover { color: #FFD700; }
+        .help-box h2 {
+            color: #FFD700;
+            font-size: 1.6em;
+            text-align: center;
+            margin-bottom: 18px;
+            text-shadow: 0 0 12px rgba(255,215,0,0.3);
+        }
+        .help-box h3 {
+            color: #DAA520;
+            font-size: 1.15em;
+            margin-top: 18px;
+            margin-bottom: 8px;
+            border-bottom: 1px solid rgba(218,165,32,0.3);
+            padding-bottom: 4px;
+        }
+        .help-box p, .help-box li {
+            font-size: 0.92em;
+            line-height: 1.65;
+            color: #E8D5B0;
+        }
+        .help-box ul, .help-box ol {
+            padding-left: 20px;
+            margin-bottom: 8px;
+        }
+        .help-box li { margin-bottom: 3px; }
+        .help-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 8px 0 12px;
+            font-size: 0.88em;
+        }
+        .help-table th {
+            text-align: left;
+            color: #DAA520;
+            padding: 5px 8px;
+            border-bottom: 1px solid #8B4513;
+        }
+        .help-table td {
+            padding: 4px 8px;
+            border-bottom: 1px solid rgba(139,69,19,0.4);
+            color: #E8D5B0;
+        }
+        .help-board-diagram {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #8B4513;
+            border-radius: 6px;
+            padding: 10px 16px;
+            margin: 8px 0 12px;
+            font-family: monospace;
+            font-size: 0.85em;
+            line-height: 1.6;
+            color: #C9A961;
+            text-align: center;
+        }
+        .help-menu-btn {
+            padding: 14px 30px;
+            font-size: 1.1em;
+            background: linear-gradient(180deg, #2E5D3A 0%, #1B4D2E 100%);
+            color: #F5DEB3;
+            border: 2px solid #DAA520;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            font-family: "Georgia", serif;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        .help-menu-btn:hover {
+            background: linear-gradient(180deg, #3A7A4A 0%, #2E5D3A 100%);
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(218,165,32,0.4);
+        }
+        .help-ingame-btn {
+            padding: 8px 14px;
+            font-size: 0.85em;
+            background: linear-gradient(180deg, #2E5D3A 0%, #1B4D2E 100%);
+            color: #F5DEB3;
+            border: 2px solid #DAA520;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            font-family: "Georgia", serif;
+        }
+        .help-ingame-btn:hover {
+            background: linear-gradient(180deg, #3A7A4A 0%, #2E5D3A 100%);
+            transform: scale(1.05);
+        }
+
         /* Campaign victory additions to game over */
         .campaign-next-btn {
             padding: 15px 40px;
@@ -1567,6 +1695,7 @@
                 <button class="menu-btn" id="skirmishBritishBtn">Skirmish — British</button>
                 <button class="menu-btn" id="deckBuilderBtn" style="background: linear-gradient(180deg, #1B4F72 0%, #154360 100%);">Deck Builder</button>
                 <button class="menu-btn" id="draftBtn" style="background: linear-gradient(180deg, #6B2D8B 0%, #4A235A 100%);">Draft Mode</button>
+                <button class="help-menu-btn" id="helpMenuBtn">How to Play</button>
             </div>
             <div class="difficulty-label">Skirmish Difficulty:</div>
             <div class="difficulty-selector">
@@ -1674,6 +1803,7 @@
         <div class="player-hand" id="playerHand"></div>
 
         <div class="controls">
+            <button class="help-ingame-btn" id="helpGameBtn">?</button>
             <button class="control-btn" id="endTurnBtn">End Turn</button>
         </div>
 
@@ -4165,6 +4295,118 @@
         window.addEventListener("DOMContentLoaded", function() {
             Liberty.start();
         });
+    </script>
+
+    <!-- Help Modal -->
+    <div class="help-overlay" id="helpOverlay">
+        <div class="help-box">
+            <button class="help-close" id="helpClose">&times;</button>
+            <h2>游戏说明 — How to Play</h2>
+
+            <h3>游戏简介</h3>
+            <p>Liberty 1776 是一款以美国独立战争（1775–1783）为背景的回合制卡牌对战游戏。选择<strong>爱国者（Patriots）</strong>或<strong>英军（British）</strong>阵营，通过打出士兵、命令和陷阱卡牌，将对手的生命值降为零来赢得胜利。</p>
+
+            <h3>资源：补给（Supply）</h3>
+            <ul>
+                <li>每回合开始时补给恢复至上限，上限每回合 +1（最多 10）</li>
+                <li>打出卡牌和发动进攻都需要消耗补给</li>
+            </ul>
+
+            <h3>回合流程</h3>
+            <ol>
+                <li>抽 1 张牌（牌库为空则受 2 点疲劳伤害）</li>
+                <li>打出手牌中的卡牌</li>
+                <li>用场上的单位进攻敌方</li>
+                <li>点击 <strong>End Turn</strong> 结束回合</li>
+            </ol>
+
+            <h3>卡牌类型</h3>
+            <table class="help-table">
+                <tr><th>类型</th><th>说明</th></tr>
+                <tr><td>士兵（Unit）</td><td>部署到战场，用于进攻和防守，拥有攻击力和生命值</td></tr>
+                <tr><td>命令（Order）</td><td>立即生效的一次性效果（造成伤害、抽牌、获得补给等）</td></tr>
+                <tr><td>陷阱（Trap）</td><td>放置在场上，在特定条件触发时自动生效</td></tr>
+            </table>
+
+            <h3>战场布局</h3>
+            <div class="help-board-diagram">
+                敌方总部（HP）<br>
+                ├─ 敌方后方（Reserve）— 受前线保护<br>
+                ├─ 敌方前线（Frontline）— 进攻优先目标<br>
+                ── ── ── 前 线 分 隔 ── ── ──<br>
+                ├─ 我方前线（Frontline）<br>
+                ├─ 我方后方（Reserve）<br>
+                我方总部（HP）
+            </div>
+            <ul>
+                <li>每方最多 <strong>5</strong> 个单位</li>
+                <li>新单位部署到后方（疲劳状态），下回合可移至前线</li>
+                <li>前线单位才能发动进攻（炮兵和海军除外）</li>
+                <li>有<strong>守卫（Guard）</strong>的前线单位必须被优先攻击</li>
+            </ul>
+
+            <h3>兵种特性</h3>
+            <table class="help-table">
+                <tr><th>兵种</th><th>特性</th></tr>
+                <tr><td>步兵（Infantry）</td><td>标准近战单位</td></tr>
+                <tr><td>骑兵（Cavalry）</td><td>部署后可直接进入前线</td></tr>
+                <tr><td>炮兵（Artillery）</td><td>可从后方进攻，且不受反击伤害</td></tr>
+                <tr><td>海军（Naval）</td><td>可攻击任意单位；仅受其他海军伤害</td></tr>
+            </table>
+
+            <h3>能力关键词</h3>
+            <table class="help-table">
+                <tr><th>关键词</th><th>效果</th></tr>
+                <tr><td>闪击 Blitz</td><td>部署后立即可进攻</td></tr>
+                <tr><td>伏击 Ambush</td><td>被攻击时先手反击</td></tr>
+                <tr><td>狂怒 Fury</td><td>每回合可进攻 2 次</td></tr>
+                <tr><td>守卫 Guard</td><td>在前线时必须被优先攻击</td></tr>
+                <tr><td>重甲 Heavy Armor</td><td>减少受到的伤害 1–2 点</td></tr>
+                <tr><td>老兵 Veteran</td><td>存活 N 次战斗后获得 +2/+2</td></tr>
+                <tr><td>钳击 Pincer</td><td>同回合打出第二个单位时双方各 +1/+1</td></tr>
+                <tr><td>烟幕 Smokescreen</td><td>无法被选为目标，进攻或移动后消失</td></tr>
+                <tr><td>战吼 Battle Cry</td><td>打出时触发特殊效果（抽牌、伤害、补给等）</td></tr>
+            </table>
+
+            <h3>游戏模式</h3>
+            <table class="help-table">
+                <tr><th>模式</th><th>说明</th></tr>
+                <tr><td>遭遇战 Skirmish</td><td>快速对战 AI，可选简单 / 普通 / 困难难度</td></tr>
+                <tr><td>战役 Campaign</td><td>5 场历史战役，从列克星敦到约克镇，逐步解锁</td></tr>
+                <tr><td>选秀 Draft</td><td>从随机卡牌中选 15 张组建牌组，赢 7 场或输 3 场结束</td></tr>
+            </table>
+
+            <h3>小提示</h3>
+            <ul>
+                <li>合理分配补给：既要出牌，也要留补给用于进攻</li>
+                <li>善用守卫单位保护后方关键卡牌</li>
+                <li>炮兵可从后方安全输出，不会被反击</li>
+                <li>注意敌方的陷阱卡 — 贸然进攻可能触发伏击</li>
+                <li>悬停卡牌可查看详细信息和历史背景</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+    (function() {
+        var overlay = document.getElementById("helpOverlay");
+        var closeBtn = document.getElementById("helpClose");
+        var menuBtn = document.getElementById("helpMenuBtn");
+        var gameBtn = document.getElementById("helpGameBtn");
+
+        function openHelp() { overlay.classList.add("active"); }
+        function closeHelp() { overlay.classList.remove("active"); }
+
+        if (menuBtn) menuBtn.addEventListener("click", openHelp);
+        if (gameBtn) gameBtn.addEventListener("click", openHelp);
+        if (closeBtn) closeBtn.addEventListener("click", closeHelp);
+        overlay.addEventListener("click", function(e) {
+            if (e.target === overlay) closeHelp();
+        });
+        document.addEventListener("keydown", function(e) {
+            if (e.key === "Escape" && overlay.classList.contains("active")) closeHelp();
+        });
+    })();
     </script>
 </body>
 </html>
