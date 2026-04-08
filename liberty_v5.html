@@ -128,7 +128,7 @@
             padding: 5px 10px;
             border-radius: 4px;
             font-size: 0.8em;
-            gap: 4px;
+            gap: 8px;
             flex-wrap: wrap;
         }
 
@@ -137,6 +137,72 @@
             border: 1px solid rgba(220, 20, 60, 0.35);
             padding-right: 100px;
         }
+
+        /* HQ Card */
+        .hq-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 64px;
+            min-height: 80px;
+            background: linear-gradient(180deg, #3B2415 0%, #2C1810 100%);
+            border: 2px solid #DAA520;
+            border-radius: 6px;
+            padding: 4px 2px;
+            flex-shrink: 0;
+            position: relative;
+        }
+        .hq-card.enemy-hq { border-color: #DC143C; }
+        .hq-card.player-hq { border-color: #4169E1; }
+        .hq-name {
+            font-size: 0.55em;
+            font-weight: bold;
+            color: #FFD700;
+            text-align: center;
+            line-height: 1.1;
+            margin-bottom: 2px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+        .hq-shield {
+            position: relative;
+            width: 40px;
+            height: 46px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .hq-shield svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .hq-shield .hq-hp {
+            position: relative;
+            z-index: 1;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #F5DEB3;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+        }
+        .hq-card.enemy-hq .hq-shield svg path { fill: rgba(220,20,60,0.35); stroke: #DC143C; }
+        .hq-card.player-hq .hq-shield svg path { fill: rgba(65,105,225,0.35); stroke: #4169E1; }
+        .hq-bar-mini {
+            width: 52px;
+            height: 4px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 2px;
+        }
+        .hq-bar-mini-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.3s;
+        }
+        .hq-bar-mini-fill.enemy { background: #DC143C; }
+        .hq-bar-mini-fill.player { background: #4169E1; }
 
         .info-section {
             display: flex;
@@ -1786,16 +1852,13 @@
     <!-- Game Screen -->
     <div id="gameScreen">
         <div class="enemy-info" id="enemyInfoBar" style="cursor: pointer;">
-            <div class="info-section">
-                <div class="info-label">Enemy:</div>
-                <div class="info-value" id="enemyName">-</div>
-            </div>
-            <div class="info-section">
-                <div class="info-label">HP:</div>
-                <div class="hp-bar-container">
-                    <div class="hp-bar"><div class="hp-bar-fill enemy" id="enemyHPBar"></div></div>
-                    <div class="hp-text enemy" id="enemyHP">-</div>
+            <div class="hq-card enemy-hq">
+                <div class="hq-name" id="enemyName">-</div>
+                <div class="hq-shield">
+                    <svg viewBox="0 0 40 46"><path d="M20 2 L38 10 L38 26 Q38 40 20 44 Q2 40 2 26 L2 10 Z" fill="rgba(220,20,60,0.35)" stroke="#DC143C" stroke-width="2"/></svg>
+                    <span class="hq-hp" id="enemyHP">-</span>
                 </div>
+                <div class="hq-bar-mini"><div class="hq-bar-mini-fill enemy" id="enemyHPBar"></div></div>
             </div>
             <div class="info-section">
                 <div class="info-label">Hand:</div>
@@ -1837,16 +1900,13 @@
         <div class="trap-zone" id="playerTrapZone"></div>
 
         <div class="player-info">
-            <div class="info-section">
-                <div class="info-label">Player:</div>
-                <div class="info-value" id="playerName">-</div>
-            </div>
-            <div class="info-section">
-                <div class="info-label">HP:</div>
-                <div class="hp-bar-container">
-                    <div class="hp-bar"><div class="hp-bar-fill player" id="playerHPBar"></div></div>
-                    <div class="hp-text player" id="playerHP">-</div>
+            <div class="hq-card player-hq">
+                <div class="hq-name" id="playerName">-</div>
+                <div class="hq-shield">
+                    <svg viewBox="0 0 40 46"><path d="M20 2 L38 10 L38 26 Q38 40 20 44 Q2 40 2 26 L2 10 Z" fill="rgba(65,105,225,0.35)" stroke="#4169E1" stroke-width="2"/></svg>
+                    <span class="hq-hp" id="playerHP">-</span>
                 </div>
+                <div class="hq-bar-mini"><div class="hq-bar-mini-fill player" id="playerHPBar"></div></div>
             </div>
             <div class="info-section">
                 <div class="info-label">Hand:</div>
@@ -2292,7 +2352,7 @@
                     playerFaction: playerFaction,
                     enemyFaction: enemyFaction,
                     player: {
-                        name: playerFaction === "patriots" ? "Continental Army" : "British Empire",
+                        name: playerFaction === "patriots" ? "Washington" : "Cornwallis",
                         hp: playerHP,
                         maxHP: playerHP,
                         hand: [],
@@ -2303,7 +2363,7 @@
                         traps: []
                     },
                     enemy: {
-                        name: enemyFaction === "patriots" ? "Continental Army" : "British Empire",
+                        name: enemyFaction === "patriots" ? "Washington" : "Cornwallis",
                         hp: enemyHP,
                         maxHP: enemyHP,
                         hand: [],
@@ -3160,7 +3220,7 @@
                 var bar = document.getElementById(barId);
                 var txt = document.getElementById(textId);
                 if (bar) bar.style.width = Math.max(0, (hp / maxHP) * 100) + "%";
-                if (txt) txt.textContent = hp + " / " + maxHP;
+                if (txt) txt.textContent = hp;
             }
 
             function renderSupplyDots(containerId, current, max) {
@@ -3778,13 +3838,13 @@
                             playerFaction: faction,
                             enemyFaction: enemyFaction,
                             player: {
-                                name: faction === "patriots" ? "Continental Army" : "British Empire",
+                                name: faction === "patriots" ? "Washington" : "Cornwallis",
                                 hp: 30, maxHP: 30,
                                 hand: [], board: [], deck: playerDeck,
                                 supply: 1, maxSupply: 1, traps: []
                             },
                             enemy: {
-                                name: enemyFaction === "patriots" ? "Continental Army" : "British Empire",
+                                name: enemyFaction === "patriots" ? "Washington" : "Cornwallis",
                                 hp: 30, maxHP: 30,
                                 hand: [], board: [], deck: enemyDeck,
                                 supply: 0, maxSupply: 0, traps: []
@@ -4435,7 +4495,7 @@
                     playerFaction: faction,
                     enemyFaction: enemyFaction,
                     player: {
-                        name: faction === "patriots" ? "Continental Army" : "British Empire",
+                        name: faction === "patriots" ? "Washington" : "Cornwallis",
                         hp: playerHP,
                         maxHP: playerHP,
                         hand: [],
@@ -4446,7 +4506,7 @@
                         traps: []
                     },
                     enemy: {
-                        name: enemyFaction === "patriots" ? "Continental Army" : "British Empire",
+                        name: enemyFaction === "patriots" ? "Washington" : "Cornwallis",
                         hp: enemyHP,
                         maxHP: enemyHP,
                         hand: [],
