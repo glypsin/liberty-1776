@@ -182,8 +182,8 @@ console.log('  IDs: ' + htmlIdsUnique.sort().join(', '));
 const jsSet = new Set(jsIdsUnique);
 const htmlSet = new Set(htmlIdsUnique);
 
-// battleIntro is created dynamically, not in HTML
-const dynamicIds = new Set(['battleIntro']);
+// battleIntro and attackArrow are created dynamically, not in HTML
+const dynamicIds = new Set(['battleIntro', 'attackArrow']);
 const missing = jsIdsUnique.filter(id => !htmlSet.has(id) && !dynamicIds.has(id));
 const unused = htmlIdsUnique.filter(id => !jsSet.has(id));
 
