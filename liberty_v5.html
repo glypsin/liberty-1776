@@ -2120,6 +2120,7 @@
         <div class="controls">
             <button class="help-ingame-btn" id="helpGameBtn">?</button>
             <button class="help-ingame-btn" id="fullscreenBtn" title="Toggle Fullscreen">⛶</button>
+            <button class="help-ingame-btn" id="statsBtn" title="Card Counts">📊</button>
             <button class="control-btn" id="endTurnBtn">End Turn</button>
             <button class="control-btn" id="surrenderBtn" style="background:linear-gradient(180deg,#8B1A1A,#5A0E0E);">Surrender</button>
         </div>
@@ -2130,6 +2131,7 @@
     <!-- Game Over Screen -->
     <div id="gameOverScreen">
         <div class="game-over-container">
+            <div id="gameOverFlag" style="width:220px;height:140px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;"></div>
             <div class="game-over-title" id="gameOverTitle">-</div>
             <div class="game-over-text" id="gameOverText">-</div>
             <button class="game-over-btn" id="playAgainBtn">Play Again</button>
@@ -2683,7 +2685,17 @@
                     { id: "patriot_warbonds", name: "War Bonds", faction: "patriots", type: "order", cost: 3, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDCDC", flavor: "Finance the war", rarity: "rare", battleCry: function() { var side = _activeSide || G.player; side.maxSupply += 1; side.supply += 1; }, battleCryText: "+1 Max Supply slot", effect: null, history: "The Continental Congress issued bonds to fund the war" },
                     { id: "patriot_quartermaster", name: "Quartermaster Corps", faction: "patriots", type: "order", cost: 4, atk: 0, hp: 0, opCost: 0, icon: "\u2696\uFE0F", flavor: "Logistics master", rarity: "rare", battleCry: function() { var side = _activeSide || G.player; side.maxSupply += 2; side.supply += 2; }, battleCryText: "+2 Max Supply slots", effect: null, history: "Nathanael Greene revolutionized army logistics" },
                     { id: "british_taxact", name: "New Tax Act", faction: "british", type: "order", cost: 3, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDCDC", flavor: "Crown taxation", rarity: "rare", battleCry: function() { var side = _activeSide || G.enemy; side.maxSupply += 1; side.supply += 1; }, battleCryText: "+1 Max Supply slot", effect: null, history: "Parliament repeatedly raised taxes on colonies" },
-                    { id: "british_admiralty", name: "Admiralty Decree", faction: "british", type: "order", cost: 4, atk: 0, hp: 0, opCost: 0, icon: "\u2696\uFE0F", flavor: "Royal logistics", rarity: "rare", battleCry: function() { var side = _activeSide || G.enemy; side.maxSupply += 2; side.supply += 2; }, battleCryText: "+2 Max Supply slots", effect: null, history: "The Royal Admiralty controlled all naval logistics" }
+                    { id: "british_admiralty", name: "Admiralty Decree", faction: "british", type: "order", cost: 4, atk: 0, hp: 0, opCost: 0, icon: "\u2696\uFE0F", flavor: "Royal logistics", rarity: "rare", battleCry: function() { var side = _activeSide || G.enemy; side.maxSupply += 2; side.supply += 2; }, battleCryText: "+2 Max Supply slots", effect: null, history: "The Royal Admiralty controlled all naval logistics" },
+
+                    // Additional historical cards (item 17)
+                    { id: "patriot_lafayette", name: "Marquis de Lafayette", faction: "patriots", type: "unit", unitType: "infantry", cost: 4, atk: 4, hp: 4, opCost: 1, icon: "\u269C", flavor: "French volunteer", rarity: "rare", blitz: true, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 1, pincer: true, battleCry: null, effect: null, history: "Lafayette served as a major general at age 19 and helped secure French aid" },
+                    { id: "patriot_knox", name: "Henry Knox", faction: "patriots", type: "unit", unitType: "artillery", cost: 4, atk: 4, hp: 3, opCost: 1, icon: "\uD83D\uDCA5", flavor: "Chief of artillery", rarity: "rare", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, pincer: false, battleCry: function(instance) { _dealDamageToOpponent(2); }, battleCryText: "Battle Cry: Deal 2 damage", effect: null, history: "Knox hauled cannons from Ticonderoga to Boston through the winter of 1775" },
+                    { id: "patriot_greene", name: "Nathanael Greene", faction: "patriots", type: "unit", unitType: "infantry", cost: 5, atk: 4, hp: 5, opCost: 1, icon: "\u2694", flavor: "Southern strategist", rarity: "rare", blitz: false, guard: true, fury: false, smokescreen: false, heavyArmor: 1, ambush: false, veteran: 2, pincer: false, battleCry: null, effect: null, history: "Greene waged a war of attrition that wore down Cornwallis in the Carolinas" },
+                    { id: "patriot_declaration", name: "Declaration of Independence", faction: "patriots", type: "order", cost: 5, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDCDC", flavor: "Self-evident truths", rarity: "legendary", battleCry: function() { _drawCards(3); var side = _activeSide || G.player; side.supply += 2; }, battleCryText: "Draw 3, +2 Supply", effect: null, history: "Adopted July 4, 1776 — the colonies declared themselves free states" },
+                    { id: "british_cornwallis", name: "Lord Cornwallis", faction: "british", type: "unit", unitType: "infantry", cost: 6, atk: 6, hp: 6, opCost: 1, icon: "\uD83C\uDF96", flavor: "Southern commander", rarity: "legendary", blitz: false, guard: true, fury: false, smokescreen: false, heavyArmor: 2, ambush: false, veteran: 0, pincer: false, battleCry: function(instance) { _drawCards(1); }, battleCryText: "Battle Cry: Draw 1", effect: null, history: "Cornwallis won at Camden but surrendered at Yorktown in 1781" },
+                    { id: "british_tarleton", name: "Banastre Tarleton", faction: "british", type: "unit", unitType: "cavalry", cost: 4, atk: 5, hp: 3, opCost: 1, icon: "\uD83D\uDC0E", flavor: "The Butcher", rarity: "rare", blitz: false, guard: false, fury: true, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 1, pincer: false, battleCry: null, effect: null, history: "Tarleton's dragoons earned a reputation for ferocity in the Carolinas" },
+                    { id: "british_howe", name: "General Howe", faction: "british", type: "unit", unitType: "infantry", cost: 5, atk: 4, hp: 6, opCost: 1, icon: "\uD83C\uDF96", flavor: "Cautious victor", rarity: "rare", blitz: false, guard: true, fury: false, smokescreen: false, heavyArmor: 1, ambush: false, veteran: 0, pincer: false, battleCry: function(instance) { _drawCards(2); }, battleCryText: "Battle Cry: Draw 2", effect: null, history: "Howe captured New York and Philadelphia but failed to crush Washington" },
+                    { id: "british_tea_act", name: "Tea Act", faction: "british", type: "order", cost: 1, atk: 0, hp: 0, opCost: 0, icon: "\uD83C\uDF75", flavor: "Royal monopoly", rarity: "common", battleCry: function() { _drawCards(1); var side = _activeSide || G.enemy; side.supply += 1; }, battleCryText: "Draw 1, +1 Supply", effect: null, history: "The 1773 Tea Act triggered the Boston Tea Party" }
                 ];
             }
 
@@ -4335,10 +4347,34 @@
                     card.appendChild(moveBtn);
                 }
 
-                // Tooltip
+                // Tooltip: full stats + keywords + history
                 var tooltip = document.createElement("div");
                 tooltip.className = "card-tooltip";
-                tooltip.textContent = instance.def.history;
+                var d = instance.def;
+                var lines = [];
+                var stats = [];
+                if (d.type === "unit") {
+                    stats.push("ATK " + (instance.atk !== undefined ? instance.atk : d.atk));
+                    stats.push("HP " + (instance.hp !== undefined ? instance.hp : d.hp));
+                    stats.push((d.unitType || "infantry").charAt(0).toUpperCase() + (d.unitType || "infantry").slice(1));
+                }
+                stats.push("Cost " + d.cost);
+                if (d.opCost) stats.push("Op " + d.opCost);
+                lines.push(stats.join(" · "));
+                var kw = [];
+                if (d.guard) kw.push("Guard");
+                if (d.blitz) kw.push("Blitz");
+                if (d.fury) kw.push("Fury");
+                if (d.ambush) kw.push("Ambush");
+                if (d.pincer) kw.push("Pincer");
+                if (d.smokescreen) kw.push("Smokescreen");
+                if (d.heavyArmor) kw.push("Armor " + d.heavyArmor);
+                if (d.veteran) kw.push("Veteran " + d.veteran);
+                if (kw.length) lines.push(kw.join(", "));
+                if (d.battleCryText) lines.push(d.battleCryText);
+                if (d.trapText) lines.push(d.trapText);
+                if (d.history) lines.push(d.history);
+                tooltip.innerHTML = lines.map(function(l) { return '<div>' + l + '</div>'; }).join("");
 
                 card.addEventListener("mouseenter", function() {
                     addClass(tooltip, "visible");
@@ -4412,6 +4448,28 @@
                 var isVictory = G.winner === "player";
                 var title = document.getElementById("gameOverTitle");
                 var text = document.getElementById("gameOverText");
+                var flagEl = document.getElementById("gameOverFlag");
+                if (flagEl) {
+                    var isPatriot = G.playerFaction === "patriots";
+                    flagEl.innerHTML = isPatriot
+                        ? '<svg viewBox="0 0 190 100" width="220" height="116" style="border:2px solid #DAA520;box-shadow:0 4px 14px rgba(0,0,0,0.6);">'
+                            + '<rect width="190" height="100" fill="#B22234"/>'
+                            + '<rect y="7.7" width="190" height="7.7" fill="#fff"/><rect y="23.1" width="190" height="7.7" fill="#fff"/>'
+                            + '<rect y="38.5" width="190" height="7.7" fill="#fff"/><rect y="53.9" width="190" height="7.7" fill="#fff"/>'
+                            + '<rect y="69.3" width="190" height="7.7" fill="#fff"/><rect y="84.7" width="190" height="7.7" fill="#fff"/>'
+                            + '<rect width="76" height="53.9" fill="#3C3B6E"/>'
+                            + '<text x="38" y="36" font-size="26" text-anchor="middle" fill="#fff" font-family="serif">★★★</text>'
+                            + '</svg>'
+                        : '<svg viewBox="0 0 120 60" width="220" height="110" style="border:2px solid #DAA520;box-shadow:0 4px 14px rgba(0,0,0,0.6);">'
+                            + '<rect width="120" height="60" fill="#012169"/>'
+                            + '<path d="M0,0 L120,60 M120,0 L0,60" stroke="#fff" stroke-width="12"/>'
+                            + '<path d="M0,0 L120,60 M120,0 L0,60" stroke="#C8102E" stroke-width="5"/>'
+                            + '<path d="M60,0 V60 M0,30 H120" stroke="#fff" stroke-width="18"/>'
+                            + '<path d="M60,0 V60 M0,30 H120" stroke="#C8102E" stroke-width="10"/>'
+                            + '</svg>';
+                    flagEl.style.opacity = isVictory ? "1" : "0.45";
+                    flagEl.style.filter = isVictory ? "none" : "grayscale(0.6)";
+                }
                 var campaignBtns = document.getElementById("campaignButtons");
                 var nextBtn = document.getElementById("nextBattleBtn");
                 var playAgainBtn = document.getElementById("playAgainBtn");
@@ -4482,6 +4540,7 @@
             function setupEventListeners() {
                 var campaignBtn = document.getElementById("campaignBtn");
                 var endTurnBtn = document.getElementById("endTurnBtn");
+                var statsBtn = document.getElementById("statsBtn");
                 var playAgainBtn = document.getElementById("playAgainBtn");
                 var campaignBackBtn = document.getElementById("campaignBackBtn");
                 var nextBattleBtn = document.getElementById("nextBattleBtn");
@@ -4524,6 +4583,25 @@
                         G.gameOver = true;
                         G.winner = "enemy";
                         endGame();
+                    });
+                }
+
+                if (statsBtn) {
+                    statsBtn.addEventListener("click", function() {
+                        if (!G) return;
+                        var msg = "Card Counts\n\n"
+                            + "You — Hand: " + G.player.hand.length
+                            + " · Deck: " + G.player.deck.length
+                            + " · Board: " + G.player.board.length + "\n"
+                            + "Enemy — Hand: " + G.enemy.hand.length
+                            + " · Deck: " + G.enemy.deck.length
+                            + " · Board: " + G.enemy.board.length + "\n\n"
+                            + "Enemy hand cards:\n";
+                        for (var i = 0; i < G.enemy.hand.length; i++) {
+                            var c = G.enemy.hand[i];
+                            msg += "  • " + c.def.name + " (" + c.def.cost + ")\n";
+                        }
+                        alert(msg);
                     });
                 }
 
@@ -4803,19 +4881,52 @@
                 results.style.gap = "6px";
                 results.style.justifyContent = "center";
                 results.innerHTML = "";
-                var label = document.createElement("div");
-                label.style.cssText = "width:100%;color:#FFD700;font-weight:bold;font-size:1.1em;margin-bottom:6px;";
-                label.textContent = "You got:";
-                results.appendChild(label);
-                for (var i = 0; i < picks.length; i++) {
-                    var def = null;
-                    for (var j = 0; j < cardDefs.length; j++) { if (cardDefs[j].id === picks[i]) { def = cardDefs[j]; break; } }
-                    if (!def) continue;
-                    var inst = createCardInstance(def);
-                    var card = createCardElement(inst, false, false, false);
-                    card.style.transform = "scale(0.85)";
-                    results.appendChild(card);
-                }
+
+                // Unopened pack awaits click.
+                var pack = document.createElement("div");
+                var isEnhanced = type === "enhanced";
+                pack.style.cssText = "width:140px;height:190px;margin:10px;cursor:pointer;border-radius:10px;"
+                    + "background:" + (isEnhanced ? "linear-gradient(160deg,#8B6914,#3A2A0A)" : "linear-gradient(160deg,#5A3010,#2A1608)") + ";"
+                    + "border:3px solid " + (isEnhanced ? "#FFD700" : "#DAA520") + ";"
+                    + "box-shadow:0 6px 18px rgba(0,0,0,0.7)," + (isEnhanced ? "0 0 24px rgba(255,215,0,0.5)" : "0 0 12px rgba(218,165,32,0.3)") + ";"
+                    + "display:flex;flex-direction:column;align-items:center;justify-content:center;color:#FFD700;"
+                    + "font-weight:bold;font-family:Georgia,serif;text-align:center;padding:10px;"
+                    + "transition:transform 0.2s;";
+                pack.innerHTML = '<div style="font-size:2.6em;margin-bottom:8px;">\uD83D\uDCE6</div>'
+                    + '<div style="font-size:1.05em;">' + (isEnhanced ? "Enhanced Pack" : "Standard Pack") + '</div>'
+                    + '<div style="font-size:0.8em;color:#C9A961;margin-top:10px;">Click to open</div>';
+                pack.addEventListener("mouseenter", function() { pack.style.transform = "scale(1.05)"; });
+                pack.addEventListener("mouseleave", function() { pack.style.transform = "scale(1)"; });
+                pack.addEventListener("click", function() {
+                    pack.style.transition = "transform 0.4s, opacity 0.4s";
+                    pack.style.transform = "scale(0.2) rotate(-15deg)";
+                    pack.style.opacity = "0";
+                    setTimeout(function() {
+                        results.innerHTML = "";
+                        var label = document.createElement("div");
+                        label.style.cssText = "width:100%;color:#FFD700;font-weight:bold;font-size:1.1em;margin-bottom:6px;";
+                        label.textContent = "You got:";
+                        results.appendChild(label);
+                        for (var i = 0; i < picks.length; i++) {
+                            var def = null;
+                            for (var j = 0; j < cardDefs.length; j++) { if (cardDefs[j].id === picks[i]) { def = cardDefs[j]; break; } }
+                            if (!def) continue;
+                            var inst = createCardInstance(def);
+                            var card = createCardElement(inst, false, false, false);
+                            card.style.transform = "scale(0.85) translateX(-40px)";
+                            card.style.opacity = "0";
+                            card.style.transition = "transform 0.35s, opacity 0.35s";
+                            results.appendChild(card);
+                            (function(el, delay) {
+                                setTimeout(function() {
+                                    el.style.transform = "scale(0.85)";
+                                    el.style.opacity = "1";
+                                }, delay);
+                            })(card, 60 * i);
+                        }
+                    }, 400);
+                });
+                results.appendChild(pack);
             }
 
             var _collectionFilter = "all";
@@ -5226,9 +5337,24 @@
                     deck: [],
                     picksMade: 0,
                     picksNeeded: 30,
-                    faction: "patriots",
-                    phase: "picking" // "picking" or "playing" or "done"
+                    faction: null,
+                    phase: "faction" // "faction" | "picking" | "playing" | "done"
                 };
+            }
+
+            function draftCopyLimit(rarity) {
+                if (rarity === "legendary") return 1;
+                if (rarity === "rare") return 2;
+                return 3;
+            }
+
+            function draftCardCounts() {
+                var counts = {};
+                for (var i = 0; i < _draftRun.deck.length; i++) {
+                    var id = _draftRun.deck[i].id;
+                    counts[id] = (counts[id] || 0) + 1;
+                }
+                return counts;
             }
 
             function showDraftScreen() {
@@ -5248,12 +5374,26 @@
             }
 
             function generateDraftChoices() {
-                // Pool from all factions (cross-faction draft)
+                // Pool is locked to the chosen faction, and honors per-card copy caps.
+                var counts = draftCardCounts();
                 var pool = [];
                 for (var i = 0; i < cardDefs.length; i++) {
-                    if (cardDefs[i].type === "trap") continue; // no traps in draft
-                    if (cardDefs[i].id && cardDefs[i].id.indexOf("token_") === 0) continue;
-                    pool.push(cardDefs[i]);
+                    var d = cardDefs[i];
+                    if (d.type === "trap") continue;
+                    if (d.id && d.id.indexOf("token_") === 0) continue;
+                    if (_draftRun.faction && d.faction !== _draftRun.faction) continue;
+                    if ((counts[d.id] || 0) >= draftCopyLimit(d.rarity)) continue;
+                    pool.push(d);
+                }
+                if (pool.length === 0) {
+                    // Fallback: if the faction pool is exhausted, allow anything of that faction regardless of cap.
+                    for (var k = 0; k < cardDefs.length; k++) {
+                        var d2 = cardDefs[k];
+                        if (d2.type === "trap") continue;
+                        if (d2.id && d2.id.indexOf("token_") === 0) continue;
+                        if (_draftRun.faction && d2.faction !== _draftRun.faction) continue;
+                        pool.push(d2);
+                    }
                 }
 
                 // Weighted by rarity
@@ -5292,6 +5432,28 @@
 
                 choices.innerHTML = "";
                 if (preview) preview.innerHTML = "";
+
+                if (_draftRun.phase === "faction") {
+                    if (progress) progress.textContent = "Choose your faction";
+                    if (record) record.textContent = "";
+                    if (startBtn) startBtn.style.display = "none";
+                    var mkFactionBtn = function(label, faction, bg) {
+                        var btn = document.createElement("button");
+                        btn.className = "menu-btn";
+                        btn.style.margin = "6px";
+                        btn.style.background = bg;
+                        btn.textContent = label;
+                        btn.addEventListener("click", function() {
+                            _draftRun.faction = faction;
+                            _draftRun.phase = "picking";
+                            renderDraftPick();
+                        });
+                        return btn;
+                    };
+                    choices.appendChild(mkFactionBtn("Patriots", "patriots", "linear-gradient(180deg,#1B4F72,#154360)"));
+                    choices.appendChild(mkFactionBtn("British", "british", "linear-gradient(180deg,#8B1A1A,#6B1010)"));
+                    return;
+                }
 
                 if (_draftRun.phase === "done") {
                     if (progress) progress.textContent = "Draft Complete!";
@@ -5339,7 +5501,6 @@
                             _draftRun.picksMade++;
                             if (_draftRun.picksMade >= _draftRun.picksNeeded) {
                                 _draftRun.phase = "playing";
-                                _draftRun.faction = determineDraftFaction();
                             }
                             renderDraftPick();
                         };
