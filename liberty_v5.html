@@ -907,15 +907,21 @@
         }
 
         @keyframes dropInCard {
-            0% { opacity: 0; transform: translateY(-200px) scale(1.4); }
-            60% { opacity: 1; transform: translateY(20px) scale(1.05); }
-            80% { transform: translateY(-10px) scale(1.0); }
-            100% { transform: translateY(0) scale(1.0); }
+            0% { opacity: 0; transform: translate(80px, -180px) scale(1.35) rotate(6deg); }
+            35% { opacity: 1; transform: translate(40px, 18px) scale(1.1) rotate(3deg); }
+            55% { transform: translate(10px, -6px) scale(1.03) rotate(1deg); }
+            75% { transform: translate(0, 2px) scale(1) rotate(0deg); }
+            100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+        }
+
+        .card.deploying {
+            box-shadow: 0 0 18px rgba(255,215,0,0.5), 0 6px 16px rgba(0,0,0,0.7) !important;
         }
 
         @keyframes drawCard {
-            0% { opacity: 0; transform: translateX(-100px) rotateY(90deg); }
-            100% { opacity: 1; transform: translateX(0) rotateY(0); }
+            0% { opacity: 0; transform: translate(220px, 120px) scale(0.55) rotateY(85deg); }
+            55% { opacity: 1; transform: translate(60px, 30px) scale(0.85) rotateY(25deg); }
+            100% { opacity: 1; transform: translate(0,0) scale(1) rotateY(0); }
         }
 
         @keyframes orderFloat {
@@ -964,6 +970,16 @@
             animation: orderFloat 2s ease-in-out forwards;
         }
 
+        .burned-card {
+            position: fixed;
+            left: 50%;
+            top: 55%;
+            z-index: 620;
+            pointer-events: none;
+            filter: sepia(0.5) brightness(0.85);
+            box-shadow: 0 0 24px rgba(255,80,0,0.55), 0 0 8px rgba(255,160,0,0.8);
+        }
+
         .muzzle-flash {
             position: fixed;
             width: 60px;
@@ -984,6 +1000,16 @@
             border-radius: 50%;
             box-shadow: 0 0 8px rgba(255, 100, 0, 0.6);
             z-index: 700;
+            pointer-events: none;
+        }
+
+        .bullet-trail {
+            position: fixed;
+            height: 2px;
+            background: linear-gradient(90deg, rgba(255,220,120,0) 0%, rgba(255,220,120,0.9) 60%, #FFF4C2 100%);
+            box-shadow: 0 0 6px rgba(255,200,80,0.8);
+            transform-origin: 0 50%;
+            z-index: 699;
             pointer-events: none;
         }
 
@@ -1061,6 +1087,47 @@
             animation: floatUp 0.6s ease-out forwards;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
         }
+
+        /* Deck pile widget (bottom-right) */
+        .deck-pile {
+            position: fixed;
+            right: 12px;
+            bottom: 14px;
+            width: 62px;
+            height: 86px;
+            z-index: 120;
+            pointer-events: none;
+            --thickness: 6px;
+        }
+        .deck-pile-stack {
+            position: absolute;
+            inset: 0;
+            border-radius: 6px;
+            background: linear-gradient(180deg, #3A1F0A, #1F0F05);
+            box-shadow:
+                0 0 0 1px rgba(218,165,32,0.4),
+                0 calc(var(--thickness) * -0.25) 0 rgba(60,30,10,0.9),
+                0 calc(var(--thickness) * -0.5) 0 rgba(50,24,8,0.85),
+                0 calc(var(--thickness) * -0.75) 0 rgba(40,20,6,0.8),
+                0 calc(var(--thickness) * -1) 0 rgba(30,15,5,0.75),
+                0 4px 12px rgba(0,0,0,0.6);
+            transform: translateY(calc(var(--thickness) * 0.6));
+        }
+        .deck-pile-top {
+            position: absolute;
+            inset: 0;
+            border: 2px solid #DAA520;
+            border-radius: 6px;
+            background: radial-gradient(circle at 50% 40%, #5A3010 0%, #2A1608 75%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #DAA520;
+            font-family: Georgia, serif;
+        }
+        .deck-pile-emblem { font-size: 1.4em; }
+        .deck-pile-count { font-size: 0.85em; font-weight: bold; margin-top: 2px; }
 
         /* Phase indicator */
         .phase-indicator {
@@ -2126,6 +2193,13 @@
         </div>
 
         <div class="phase-indicator" id="phaseIndicator">-</div>
+        <div class="deck-pile" id="playerDeckPile" title="Your Deck">
+            <div class="deck-pile-stack"></div>
+            <div class="deck-pile-top">
+                <div class="deck-pile-emblem">⚔</div>
+                <div class="deck-pile-count" id="playerDeckPileCount">0</div>
+            </div>
+        </div>
     </div>
 
     <!-- Game Over Screen -->
@@ -2521,10 +2595,11 @@
                 if (won) {
                     // First win
                     _stats.wins += 1;
-                    // Award 20 gold per win (item 15)
+                    // Gold per win: Campaign 50, Skirmish/other 20
                     if (!_draftMode) {
-                        _stats.gold = (_stats.gold || 0) + 20;
-                        _log("\uD83D\uDCB0 Earned 20 gold!");
+                        var reward = _campaignMode ? 50 : 20;
+                        _stats.gold = (_stats.gold || 0) + reward;
+                        _log("\uD83D\uDCB0 Earned " + reward + " gold!");
                     }
                     saveStats();
                     unlockAchievement("first_win");
@@ -2840,8 +2915,9 @@
                         continue;
                     }
                     if (side.hand.length >= 7) {
-                        side.deck.shift(); // burn card
+                        var burnedDef = side.deck.shift(); // burn card
                         _log((side === G.player ? "Your" : "Enemy") + " hand is full — card burned!");
+                        if (side === G.player) showBurnedCard(burnedDef);
                         continue;
                     }
                     var cardDef = side.deck.shift();
@@ -3602,6 +3678,23 @@
             }
 
             // ========== ANIMATION HELPERS ==========
+            function showBurnedCard(def) {
+                try {
+                    if (!def) return;
+                    var inst = createCardInstance(def);
+                    var card = createCardElement(inst, false, false, false);
+                    card.classList.add("burned-card");
+                    document.body.appendChild(card);
+                    card.animate([
+                        { opacity: 0, transform: "translate(-50%,-50%) scale(0.9) rotate(0deg)" },
+                        { opacity: 1, transform: "translate(-50%,-50%) scale(1) rotate(0deg)", offset: 0.2 },
+                        { opacity: 1, transform: "translate(-50%,-50%) scale(1) rotate(0deg)", offset: 0.7 },
+                        { opacity: 0, transform: "translate(220%,-50%) scale(0.7) rotate(25deg)" }
+                    ], { duration: 1000, easing: "ease-out", fill: "forwards" });
+                    setTimeout(function() { if (card.parentNode) card.parentNode.removeChild(card); }, 1050);
+                } catch (e) {}
+            }
+
             function showFloatingOrder(instance) {
                 try {
                     var inst = createCardInstance(instance.def);
@@ -3633,7 +3726,9 @@
                     var src = getElCenter(attackerEl);
                     var dst = getElCenter(targetEl);
 
-                    if (atkType === "artillery" || atkType === "naval") {
+                    var isHQ = targetEl.classList && (targetEl.classList.contains("hq-card") || targetEl.classList.contains("enemy-hq") || targetEl.classList.contains("player-hq"));
+
+                    if (isHQ || atkType === "artillery" || atkType === "naval") {
                         // Muzzle flash at source
                         var flash = document.createElement("div");
                         flash.className = "muzzle-flash";
@@ -3660,16 +3755,43 @@
                             setTimeout(function() { targetEl.classList.remove("hit"); }, 500);
                         }, 350);
                     } else {
-                        // Melee clash
-                        var clash = document.createElement("div");
-                        clash.className = "melee-clash";
-                        clash.textContent = "\u2694\uFE0F";
-                        clash.style.left = ((src.x + dst.x) / 2 - 20) + "px";
-                        clash.style.top = ((src.y + dst.y) / 2 - 20) + "px";
-                        document.body.appendChild(clash);
-                        setTimeout(function() { if (clash.parentNode) clash.parentNode.removeChild(clash); }, 600);
+                        // Infantry rifle exchange: muzzle flashes both ends + bullet trails for ~1s
+                        var ang = Math.atan2(dst.y - src.y, dst.x - src.x);
+                        var mkFlash = function(x, y, delay) {
+                            var f = document.createElement("div");
+                            f.className = "muzzle-flash";
+                            f.style.left = (x - 30) + "px";
+                            f.style.top = (y - 30) + "px";
+                            f.style.animationDelay = delay + "ms";
+                            document.body.appendChild(f);
+                            setTimeout(function() { if (f.parentNode) f.parentNode.removeChild(f); }, 500 + delay);
+                        };
+                        var mkTrail = function(fromX, fromY, toX, toY, delay) {
+                            var tr = document.createElement("div");
+                            tr.className = "bullet-trail";
+                            tr.style.left = fromX + "px";
+                            tr.style.top = fromY + "px";
+                            var len = Math.hypot(toX - fromX, toY - fromY);
+                            tr.style.width = len + "px";
+                            tr.style.transform = "rotate(" + ang + "rad)";
+                            document.body.appendChild(tr);
+                            tr.animate([
+                                { opacity: 0, transform: "rotate(" + ang + "rad) scaleX(0)" },
+                                { opacity: 1, transform: "rotate(" + ang + "rad) scaleX(1)" },
+                                { opacity: 0, transform: "rotate(" + ang + "rad) scaleX(1)" }
+                            ], { duration: 220, delay: delay, easing: "ease-out", fill: "forwards" });
+                            setTimeout(function() { if (tr.parentNode) tr.parentNode.removeChild(tr); }, 240 + delay);
+                        };
+                        // Volleys: shooter → target, then target → shooter, twice over ~1s
+                        for (var v = 0; v < 2; v++) {
+                            var base = v * 500;
+                            mkFlash(src.x, src.y, base);
+                            mkTrail(src.x, src.y, dst.x, dst.y, base + 40);
+                            mkFlash(dst.x, dst.y, base + 220);
+                            mkTrail(dst.x, dst.y, src.x, src.y, base + 260);
+                        }
                         targetEl.classList.add("hit");
-                        setTimeout(function() { targetEl.classList.remove("hit"); }, 500);
+                        setTimeout(function() { targetEl.classList.remove("hit"); }, 1000);
                     }
                 } catch (e) {}
             }
@@ -3842,6 +3964,21 @@
                 renderHPBar("playerHPBar", "playerHP", G.player.hp, G.player.maxHP);
                 setTxt("playerHandCount", G.player.hand.length);
                 setTxt("playerDeckCount", G.player.deck.length);
+                var pile = document.getElementById("playerDeckPile");
+                var pileCount = document.getElementById("playerDeckPileCount");
+                if (pile && pileCount) {
+                    pileCount.textContent = G.player.deck.length;
+                    // Thickness scales with remaining deck size (0 → hidden, 30 → ~16px)
+                    var n = G.player.deck.length;
+                    if (n <= 0) {
+                        pile.style.opacity = "0.35";
+                        pile.style.setProperty("--thickness", "0px");
+                    } else {
+                        pile.style.opacity = "1";
+                        var t = Math.min(16, Math.max(2, Math.round(n * 0.55)));
+                        pile.style.setProperty("--thickness", t + "px");
+                    }
+                }
                 renderSupplyBox("playerSupplyBox", G.player.supply, G.player.maxSupply);
 
                 setTxt("enemyName", G.enemy.name);
