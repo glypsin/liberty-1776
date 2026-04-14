@@ -298,8 +298,8 @@ test('Draw logic exists', function() {
 console.log('\n===== EVENT LISTENER CHECK =====\n');
 
 test('Menu buttons have event listeners', function() {
-  assert(gameScript.includes('skirmishPatriotsBtn'), 'Patriots button referenced');
-  assert(gameScript.includes('skirmishBritishBtn'), 'British button referenced');
+  assert(gameScript.includes('campaignBtn'), 'Campaign button referenced');
+  assert(gameScript.includes('deckBuilderPatriotsBtn') || gameScript.includes('deckBuilderBritishBtn'), 'Deck builder button referenced');
   assert(gameScript.includes('addEventListener'), 'Event listeners attached');
 });
 

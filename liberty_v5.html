@@ -1809,7 +1809,6 @@
         /* Unit type badges */
         .unit-type-cavalry { background: #8B6914 !important; color: #FFE0A0 !important; }
         .unit-type-artillery { background: #6B3410 !important; color: #FFB074 !important; }
-        .unit-type-naval { background: #1B4F72 !important; color: #AED6F1 !important; }
         .trap-badge { background: #6B2D8B !important; color: #E8DAEF !important; }
 
         /* Keyword badges */
@@ -2017,8 +2016,6 @@
             </div>
             <div class="menu-buttons">
                 <button class="menu-btn" id="campaignBtn">Campaign</button>
-                <button class="menu-btn" id="skirmishPatriotsBtn">Skirmish — Patriots</button>
-                <button class="menu-btn" id="skirmishBritishBtn">Skirmish — British</button>
                 <button class="menu-btn" id="deckBuilderPatriotsBtn" style="background: linear-gradient(180deg, #1B4F72 0%, #154360 100%);">Deck Builder — Patriots</button>
                 <button class="menu-btn" id="deckBuilderBritishBtn" style="background: linear-gradient(180deg, #8B1A1A 0%, #6B1010 100%);">Deck Builder — British</button>
                 <button class="menu-btn" id="draftBtn" style="background: linear-gradient(180deg, #6B2D8B 0%, #4A235A 100%);">Draft Mode</button>
@@ -2083,17 +2080,9 @@
             </div>
         </div>
 
-        <div class="frontline-divider">
-            <div class="frontline-label">— FRONTLINE —</div>
-        </div>
-
         <div class="board-zone frontline-zone">
             <div class="zone-row" id="enemyFrontline"></div>
             <div class="zone-row" id="playerFrontline"></div>
-        </div>
-
-        <div class="frontline-divider">
-            <div class="frontline-label">— FRONTLINE —</div>
         </div>
 
         <div class="board-zone player-support-zone">
@@ -2132,9 +2121,8 @@
             <button class="help-ingame-btn" id="helpGameBtn">?</button>
             <button class="help-ingame-btn" id="fullscreenBtn" title="Toggle Fullscreen">⛶</button>
             <button class="control-btn" id="endTurnBtn">End Turn</button>
+            <button class="control-btn" id="surrenderBtn" style="background:linear-gradient(180deg,#8B1A1A,#5A0E0E);">Surrender</button>
         </div>
-
-        <div class="game-log" id="gameLog"></div>
 
         <div class="phase-indicator" id="phaseIndicator">-</div>
     </div>
@@ -2617,8 +2605,8 @@
                     { id: "patriot_declaration", name: "Declaration of Independence", faction: "patriots", type: "order", cost: 2, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDCDC", flavor: "Independence declared", rarity: "common", battleCry: function() { _drawCards(2); }, battleCryText: "Draw 2", effect: null, history: "Declared independence July 4, 1776" },
                     { id: "patriot_saratoga", name: "Victory at Saratoga", faction: "patriots", type: "order", cost: 4, atk: 0, hp: 0, opCost: 0, icon: "\uD83C\uDFC6", flavor: "Major victory", rarity: "rare", battleCry: function() { _drawCards(2); var side = _activeSide || G.player; side.supply += 1; }, battleCryText: "Draw 2, +1 Supply", effect: null, history: "Turning point battle in 1777" },
                     // Naval & expansion cards
-                    { id: "patriot_privateer", name: "Privateer Ship", faction: "patriots", type: "unit", unitType: "naval", cost: 3, atk: 3, hp: 4, opCost: 1, icon: "\uD83D\uDEA2", flavor: "Licensed raider", rarity: "common", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, pincer: false, battleCry: function(instance) { _dealDamageToOpponent(1); }, battleCryText: "Battle Cry: Deal 1 damage", effect: null, history: "Congress authorized privateers to raid British ships" },
-                    { id: "patriot_jones", name: "John Paul Jones", faction: "patriots", type: "unit", unitType: "naval", cost: 5, atk: 5, hp: 4, opCost: 2, icon: "\u2693", flavor: "Naval hero", rarity: "legendary", blitz: true, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, pincer: false, battleCry: function(instance) { _dealDamageToOpponent(3); _drawCards(1); }, battleCryText: "Battle Cry: Deal 3 damage, Draw 1", effect: null, history: "I have not yet begun to fight!" },
+                    { id: "patriot_privateer", name: "Privateer Ship", faction: "patriots", type: "unit", unitType: "infantry", cost: 3, atk: 3, hp: 4, opCost: 1, icon: "\uD83D\uDEA2", flavor: "Licensed raider", rarity: "common", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, pincer: false, battleCry: function(instance) { _dealDamageToOpponent(1); }, battleCryText: "Battle Cry: Deal 1 damage", effect: null, history: "Congress authorized privateers to raid British ships" },
+                    { id: "patriot_jones", name: "John Paul Jones", faction: "patriots", type: "unit", unitType: "infantry", cost: 5, atk: 5, hp: 4, opCost: 2, icon: "\u2693", flavor: "Naval hero", rarity: "legendary", blitz: true, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, pincer: false, battleCry: function(instance) { _dealDamageToOpponent(3); _drawCards(1); }, battleCryText: "Battle Cry: Deal 3 damage, Draw 1", effect: null, history: "I have not yet begun to fight!" },
                     { id: "patriot_cannon", name: "Hidden Cannon", faction: "patriots", type: "unit", unitType: "artillery", cost: 2, atk: 4, hp: 1, opCost: 1, icon: "\uD83D\uDCA5", flavor: "Ambush artillery", rarity: "common", blitz: false, guard: false, fury: false, smokescreen: true, heavyArmor: 0, ambush: false, veteran: 0, pincer: false, battleCry: null, effect: null, history: "Colonial cannon concealed behind fortifications" },
                     { id: "patriot_yorktown", name: "Siege of Yorktown", faction: "patriots", type: "order", cost: 5, atk: 0, hp: 0, opCost: 0, icon: "\uD83C\uDFF0", flavor: "Final siege", rarity: "legendary", battleCry: function() { _dealDamageToOpponent(5); _drawCards(1); }, battleCryText: "Deal 5 damage, Draw 1", effect: null, history: "The final major battle that won the war in 1781" },
                     { id: "patriot_spyring", name: "Culper Spy Ring", faction: "patriots", type: "order", cost: 3, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDD75", flavor: "Secret intel", rarity: "rare", battleCry: function() { _drawCards(3); }, battleCryText: "Draw 3", effect: null, history: "Washington's spy network on Long Island" },
@@ -2632,13 +2620,13 @@
                     { id: "patriot_steuben", name: "Baron von Steuben", faction: "patriots", type: "unit", unitType: "infantry", cost: 4, atk: 3, hp: 5, opCost: 1, icon: "\uD83D\uDCCB", flavor: "Drillmaster", rarity: "rare", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, pincer: true, battleCry: function(instance) { var side = _activeSide || G.player; side.supply += 1; }, battleCryText: "Battle Cry: +1 Supply", effect: null, history: "Steuben trained the Continental Army at Valley Forge" },
                     { id: "patriot_arnold", name: "Benedict Arnold", faction: "patriots", type: "unit", unitType: "infantry", cost: 4, atk: 5, hp: 4, opCost: 1, icon: "\u2694", flavor: "Brave but treacherous", rarity: "rare", blitz: true, guard: false, fury: true, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, pincer: false, battleCry: null, effect: null, history: "Arnold was a hero at Saratoga before his betrayal" },
                     { id: "patriot_sentry", name: "Continental Sentry", faction: "patriots", type: "unit", unitType: "infantry", cost: 1, atk: 1, hp: 2, opCost: 1, icon: "\uD83E\uDE96", flavor: "Night watchman", rarity: "common", blitz: false, guard: true, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, pincer: false, battleCry: null, effect: null, history: "Sentries guarded the camps through long cold nights" },
-                    { id: "patriot_schooner", name: "Armed Schooner", faction: "patriots", type: "unit", unitType: "naval", cost: 2, atk: 2, hp: 3, opCost: 1, icon: "\u26F5", flavor: "Fast escort", rarity: "common", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, pincer: false, battleCry: null, effect: null, history: "Washington's schooners raided British supply ships" },
+                    { id: "patriot_schooner", name: "Armed Schooner", faction: "patriots", type: "unit", unitType: "infantry", cost: 2, atk: 2, hp: 3, opCost: 1, icon: "\u26F5", flavor: "Fast escort", rarity: "common", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, pincer: false, battleCry: null, effect: null, history: "Washington's schooners raided British supply ships" },
                     { id: "patriot_fortify", name: "Fortify the Line", faction: "patriots", type: "order", cost: 2, atk: 0, hp: 0, opCost: 0, icon: "\uD83E\uDDF1", flavor: "Dig in!", rarity: "common", battleCry: function() { var side = _activeSide || G.player; for (var i = 0; i < side.board.length; i++) { side.board[i].hp += 1; } _log("All friendly units gain +1 HP!"); }, battleCryText: "All friendly units +1 HP", effect: null, history: "Entrenchments saved many lives at Breed's Hill" },
                     { id: "patriot_rally_cry", name: "Don't Tread on Me", faction: "patriots", type: "order", cost: 1, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDC0D", flavor: "Rally cry", rarity: "common", battleCry: function() { _drawCards(1); }, battleCryText: "Draw 1", effect: null, history: "The Gadsden flag became a symbol of defiance" },
                     { id: "patriot_valley_forge", name: "Valley Forge", faction: "patriots", type: "order", cost: 3, atk: 0, hp: 0, opCost: 0, icon: "\u2744", flavor: "Endure the winter", rarity: "rare", battleCry: function() { var side = _activeSide || G.player; for (var i = 0; i < side.board.length; i++) { side.board[i].atk += 1; side.board[i].hp += 1; } _log("All friendly units gain +1/+1!"); }, battleCryText: "All friendly units +1/+1", effect: null, history: "The harsh winter of 1777-78 forged a tougher army" },
-                    { id: "patriot_bonhomme", name: "Bonhomme Richard", faction: "patriots", type: "unit", unitType: "naval", cost: 4, atk: 4, hp: 5, opCost: 1, icon: "\uD83D\uDEA2", flavor: "Jones's flagship", rarity: "rare", blitz: false, guard: true, fury: false, smokescreen: false, heavyArmor: 1, ambush: false, veteran: 0, pincer: false, battleCry: null, effect: null, history: "Jones captured HMS Serapis from this battered ship" },
+                    { id: "patriot_bonhomme", name: "Bonhomme Richard", faction: "patriots", type: "unit", unitType: "infantry", cost: 4, atk: 4, hp: 5, opCost: 1, icon: "\uD83D\uDEA2", flavor: "Jones's flagship", rarity: "rare", blitz: false, guard: true, fury: false, smokescreen: false, heavyArmor: 1, ambush: false, veteran: 0, pincer: false, battleCry: null, effect: null, history: "Jones captured HMS Serapis from this battered ship" },
                     { id: "patriot_sons", name: "Sons of Liberty", faction: "patriots", type: "order", cost: 2, atk: 0, hp: 0, opCost: 0, icon: "\u270A", flavor: "No taxation!", rarity: "common", battleCry: function() { _dealDamageToOpponent(2); }, battleCryText: "Deal 2 damage", effect: null, history: "The Sons of Liberty organized the Boston Tea Party" },
-                    { id: "patriot_french_fleet", name: "French Fleet", faction: "patriots", type: "unit", unitType: "naval", cost: 5, atk: 4, hp: 5, opCost: 1, icon: "\u269C", flavor: "Allied armada", rarity: "rare", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 1, ambush: false, veteran: 0, pincer: true, battleCry: function(instance) { _dealDamageToOpponent(2); }, battleCryText: "Battle Cry: Deal 2 damage", effect: null, history: "De Grasse's fleet sealed Cornwallis at Yorktown" },
+                    { id: "patriot_french_fleet", name: "French Fleet", faction: "patriots", type: "unit", unitType: "infantry", cost: 5, atk: 4, hp: 5, opCost: 1, icon: "\u269C", flavor: "Allied armada", rarity: "rare", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 1, ambush: false, veteran: 0, pincer: true, battleCry: function(instance) { _dealDamageToOpponent(2); }, battleCryText: "Battle Cry: Deal 2 damage", effect: null, history: "De Grasse's fleet sealed Cornwallis at Yorktown" },
                     { id: "patriot_hamilton", name: "Alexander Hamilton", faction: "patriots", type: "unit", unitType: "infantry", cost: 3, atk: 3, hp: 3, opCost: 1, icon: "\u2694", flavor: "Aide-de-camp", rarity: "common", blitz: true, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, pincer: true, battleCry: null, effect: null, history: "Hamilton led the charge at Yorktown's Redoubt 10" },
                     { id: "patriot_trap_teaparty", name: "Boston Tea Party", faction: "patriots", type: "trap", cost: 2, atk: 0, hp: 0, opCost: 0, icon: "\u2615", flavor: "Tax revolt", rarity: "common", triggerCondition: "enemy_play_unit", trapText: "Trigger: Enemy plays unit. -1 ATK, -1 HP to it", trapEffect: function(ctx) { if (ctx.unit) { ctx.unit.atk = Math.max(0, ctx.unit.atk - 1); ctx.unit.hp -= 1; if (ctx.unit.hp <= 0) ctx.unit.dead = true; _log("Boston Tea Party weakens " + ctx.unit.def.name + " by -1/-1!"); } }, history: "Colonists dumped tea into Boston Harbor in 1773" },
 
@@ -2658,12 +2646,11 @@
                     { id: "british_tarleton", name: "Banastre Tarleton", faction: "british", type: "unit", unitType: "cavalry", cost: 4, atk: 5, hp: 3, opCost: 1, icon: "\uD83D\uDC0E", flavor: "Cavalry colonel", rarity: "rare", blitz: true, guard: false, fury: true, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, pincer: false, battleCry: function(instance) { _dealDamageToOpponent(1); }, battleCryText: "Battle Cry: Deal 1 damage", effect: null, history: "Brutal dragoon commander" },
                     { id: "british_highlander", name: "Highland Soldier", faction: "british", type: "unit", unitType: "infantry", cost: 3, atk: 3, hp: 4, opCost: 1, icon: "\u2694", flavor: "Fierce warrior", rarity: "common", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: true, veteran: 0, pincer: false, battleCry: null, effect: null, history: "Scottish Highlanders served in the British Army" },
                     { id: "british_cannon_royal", name: "Royal Horse Artillery", faction: "british", type: "unit", unitType: "artillery", cost: 4, atk: 5, hp: 2, opCost: 1, icon: "\uD83D\uDCA5", flavor: "Mobile guns", rarity: "rare", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, pincer: false, battleCry: function(instance) { _dealDamageToOpponent(1); }, battleCryText: "Battle Cry: Deal 1 damage", effect: null, history: "Horse artillery could rapidly deploy on the battlefield" },
-                    { id: "british_stamp", name: "Stamp Tax", faction: "british", type: "order", cost: 2, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDCB0", flavor: "Tax colonists", rarity: "common", battleCry: function() { var side = _activeSide || G.enemy; side.supply += 2; }, battleCryText: "+2 Supply", effect: null, history: "Sparked colonial outrage in 1765" },
                     { id: "british_bunker", name: "Assault on Bunker Hill", faction: "british", type: "order", cost: 4, atk: 0, hp: 0, opCost: 0, icon: "\uD83C\uDFD4", flavor: "Hill battle", rarity: "rare", battleCry: function() { _dealDamageToOpponent(3); }, battleCryText: "Deal 3 damage", effect: null, history: "Early major battle of the war" },
                     { id: "british_blockade", name: "Royal Navy Blockade", faction: "british", type: "order", cost: 3, atk: 0, hp: 0, opCost: 0, icon: "\u26F5", flavor: "Naval blockade", rarity: "common", battleCry: function() { _drawCards(2); }, battleCryText: "Draw 2", effect: null, history: "British navy controlled the coast" },
                     // Naval & expansion cards
-                    { id: "british_frigate", name: "HMS Frigate", faction: "british", type: "unit", unitType: "naval", cost: 3, atk: 3, hp: 4, opCost: 1, icon: "\uD83D\uDEA2", flavor: "Warship", rarity: "common", blitz: false, guard: true, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, pincer: false, battleCry: function(instance) { _dealDamageToOpponent(1); }, battleCryText: "Battle Cry: Deal 1 damage", effect: null, history: "British warships patrolled the Atlantic" },
-                    { id: "british_admiral", name: "Admiral Graves", faction: "british", type: "unit", unitType: "naval", cost: 5, atk: 4, hp: 6, opCost: 2, icon: "\u2693", flavor: "Fleet commander", rarity: "legendary", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, pincer: false, battleCry: function(instance) { _dealDamageToOpponent(2); _drawCards(1); }, battleCryText: "Battle Cry: Deal 2 damage, Draw 1", effect: null, history: "Commanded the British North American fleet" },
+                    { id: "british_frigate", name: "HMS Frigate", faction: "british", type: "unit", unitType: "infantry", cost: 3, atk: 3, hp: 4, opCost: 1, icon: "\uD83D\uDEA2", flavor: "Warship", rarity: "common", blitz: false, guard: true, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, pincer: false, battleCry: function(instance) { _dealDamageToOpponent(1); }, battleCryText: "Battle Cry: Deal 1 damage", effect: null, history: "British warships patrolled the Atlantic" },
+                    { id: "british_admiral", name: "Admiral Graves", faction: "british", type: "unit", unitType: "infantry", cost: 5, atk: 4, hp: 6, opCost: 2, icon: "\u2693", flavor: "Fleet commander", rarity: "legendary", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, pincer: false, battleCry: function(instance) { _dealDamageToOpponent(2); _drawCards(1); }, battleCryText: "Battle Cry: Deal 2 damage, Draw 1", effect: null, history: "Commanded the British North American fleet" },
                     { id: "british_artillery", name: "Royal Artillery", faction: "british", type: "unit", unitType: "artillery", cost: 2, atk: 4, hp: 1, opCost: 1, icon: "\uD83D\uDCA5", flavor: "Heavy guns", rarity: "common", blitz: false, guard: false, fury: false, smokescreen: true, heavyArmor: 0, ambush: false, veteran: 0, pincer: false, battleCry: null, effect: null, history: "British field cannons were feared in battle" },
                     { id: "british_burning", name: "Burning of Norfolk", faction: "british", type: "order", cost: 5, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDD25", flavor: "Total destruction", rarity: "legendary", battleCry: function() { _dealDamageToOpponent(5); }, battleCryText: "Deal 5 damage", effect: null, history: "British burned Norfolk, Virginia in January 1776" },
                     { id: "british_intel", name: "British Intelligence", faction: "british", type: "order", cost: 3, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDD75", flavor: "Spy network", rarity: "rare", battleCry: function() { _drawCards(3); }, battleCryText: "Draw 3", effect: null, history: "Major Andre ran British spy operations" },
@@ -2677,14 +2664,13 @@
                     { id: "british_sapper", name: "Royal Engineers", faction: "british", type: "unit", unitType: "infantry", cost: 4, atk: 3, hp: 5, opCost: 1, icon: "\uD83D\uDEE0", flavor: "Siege experts", rarity: "rare", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, pincer: true, battleCry: function(instance) { _dealDamageToOpponent(2); }, battleCryText: "Battle Cry: Deal 2 damage", effect: null, history: "Royal Engineers built fortifications across the colonies" },
                     { id: "british_jager", name: "Hessian Jager", faction: "british", type: "unit", unitType: "infantry", cost: 3, atk: 3, hp: 3, opCost: 1, icon: "\uD83C\uDFAF", flavor: "Elite sharpshooter", rarity: "common", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: true, veteran: 2, pincer: false, battleCry: null, effect: null, history: "German Jagers were expert marksmen and scouts" },
                     { id: "british_hussar", name: "British Hussar", faction: "british", type: "unit", unitType: "cavalry", cost: 2, atk: 2, hp: 2, opCost: 1, icon: "\uD83D\uDC0E", flavor: "Light cavalry", rarity: "common", blitz: false, guard: false, fury: true, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, pincer: false, battleCry: null, effect: null, history: "Hussars scouted ahead and harassed enemy flanks" },
-                    { id: "british_man_o_war", name: "Man-of-War", faction: "british", type: "unit", unitType: "naval", cost: 4, atk: 4, hp: 5, opCost: 1, icon: "\uD83D\uDEA2", flavor: "Ship of the line", rarity: "rare", blitz: false, guard: true, fury: false, smokescreen: false, heavyArmor: 1, ambush: false, veteran: 0, pincer: false, battleCry: null, effect: null, history: "Ships of the line were the backbone of the Royal Navy" },
+                    { id: "british_man_o_war", name: "Man-of-War", faction: "british", type: "unit", unitType: "infantry", cost: 4, atk: 4, hp: 5, opCost: 1, icon: "\uD83D\uDEA2", flavor: "Ship of the line", rarity: "rare", blitz: false, guard: true, fury: false, smokescreen: false, heavyArmor: 1, ambush: false, veteran: 0, pincer: false, battleCry: null, effect: null, history: "Ships of the line were the backbone of the Royal Navy" },
                     { id: "british_press_gang", name: "Press Gang", faction: "british", type: "order", cost: 2, atk: 0, hp: 0, opCost: 0, icon: "\u26D3", flavor: "Forced conscription", rarity: "common", battleCry: function() { _drawCards(1); var side = _activeSide || G.enemy; side.supply += 1; }, battleCryText: "Draw 1, +1 Supply", effect: null, history: "The Royal Navy forced civilians into service" },
                     { id: "british_martial_law", name: "Martial Law", faction: "british", type: "order", cost: 1, atk: 0, hp: 0, opCost: 0, icon: "\u2696", flavor: "Military authority", rarity: "common", battleCry: function() { _drawCards(1); }, battleCryText: "Draw 1", effect: null, history: "British declared martial law in rebellious colonies" },
                     { id: "british_bombardment", name: "Naval Bombardment", faction: "british", type: "order", cost: 4, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDCA5", flavor: "Broadside!", rarity: "rare", battleCry: function() { _dealDamageToOpponent(4); }, battleCryText: "Deal 4 damage", effect: null, history: "British warships bombarded coastal towns" },
                     { id: "british_fortify", name: "Fortify Position", faction: "british", type: "order", cost: 2, atk: 0, hp: 0, opCost: 0, icon: "\uD83E\uDDF1", flavor: "Hold the line!", rarity: "common", battleCry: function() { var side = _activeSide || G.enemy; for (var i = 0; i < side.board.length; i++) { side.board[i].hp += 1; } _log("All friendly units gain +1 HP!"); }, battleCryText: "All friendly units +1 HP", effect: null, history: "British fortifications were formidable defensive works" },
-                    { id: "british_supply_line", name: "Transatlantic Supply", faction: "british", type: "order", cost: 2, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDCE6", flavor: "Supplies from London", rarity: "common", battleCry: function() { var side = _activeSide || G.enemy; side.supply += 2; }, battleCryText: "+2 Supply", effect: null, history: "Britain shipped supplies 3,000 miles across the Atlantic" },
                     { id: "british_bayonet", name: "Bayonet Charge", faction: "british", type: "order", cost: 3, atk: 0, hp: 0, opCost: 0, icon: "\u2694", flavor: "Fix bayonets!", rarity: "rare", battleCry: function() { var side = _activeSide || G.enemy; for (var i = 0; i < side.board.length; i++) { side.board[i].atk += 1; side.board[i].hp += 1; } _log("All friendly units gain +1/+1!"); }, battleCryText: "All friendly units +1/+1", effect: null, history: "British bayonet charges were devastating in close combat" },
-                    { id: "british_cutter", name: "Revenue Cutter", faction: "british", type: "unit", unitType: "naval", cost: 2, atk: 2, hp: 3, opCost: 1, icon: "\u26F5", flavor: "Patrol vessel", rarity: "common", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, pincer: false, battleCry: null, effect: null, history: "Revenue cutters enforced trade laws along the coast" },
+                    { id: "british_cutter", name: "Revenue Cutter", faction: "british", type: "unit", unitType: "infantry", cost: 2, atk: 2, hp: 3, opCost: 1, icon: "\u26F5", flavor: "Patrol vessel", rarity: "common", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, pincer: false, battleCry: null, effect: null, history: "Revenue cutters enforced trade laws along the coast" },
                     { id: "british_sentry", name: "Redcoat Sentry", faction: "british", type: "unit", unitType: "infantry", cost: 1, atk: 1, hp: 2, opCost: 1, icon: "\uD83E\uDE96", flavor: "Standing guard", rarity: "common", blitz: false, guard: true, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, pincer: false, battleCry: null, effect: null, history: "British sentries kept watch over occupied cities" },
                     { id: "british_trap_ambush", name: "Redcoat Ambush", faction: "british", type: "trap", cost: 2, atk: 0, hp: 0, opCost: 0, icon: "\u2694", flavor: "Surprise attack", rarity: "common", triggerCondition: "enemy_play_unit", trapText: "Trigger: Enemy plays unit. -1 ATK, -1 HP to it", trapEffect: function(ctx) { if (ctx.unit) { ctx.unit.atk = Math.max(0, ctx.unit.atk - 1); ctx.unit.hp -= 1; if (ctx.unit.hp <= 0) ctx.unit.dead = true; _log("Redcoat Ambush weakens " + ctx.unit.def.name + " by -1/-1!"); } }, history: "British troops ambushed rebel columns on forest roads" },
 
@@ -2694,10 +2680,10 @@
                     { id: "british_trap_mines", name: "Naval Mines", faction: "british", type: "trap", cost: 2, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDCA3", flavor: "Hidden danger", rarity: "common", triggerCondition: "enemy_attack", trapText: "Trigger: Enemy attacks. Deal 3 damage to attacker", trapEffect: function(ctx) { if (ctx.attacker) { ctx.attacker.hp -= 3; if (ctx.attacker.hp <= 0) ctx.attacker.dead = true; _log("Naval Mines explode, dealing 3 damage to " + ctx.attacker.def.name + "!"); } }, history: "The British mined harbors to prevent colonial ships" },
 
                     // Command Point cards (item 21) - increase max supply slots
-                    { id: "patriot_warbonds", name: "War Bonds", faction: "patriots", type: "order", cost: 3, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDCDC", flavor: "Finance the war", rarity: "rare", battleCry: function() { var side = _activeSide || G.player; side.maxSupply = Math.min(side.maxSupply + 1, 10); side.supply = Math.min(side.supply + 1, side.maxSupply); }, battleCryText: "+1 Max Supply slot", effect: null, history: "The Continental Congress issued bonds to fund the war" },
-                    { id: "patriot_quartermaster", name: "Quartermaster Corps", faction: "patriots", type: "order", cost: 4, atk: 0, hp: 0, opCost: 0, icon: "\u2696\uFE0F", flavor: "Logistics master", rarity: "rare", battleCry: function() { var side = _activeSide || G.player; side.maxSupply = Math.min(side.maxSupply + 2, 10); side.supply = Math.min(side.supply + 2, side.maxSupply); }, battleCryText: "+2 Max Supply slots", effect: null, history: "Nathanael Greene revolutionized army logistics" },
-                    { id: "british_taxact", name: "New Tax Act", faction: "british", type: "order", cost: 3, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDCDC", flavor: "Crown taxation", rarity: "rare", battleCry: function() { var side = _activeSide || G.enemy; side.maxSupply = Math.min(side.maxSupply + 1, 10); side.supply = Math.min(side.supply + 1, side.maxSupply); }, battleCryText: "+1 Max Supply slot", effect: null, history: "Parliament repeatedly raised taxes on colonies" },
-                    { id: "british_admiralty", name: "Admiralty Decree", faction: "british", type: "order", cost: 4, atk: 0, hp: 0, opCost: 0, icon: "\u2696\uFE0F", flavor: "Royal logistics", rarity: "rare", battleCry: function() { var side = _activeSide || G.enemy; side.maxSupply = Math.min(side.maxSupply + 2, 10); side.supply = Math.min(side.supply + 2, side.maxSupply); }, battleCryText: "+2 Max Supply slots", effect: null, history: "The Royal Admiralty controlled all naval logistics" }
+                    { id: "patriot_warbonds", name: "War Bonds", faction: "patriots", type: "order", cost: 3, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDCDC", flavor: "Finance the war", rarity: "rare", battleCry: function() { var side = _activeSide || G.player; side.maxSupply += 1; side.supply += 1; }, battleCryText: "+1 Max Supply slot", effect: null, history: "The Continental Congress issued bonds to fund the war" },
+                    { id: "patriot_quartermaster", name: "Quartermaster Corps", faction: "patriots", type: "order", cost: 4, atk: 0, hp: 0, opCost: 0, icon: "\u2696\uFE0F", flavor: "Logistics master", rarity: "rare", battleCry: function() { var side = _activeSide || G.player; side.maxSupply += 2; side.supply += 2; }, battleCryText: "+2 Max Supply slots", effect: null, history: "Nathanael Greene revolutionized army logistics" },
+                    { id: "british_taxact", name: "New Tax Act", faction: "british", type: "order", cost: 3, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDCDC", flavor: "Crown taxation", rarity: "rare", battleCry: function() { var side = _activeSide || G.enemy; side.maxSupply += 1; side.supply += 1; }, battleCryText: "+1 Max Supply slot", effect: null, history: "Parliament repeatedly raised taxes on colonies" },
+                    { id: "british_admiralty", name: "Admiralty Decree", faction: "british", type: "order", cost: 4, atk: 0, hp: 0, opCost: 0, icon: "\u2696\uFE0F", flavor: "Royal logistics", rarity: "rare", battleCry: function() { var side = _activeSide || G.enemy; side.maxSupply += 2; side.supply += 2; }, battleCryText: "+2 Max Supply slots", effect: null, history: "The Royal Admiralty controlled all naval logistics" }
                 ];
             }
 
@@ -2859,7 +2845,7 @@
                 if (instance.def.type === "trap") return G.player.traps.length < 2; // max 2 traps
                 // Unit: check zone capacity
                 var uType = instance.def.unitType || "infantry";
-                var goingToFrontline = instance.def.blitz || uType === "cavalry";
+                var goingToFrontline = uType === "cavalry";
                 if (goingToFrontline) {
                     return getUnitsInZone(G.player.board, "frontline").length < 5;
                 } else {
@@ -2887,19 +2873,19 @@
 
                 if (instance.def.type === "unit") {
                     var unitType = instance.def.unitType || "infantry";
-                    // Cavalry and Blitz go to frontline; Artillery stays in reserve
-                    if (instance.def.blitz || unitType === "cavalry") {
+                    // Cavalry goes to frontline. Blitz units stay in reserve but act this turn.
+                    if (unitType === "cavalry") {
                         instance.zone = "frontline";
                         instance.exhausted = false;
                     } else {
                         instance.zone = "reserve";
-                        instance.exhausted = true;
+                        instance.exhausted = !instance.def.blitz;
                     }
                     instance._justDeployed = true;
                     G.player.board.push(instance);
                     _playSound("card");
 
-                    var zoneMsg = instance.zone === "frontline" ? (instance.def.blitz ? " (Blitz!)" : (instance.def.unitType === "cavalry" ? " (Cavalry!)" : " to frontline")) : " to reserve";
+                    var zoneMsg = instance.zone === "frontline" ? (instance.def.unitType === "cavalry" ? " (Cavalry!)" : " to frontline") : (instance.def.blitz ? " to reserve (Blitz!)" : " to reserve");
                     _log("Played " + instance.def.name + zoneMsg + ".");
                     if (instance.def.history) _log("\uD83D\uDCD6 " + instance.def.history);
 
@@ -2969,8 +2955,8 @@
                 var atkType = attacker.def.unitType || "infantry";
                 var defType = defender.def.unitType || "infantry";
 
-                // Ambush: defender strikes first
-                if (defender.def.ambush && !defender.dead) {
+                // Ambush: defender strikes first (Artillery is immune to ambush)
+                if (defender.def.ambush && !defender.dead && atkType !== "artillery") {
                     var ambushDmg = calculateDamage(defender.atk, attacker);
                     attacker.hp -= ambushDmg;
                     _log(defender.def.name + " ambushes " + attacker.def.name + " for " + ambushDmg + "!");
@@ -2998,12 +2984,10 @@
                     _playSound("attack");
                     _log(attacker.def.name + " attacks " + defender.def.name + " for " + atkDmg + "!");
 
-                    // Retaliation check
+                    // Retaliation check. Artillery defenders always strike back.
                     var takesRetaliation = true;
-                    if (atkType === "artillery") {
-                        takesRetaliation = false; // Artillery: no retaliation
-                    } else if (atkType === "naval" && defType !== "naval") {
-                        takesRetaliation = false; // Naval: only from other naval
+                    if (defType !== "artillery" && atkType === "artillery") {
+                        takesRetaliation = false; // Artillery attacker: no retaliation
                     }
 
                     if (takesRetaliation) {
@@ -4132,19 +4116,7 @@
             }
 
             function renderLog() {
-                var log = document.getElementById("gameLog");
-                if (!log) return;
-
-                log.innerHTML = "";
-
-                for (var i = Math.max(0, G.log.length - 10); i < G.log.length; i++) {
-                    var entry = document.createElement("div");
-                    entry.className = "log-entry";
-                    entry.textContent = G.log[i];
-                    log.appendChild(entry);
-                }
-
-                log.scrollTop = log.scrollHeight;
+                // Game log UI removed; log data is still maintained in G.log for debugging.
             }
 
             function createCardElement(instance, isPlayerUnit, inReserve, onBoard) {
@@ -4509,8 +4481,6 @@
             // ========== UI EVENTS ==========
             function setupEventListeners() {
                 var campaignBtn = document.getElementById("campaignBtn");
-                var skirmishPatriotsBtn = document.getElementById("skirmishPatriotsBtn");
-                var skirmishBritishBtn = document.getElementById("skirmishBritishBtn");
                 var endTurnBtn = document.getElementById("endTurnBtn");
                 var playAgainBtn = document.getElementById("playAgainBtn");
                 var campaignBackBtn = document.getElementById("campaignBackBtn");
@@ -4537,25 +4507,23 @@
                     });
                 }
 
-                if (skirmishPatriotsBtn) {
-                    skirmishPatriotsBtn.addEventListener("click", function() {
-                        _campaignMode = false;
-                        startGame("patriots");
-                    });
-                }
-
-                if (skirmishBritishBtn) {
-                    skirmishBritishBtn.addEventListener("click", function() {
-                        _campaignMode = false;
-                        startGame("british");
-                    });
-                }
-
                 if (endTurnBtn) {
                     endTurnBtn.addEventListener("click", function() {
                         if (G && G.phase === "player" && !G.gameOver) {
                             endTurn();
                         }
+                    });
+                }
+
+                var surrenderBtn = document.getElementById("surrenderBtn");
+                if (surrenderBtn) {
+                    surrenderBtn.addEventListener("click", function() {
+                        if (!G || G.gameOver) return;
+                        if (!confirm("Surrender and concede this battle?")) return;
+                        G.player.hp = 0;
+                        G.gameOver = true;
+                        G.winner = "enemy";
+                        endGame();
                     });
                 }
 
