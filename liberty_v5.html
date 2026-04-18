@@ -569,6 +569,15 @@
             outline-color: #FFD700;
             background: rgba(255, 215, 0, 0.18) !important;
         }
+        /* Reserve slide-aside: when dragging a unit over reserve, existing cards
+           in the hovered zone spread apart to visually open a drop slot (batch 5b item 5). */
+        .board-zone.drop-zone-hover .zone-row {
+            gap: 32px;
+            transition: gap 0.2s ease-out;
+        }
+        .board-zone .zone-row {
+            transition: gap 0.2s ease-out;
+        }
 
         .card.selected {
             transform: scale(1.12) translateY(-8px);
@@ -1032,6 +1041,25 @@
             width: 100%;
             height: 100%;
             overflow: visible;
+        }
+        /* Arrow color modes (batch 5b item 7): red attack, blue move, gray invalid */
+        .attack-arrow.mode-attack line { stroke: #FF4040; }
+        .attack-arrow.mode-attack .arrow-head-polygon { fill: #FF4040; }
+        .attack-arrow.mode-move line { stroke: #4A90E2; }
+        .attack-arrow.mode-move .arrow-head-polygon { fill: #4A90E2; }
+        .attack-arrow.mode-invalid line { stroke: #888; stroke-dasharray: 4,4; opacity: 0.6; }
+        .attack-arrow.mode-invalid .arrow-head-polygon { fill: #888; opacity: 0.6; }
+
+        /* Reserve unit pointer cursor + subtle pulse for discoverability */
+        .card.in-reserve.unit-card:not(.exhausted):not(.disabled) {
+            cursor: pointer;
+        }
+        .card.move-eligible {
+            animation: moveEligiblePulse 2.5s ease-in-out infinite;
+        }
+        @keyframes moveEligiblePulse {
+            0%, 100% { box-shadow: 0 0 0 2px transparent; }
+            50% { box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.45); }
         }
 
         @keyframes shake {
@@ -2295,7 +2323,14 @@
             var _currentBattle = 0;
             var _campaignProgress = null;
             var AI_PLAY_DELAY_MS = 450;
+            var FRONTLINE_SLIDE_MS = 600;
             function _sleep(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }
+
+            // VFX source tracking (batch 5b).
+            // Set by playCard/enemyTurn before calling a battleCry and cleared after.
+            // _dealDamageToOpponent reads this to fire cannonball VFX from the
+            // correct source (unit on board, or floating order card) to enemy HQ.
+            var _vfxSource = null;
 
             // Kards-style keyword display (batch 5a, item 19)
             // Booleans render when true; counted keywords (heavyArmor, veteran) render when > 0
@@ -2979,24 +3014,30 @@
                     _unitsPlayedThisTurn.push(instance);
 
                     try {
+                        _vfxSource = { instance: instance };
                         if (instance.def.battleCry) {
                             instance.def.battleCry(instance);
                         }
                     } catch (e) {
                         // Silent fail
+                    } finally {
+                        _vfxSource = null;
                     }
                 } else if (instance.def.type === "order") {
                     _playSound("card");
                     _log("Played " + instance.def.name + ".");
                     if (instance.def.history) _log("\uD83D\uDCD6 " + instance.def.history);
-                    showFloatingOrder(instance);
+                    var _orderEl = showFloatingOrder(instance);
 
                     try {
+                        _vfxSource = { el: _orderEl };
                         if (instance.def.battleCry) {
                             instance.def.battleCry();
                         }
                     } catch (e) {
                         // Silent fail
+                    } finally {
+                        _vfxSource = null;
                     }
                 }
 
@@ -3107,7 +3148,29 @@
             // ========== DAMAGE HELPERS ==========
             function _dealDamageToOpponent(amount) {
                 var target = (_activeSide === G.enemy) ? "player" : "enemy";
+                // Capture VFX source before mutating state — _vfxSource is cleared by the caller's finally.
+                var src = _vfxSource;
                 _dealDamage(amount, target);
+                // Fire cannonball VFX from source → enemy HQ after a short delay
+                // so any re-render triggered by the battleCry has flushed to DOM.
+                if (src) {
+                    var targetSelector = target === "player" ? ".hq-card.player-hq" : ".hq-card.enemy-hq";
+                    setTimeout(function() {
+                        try {
+                            var targetEl = document.querySelector(targetSelector)
+                                || document.getElementById(target === "player" ? "playerHQCard" : "enemyHQCard");
+                            if (!targetEl) return;
+                            if (src.instance) {
+                                // Unit battleCry: find the unit's DOM on the board and use its attack style.
+                                var atkType = (src.instance.def && src.instance.def.unitType) || "infantry";
+                                showAttackEffect(src.instance, targetEl, atkType);
+                            } else if (src.el) {
+                                // Order card: fire artillery cannonball from the floating card's position.
+                                showAttackEffect(null, targetEl, "artillery", src.el);
+                            }
+                        } catch (e) {}
+                    }, 30);
+                }
             }
 
             function _dealDamage(amount, target) {
@@ -3130,6 +3193,69 @@
             }
 
             // ========== FRONTLINE MOVEMENT ==========
+            // FLIP animation helpers (batch 5b item 6).
+            // Records the board's card positions before a layout change,
+            // then animates each card from its previous position to its new
+            // position over FRONTLINE_SLIDE_MS. Animates the whole zone so
+            // neighbors also slide, not just the moving card.
+            function _snapshotBoardPositions() {
+                var snap = [];
+                var all = document.querySelectorAll(".card.on-board");
+                for (var i = 0; i < all.length; i++) {
+                    if (all[i].__inst) {
+                        snap.push({ inst: all[i].__inst, rect: all[i].getBoundingClientRect() });
+                    }
+                }
+                return snap;
+            }
+
+            function _applyFLIPFromSnapshot(snap, durationMs) {
+                var all = document.querySelectorAll(".card.on-board");
+                for (var i = 0; i < all.length; i++) {
+                    var el = all[i];
+                    if (!el.__inst) continue;
+                    var before = null;
+                    for (var s = 0; s < snap.length; s++) {
+                        if (snap[s].inst === el.__inst) { before = snap[s].rect; break; }
+                    }
+                    if (!before) continue;
+                    var after = el.getBoundingClientRect();
+                    var dx = before.left - after.left;
+                    var dy = before.top - after.top;
+                    if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) continue;
+                    el.style.transform = "translate(" + dx + "px," + dy + "px)";
+                    el.style.transition = "none";
+                    (function(targetEl) {
+                        requestAnimationFrame(function() {
+                            requestAnimationFrame(function() {
+                                targetEl.style.transition = "transform " + durationMs + "ms ease-out";
+                                targetEl.style.transform = "";
+                                setTimeout(function() {
+                                    targetEl.style.transition = "";
+                                }, durationMs + 50);
+                            });
+                        });
+                    })(el);
+                }
+            }
+
+            // Wraps moveToFrontline with FLIP slide animation and input gate.
+            function moveUnitWithAnimation(instance) {
+                var snap = _snapshotBoardPositions();
+                var prevPhase = G ? G.phase : null;
+                if (!moveToFrontline(instance)) return false;
+                if (G) G.phase = "animating";
+                render();
+                _applyFLIPFromSnapshot(snap, FRONTLINE_SLIDE_MS);
+                setTimeout(function() {
+                    if (G && !G.gameOver && G.phase === "animating") {
+                        G.phase = prevPhase || "player";
+                        render();
+                    }
+                }, FRONTLINE_SLIDE_MS);
+                return true;
+            }
+
             function moveToFrontline(instance) {
                 if (G.phase !== "player") return false;
                 if (instance.zone !== "reserve") return false;
@@ -3388,18 +3514,26 @@
                                 _enemyUnitsPlayedThisTurn.push(bestCard);
 
                                 try {
+                                    _vfxSource = { instance: bestCard };
                                     if (bestCard.def.battleCry) {
                                         bestCard.def.battleCry(bestCard);
                                     }
-                                } catch (e) {}
+                                } catch (e) {
+                                } finally {
+                                    _vfxSource = null;
+                                }
                             } else if (bestCard.def.type === "order") {
                                 _log("Enemy plays " + bestCard.def.name + ".");
-                                showFloatingOrder(bestCard);
+                                var _enemyOrderEl = showFloatingOrder(bestCard);
                                 try {
+                                    _vfxSource = { el: _enemyOrderEl };
                                     if (bestCard.def.battleCry) {
                                         bestCard.def.battleCry();
                                     }
-                                } catch (e) {}
+                                } catch (e) {
+                                } finally {
+                                    _vfxSource = null;
+                                }
                             }
 
                             played = true;
@@ -3629,7 +3763,8 @@
                     setTimeout(function() {
                         if (card.parentNode) card.parentNode.removeChild(card);
                     }, 2100);
-                } catch (e) {}
+                    return card;
+                } catch (e) { return null; }
             }
 
             function getElCenter(el) {
@@ -3638,14 +3773,18 @@
                 return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
             }
 
-            function showAttackEffect(attacker, targetEl, atkType) {
+            function showAttackEffect(attacker, targetEl, atkType, srcElOverride) {
                 try {
                     if (!targetEl) return;
-                    // Find attacker DOM element by searching for matching unit
-                    var attackerEl = null;
-                    var allCards = document.querySelectorAll(".card.on-board");
-                    for (var i = 0; i < allCards.length; i++) {
-                        if (allCards[i].__inst === attacker) { attackerEl = allCards[i]; break; }
+                    // Allow caller to pass a source DOM element directly (for order
+                    // cards that aren't on the board). Otherwise look up the
+                    // attacker's board DOM by __inst match.
+                    var attackerEl = srcElOverride || null;
+                    if (!attackerEl) {
+                        var allCards = document.querySelectorAll(".card.on-board");
+                        for (var i = 0; i < allCards.length; i++) {
+                            if (allCards[i].__inst === attacker) { attackerEl = allCards[i]; break; }
+                        }
                     }
                     var src = getElCenter(attackerEl);
                     var dst = getElCenter(targetEl);
@@ -3706,13 +3845,16 @@
                             ], { duration: 220, delay: delay, easing: "ease-out", fill: "forwards" });
                             setTimeout(function() { if (tr.parentNode) tr.parentNode.removeChild(tr); }, 240 + delay);
                         };
-                        // Volleys: shooter → target, then target → shooter, twice over ~1s
-                        for (var v = 0; v < 2; v++) {
-                            var base = v * 500;
+                        // Musket volleys: N shots where N = attacker.atk, compressed into ~1s.
+                        // Each volley: shooter flash, shooter trail, target flash, target return trail.
+                        var volleys = Math.max(1, (attacker && attacker.atk) || 1);
+                        var step = Math.max(80, Math.round(1000 / volleys));
+                        for (var v = 0; v < volleys; v++) {
+                            var base = v * step;
                             mkFlash(src.x, src.y, base);
                             mkTrail(src.x, src.y, dst.x, dst.y, base + 40);
-                            mkFlash(dst.x, dst.y, base + 220);
-                            mkTrail(dst.x, dst.y, src.x, src.y, base + 260);
+                            mkFlash(dst.x, dst.y, base + Math.round(step * 0.45));
+                            mkTrail(dst.x, dst.y, src.x, src.y, base + Math.round(step * 0.55));
                         }
                         targetEl.classList.add("hit");
                         setTimeout(function() { targetEl.classList.remove("hit"); }, 1000);
@@ -3720,15 +3862,17 @@
                 } catch (e) {}
             }
 
-            function showAttackArrow(fromEl, toX, toY) {
+            function showAttackArrow(fromEl, toX, toY, mode) {
                 var arrow = document.getElementById("attackArrow");
                 if (!arrow) {
                     arrow = document.createElement("div");
                     arrow.id = "attackArrow";
                     arrow.className = "attack-arrow";
-                    arrow.innerHTML = '<svg><defs><marker id="arrowHead" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><polygon points="0 0, 10 5, 0 10" fill="#FFD700"/></marker></defs><line stroke="#FFD700" stroke-width="4" stroke-dasharray="6,4" marker-end="url(#arrowHead)"/></svg>';
+                    arrow.innerHTML = '<svg><defs><marker id="arrowHead" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><polygon class="arrow-head-polygon" points="0 0, 10 5, 0 10"/></marker></defs><line stroke-width="4" stroke-dasharray="6,4" marker-end="url(#arrowHead)"/></svg>';
                     document.body.appendChild(arrow);
                 }
+                // Reset mode classes then apply current mode (default attack for back-compat)
+                arrow.className = "attack-arrow mode-" + (mode || "attack");
                 if (!fromEl) { arrow.style.display = "none"; return; }
                 var src = getElCenter(fromEl);
                 arrow.style.display = "block";
@@ -3743,6 +3887,40 @@
                     line.setAttribute("x2", toX);
                     line.setAttribute("y2", toY);
                 }
+            }
+
+            // Given a selected unit and the element under the cursor, determine
+            // whether the current pointing state is an attack, a move, or invalid.
+            // Returns "attack" | "move" | "invalid".
+            function _getArrowMode(selected, underCursorEl) {
+                if (!selected) return "invalid";
+                // Reserve non-artillery non-exhausted unit → expecting a MOVE target.
+                var iType = selected.def.unitType || "infantry";
+                var canMove = selected.zone === "reserve" && iType !== "artillery" && !selected.exhausted;
+                if (canMove) {
+                    // Valid move if cursor is over the frontline zone or a frontline card
+                    var el = underCursorEl;
+                    while (el && el !== document.body) {
+                        if (el.classList && (el.classList.contains("frontline-zone") || el.classList.contains("frontline"))) return "move";
+                        el = el.parentNode;
+                    }
+                    return "invalid";
+                }
+                // Frontline unit (or artillery/naval from reserve) → expecting an ATTACK target.
+                var el2 = underCursorEl;
+                while (el2 && el2 !== document.body) {
+                    if (el2.classList) {
+                        if (el2.__inst && el2.__inst !== selected && el2.classList.contains("card")) {
+                            // Own unit? invalid. Enemy unit? attack target.
+                            // Heuristic: player cards have class added during render — easier to check board membership.
+                            if (G && G.enemy && G.enemy.board.indexOf(el2.__inst) !== -1) return "attack";
+                            return "invalid";
+                        }
+                        if (el2.classList.contains("hq-card") && el2.classList.contains("enemy-hq")) return "attack";
+                    }
+                    el2 = el2.parentNode;
+                }
+                return "invalid";
             }
 
             function hideAttackArrow() {
@@ -3870,9 +4048,19 @@
             function renderHPBar(barId, textId, hp, maxHP) {
                 var bar = document.getElementById(barId);
                 var txt = document.getElementById(textId);
-                // HQ HP can exceed maxHP via heal cards; cap the visual bar at 100%
-                // so it doesn't overflow the container, but show the real number.
-                if (bar) bar.style.width = Math.max(0, Math.min(100, (hp / maxHP) * 100)) + "%";
+                // HQ HP can exceed maxHP via heal cards. When overcharged
+                // (hp > maxHP), hide the bar container entirely and show
+                // only the number. Otherwise render normally.
+                if (bar) {
+                    var container = bar.parentNode;
+                    if (hp > maxHP) {
+                        if (container) container.style.visibility = "hidden";
+                        bar.style.width = "100%";
+                    } else {
+                        if (container) container.style.visibility = "visible";
+                        bar.style.width = Math.max(0, (hp / maxHP) * 100) + "%";
+                    }
+                }
                 if (txt) txt.textContent = hp;
             }
 
@@ -4038,6 +4226,9 @@
                 if (!_drag) return;
                 var touch = e.changedTouches ? e.changedTouches[0] : e;
                 var target = getDropZoneAt(touch.clientX, touch.clientY);
+                var dropX = touch.clientX;
+                var dropY = touch.clientY;
+                var droppedInst = _drag.inst;
 
                 // Clean up visuals
                 if (_drag.el.parentNode) _drag.el.parentNode.removeChild(_drag.el);
@@ -4049,9 +4240,37 @@
 
                 // Play card if dropped on valid zone
                 if (target) {
-                    playCard(_drag.inst);
+                    // Snapshot existing reserve/frontline positions for slide-aside + new card deploy animation (batch 5b items 4+5+6).
+                    var preSnap = _snapshotBoardPositions();
+                    playCard(droppedInst);
                     selectedCard = null;
                     render();
+                    // Animate existing cards sliding aside to make room (FLIP).
+                    _applyFLIPFromSnapshot(preSnap, 300);
+                    // Find the newly-deployed card DOM and animate it from the drop point → zone slot.
+                    var newEl = null;
+                    var allNow = document.querySelectorAll(".card.on-board");
+                    for (var k = 0; k < allNow.length; k++) {
+                        if (allNow[k].__inst === droppedInst) { newEl = allNow[k]; break; }
+                    }
+                    if (newEl) {
+                        var rect = newEl.getBoundingClientRect();
+                        var cx = rect.left + rect.width / 2;
+                        var cy = rect.top + rect.height / 2;
+                        var dx = dropX - cx;
+                        var dy = dropY - cy;
+                        newEl.style.transition = "none";
+                        newEl.style.transform = "translate(" + dx + "px," + dy + "px)";
+                        (function(el) {
+                            requestAnimationFrame(function() {
+                                requestAnimationFrame(function() {
+                                    el.style.transition = "transform 350ms ease-out";
+                                    el.style.transform = "";
+                                    setTimeout(function() { el.style.transition = ""; }, 400);
+                                });
+                            });
+                        })(newEl);
+                    }
                 }
 
                 _drag = null;
@@ -4094,28 +4313,28 @@
             document.addEventListener("touchmove", moveDrag, { passive: false });
             document.addEventListener("touchend", endDrag);
 
-            // Arrow follows mouse when a unit is selected for attack
-            document.addEventListener("mousemove", function(e) {
-                if (selectedCard && G && G.phase === "player") {
-                    // Find selected unit DOM
-                    var allCards = document.querySelectorAll(".card.on-board");
-                    var srcEl = null;
-                    for (var i = 0; i < allCards.length; i++) {
-                        if (allCards[i].__inst === selectedCard) { srcEl = allCards[i]; break; }
-                    }
-                    if (srcEl) showAttackArrow(srcEl, e.clientX, e.clientY);
-                } else {
-                    hideAttackArrow();
+            // Arrow follows mouse when a unit is selected for attack or move (batch 5b item 7).
+            // Arrow color depends on what the cursor is pointing at:
+            //   red = valid attack target, blue = valid move destination, gray = invalid.
+            function _updateArrowFromPointer(clientX, clientY) {
+                if (!selectedCard || !G || G.phase !== "player") { hideAttackArrow(); return; }
+                var allCards = document.querySelectorAll(".card.on-board");
+                var srcEl = null;
+                for (var i = 0; i < allCards.length; i++) {
+                    if (allCards[i].__inst === selectedCard) { srcEl = allCards[i]; break; }
                 }
+                if (!srcEl) { hideAttackArrow(); return; }
+                var underEl = document.elementFromPoint ? document.elementFromPoint(clientX, clientY) : null;
+                var mode = _getArrowMode(selectedCard, underEl);
+                showAttackArrow(srcEl, clientX, clientY, mode);
+            }
+
+            document.addEventListener("mousemove", function(e) {
+                _updateArrowFromPointer(e.clientX, e.clientY);
             });
             document.addEventListener("touchmove", function(e) {
-                if (selectedCard && G && G.phase === "player" && e.touches[0]) {
-                    var allCards = document.querySelectorAll(".card.on-board");
-                    var srcEl = null;
-                    for (var i = 0; i < allCards.length; i++) {
-                        if (allCards[i].__inst === selectedCard) { srcEl = allCards[i]; break; }
-                    }
-                    if (srcEl) showAttackArrow(srcEl, e.touches[0].clientX, e.touches[0].clientY);
+                if (e.touches && e.touches[0]) {
+                    _updateArrowFromPointer(e.touches[0].clientX, e.touches[0].clientY);
                 }
             }, { passive: true });
 
@@ -4359,9 +4578,7 @@
                     moveBtn.addEventListener("click", (function(inst) {
                         return function(e) {
                             e.stopPropagation();
-                            if (moveToFrontline(inst)) {
-                                render();
-                            }
+                            moveUnitWithAnimation(inst);
                         };
                     })(instance));
                     card.appendChild(moveBtn);
@@ -4415,13 +4632,22 @@
 
                 card.appendChild(tooltip);
 
-                // Unit-specific interactions: select own units to attack
-                // Frontline units always selectable; Artillery/Naval selectable from reserve too
+                // Unit-specific interactions: select own units to attack OR to move (batch 5b item 7).
+                // Frontline units always selectable for attack;
+                // Artillery/Naval selectable from reserve for attack (they shoot from reserve);
+                // Other reserve units (infantry/cavalry non-artillery) selectable for MOVE.
                 var canSelect = false;
                 if (G && isPlayerUnit && G.phase === "player") {
                     var iType = instance.def.unitType || "infantry";
                     if (instance.zone === "frontline") canSelect = true;
                     if ((iType === "artillery" || iType === "naval") && instance.zone === "reserve") canSelect = true;
+                    if (instance.zone === "reserve" && iType !== "artillery" && iType !== "naval" && !instance.exhausted) {
+                        var mc = instance.def.opCost || 1;
+                        if (G.player.supply >= mc) {
+                            canSelect = true;
+                            addClass(card, "move-eligible");
+                        }
+                    }
                 }
                 if (canSelect) {
                     card.addEventListener("click", (function(unit, el) {
@@ -4431,10 +4657,16 @@
                             if (unit.exhausted) return;
                             if (selectedCard === unit) {
                                 selectedCard = null;
+                                hideAttackArrow();
                             } else {
                                 selectedCard = unit;
                             }
                             render();
+                            // Immediately show an arrow from the selected unit pointing at the tap location
+                            // so touch users get the same feedback as mouse users (batch 5b item 8).
+                            if (selectedCard && typeof e.clientX === "number" && typeof e.clientY === "number") {
+                                _updateArrowFromPointer(e.clientX, e.clientY);
+                            }
                         };
                     })(instance, card));
                     if (selectedCard === instance) {
@@ -4557,6 +4789,33 @@
 
             // ========== UI EVENTS ==========
             function setupEventListeners() {
+                // Click on player frontline zone: if a reserve unit is selected, move it (batch 5b item 7).
+                var playerFrontlineZone = document.querySelector(".frontline-zone");
+                if (playerFrontlineZone) {
+                    playerFrontlineZone.addEventListener("click", function(e) {
+                        if (!selectedCard || !G || G.phase !== "player" || G.gameOver) return;
+                        var iType = selectedCard.def.unitType || "infantry";
+                        var canMove = selectedCard.zone === "reserve" && iType !== "artillery" && iType !== "naval" && !selectedCard.exhausted;
+                        if (canMove) {
+                            e.stopPropagation();
+                            var inst = selectedCard;
+                            selectedCard = null;
+                            moveUnitWithAnimation(inst);
+                        }
+                    });
+                }
+                // Click on empty area (outside cards/zones) deselects (batch 5b item 7/8).
+                document.addEventListener("click", function(e) {
+                    if (!selectedCard) return;
+                    var el = e.target;
+                    while (el && el !== document.body) {
+                        if (el.classList && (el.classList.contains("card") || el.classList.contains("hq-card"))) return;
+                        el = el.parentNode;
+                    }
+                    selectedCard = null;
+                    hideAttackArrow();
+                    render();
+                });
                 var campaignBtn = document.getElementById("campaignBtn");
                 var endTurnBtn = document.getElementById("endTurnBtn");
                 var statsBtn = document.getElementById("statsBtn");
