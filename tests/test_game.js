@@ -540,16 +540,17 @@ test('Batch 5a: enemyTurn is async (returns a Promise)', function() {
   assert(result && typeof result.then === 'function', 'enemyTurn returns a thenable (Promise)');
 });
 
-// NEW 14: KEYWORDS dict has icons + data for all 8 keywords
-test('Batch 5a: KEYWORDS dict is populated with 8 entries', function() {
+// NEW 14: KEYWORDS dict has icons + data for all 7 keywords (pincer removed in 5c)
+test('KEYWORDS dict is populated (7 active keywords, pincer removed in 5c)', function() {
   var K = LibertyTest.getKeywords();
-  var expected = ['guard', 'blitz', 'fury', 'smokescreen', 'ambush', 'pincer', 'heavyArmor', 'veteran'];
+  var expected = ['guard', 'blitz', 'fury', 'smokescreen', 'ambush', 'heavyArmor', 'veteran'];
   for (var i = 0; i < expected.length; i++) {
     assert(K[expected[i]], 'KEYWORDS has ' + expected[i]);
     assert(K[expected[i]].icon, expected[i] + ' has icon');
     assert(K[expected[i]].label, expected[i] + ' has label');
     assert(K[expected[i]].desc, expected[i] + ' has desc');
   }
+  assert(!K.pincer, 'KEYWORDS no longer has pincer');
 });
 
 // ========== BATCH 5b TESTS ==========
@@ -697,6 +698,100 @@ test('Batch 5b: HP bar hides container when HP exceeds maxHP', function() {
 test('Batch 5b: drop-zone-hover expands gap for slide-aside', function() {
   assert(htmlContent.indexOf('.board-zone.drop-zone-hover .zone-row') >= 0, 'slide-aside CSS selector exists');
   assert(htmlContent.indexOf('gap: 32px') >= 0 || htmlContent.indexOf('gap:32px') >= 0, 'gap widens on hover');
+});
+
+// ========== BATCH 5c TESTS ==========
+console.log('\n===== BATCH 5c TESTS =====\n');
+
+// REGRESSION: Pincer fully removed
+test('REGRESSION: Pincer keyword removed everywhere', function() {
+  assert(!/pincer:\s*(true|false)/.test(gameScript), 'No pincer flag on cards');
+  assert(!gameScript.includes('function _applyPincer'), 'No pincer helper');
+  assert(!gameScript.includes('def.pincer'), 'No pincer reads');
+  var defs = LibertyTest.getCardDefs();
+  for (var i = 0; i < defs.length; i++) {
+    assert(!defs[i].pincer, 'card ' + defs[i].id + ' has no pincer flag');
+  }
+});
+
+// GBP rename
+test('Batch 5c: GBP rename present in UI', function() {
+  assert(htmlContent.indexOf('Pounds: \u00a3') >= 0 || htmlContent.indexOf('Pounds: £') >= 0, 'shop shows Pounds label');
+  assert(htmlContent.indexOf('Buy (\u00a3100)') >= 0 || htmlContent.indexOf('Buy (£100)') >= 0, 'buy button uses £');
+  assert(!/Not enough gold!/.test(gameScript), 'old "Not enough gold" message gone');
+});
+
+// Save/load
+test('Batch 5c: save/load helpers defined', function() {
+  assert(gameScript.includes('function saveGame'), 'saveGame defined');
+  assert(gameScript.includes('function loadGame'), 'loadGame defined');
+  assert(gameScript.includes('function hasSavedGame'), 'hasSavedGame defined');
+  assert(gameScript.includes('function clearSavedGame'), 'clearSavedGame defined');
+  assert(gameScript.includes('function _serializeSide'), 'serialize helper defined');
+  assert(gameScript.includes('function _deserializeSide'), 'deserialize helper defined');
+});
+
+test('Batch 5c: save/load uses liberty1776_game key', function() {
+  assert(gameScript.includes('"liberty1776_game"'), 'localStorage key set');
+});
+
+test('Batch 5c: endGame clears saved game', function() {
+  var block = gameScript.match(/function\s+endGame[\s\S]{0,400}/);
+  assert(block, 'endGame found');
+  assert(/clearSavedGame\(\)/.test(block[0]), 'endGame calls clearSavedGame');
+});
+
+test('Batch 5c: Save & Quit button wired', function() {
+  assert(htmlContent.indexOf('id="saveQuitBtn"') >= 0, 'saveQuitBtn in HTML');
+  assert(gameScript.includes('saveQuitBtn.addEventListener'), 'saveQuitBtn listener');
+  assert(gameScript.includes('resumeGameBtn'), 'resumeGameBtn referenced');
+});
+
+// Arena preserve
+test('Batch 5c: arena run persisted', function() {
+  assert(gameScript.includes('function _persistDraftRun'), 'persist helper defined');
+  assert(gameScript.includes('function _loadDraftRun'), 'load helper defined');
+  assert(gameScript.includes('"liberty1776_arena"'), 'arena localStorage key set');
+});
+
+// UK campaign
+test('Batch 5c: UK_BATTLES defined with 8 battles', function() {
+  assert(gameScript.includes('var UK_BATTLES'), 'UK_BATTLES declared');
+  assert(gameScript.includes('function currentBattles'), 'currentBattles wrapper defined');
+  assert(gameScript.includes('_campaignSide'), '_campaignSide module var');
+});
+
+test('Batch 5c: UK campaign menu button + wiring', function() {
+  assert(htmlContent.indexOf('id="campaignUkBtn"') >= 0, 'UK campaign menu button exists');
+  assert(gameScript.includes('campaignUkBtn.addEventListener'), 'UK campaign button wired');
+  assert(gameScript.includes('_campaignSide = "british"'), 'UK button sets side to british');
+});
+
+test('Batch 5c: startCampaignBattle uses currentBattles + _campaignSide', function() {
+  assert(gameScript.includes('currentBattles()[index]'), 'startCampaignBattle reads currentBattles');
+  assert(/startGame\(_campaignSide/.test(gameScript), 'startGame called with _campaignSide');
+});
+
+// 40 new cards
+test('Batch 5c: 40 new cards added (20 per faction)', function() {
+  var defs = LibertyTest.getCardDefs();
+  var patriots = defs.filter(function(d) { return d.faction === 'patriots'; });
+  var british = defs.filter(function(d) { return d.faction === 'british'; });
+  assert(patriots.length >= 60, 'at least 60 patriot cards (was ~42, +20 = 62): got ' + patriots.length);
+  assert(british.length >= 60, 'at least 60 british cards: got ' + british.length);
+  // Spot-check a few new card ids from the batch
+  assert(defs.find(function(d) { return d.id === 'patriot_revere'; }), 'Paul Revere exists');
+  assert(defs.find(function(d) { return d.id === 'patriot_armistead'; }), 'James Armistead exists');
+  assert(defs.find(function(d) { return d.id === 'british_clinton'; }), 'Henry Clinton exists');
+  assert(defs.find(function(d) { return d.id === 'british_42nd'; }), 'Black Watch exists');
+});
+
+// How to Play updated
+test('Batch 5c: How to Play mentions new batch 5 features', function() {
+  assert(htmlContent.indexOf('Save &amp; Quit') >= 0 || htmlContent.indexOf('Save & Quit') >= 0, 'mentions Save & Quit');
+  assert(htmlContent.indexOf('英镑') >= 0 || htmlContent.indexOf('£') >= 0, 'mentions pounds');
+  assert(htmlContent.indexOf('英军') >= 0, 'mentions british campaign');
+  assert(!/陷阱/.test(htmlContent.substring(htmlContent.indexOf('helpOverlay'))), 'no traps mentioned in help');
 });
 
 // ========== SUMMARY ==========
