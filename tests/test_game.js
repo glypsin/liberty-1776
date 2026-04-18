@@ -42,7 +42,19 @@ function createDOMStub() {
           querySelector: function() { return null; },
           querySelectorAll: function() { return []; },
           firstChild: null,
-          parentNode: null
+          parentNode: { removeChild: function() {} },
+          remove: function() {},
+          animate: function() { return { onfinish: null }; },
+          getBoundingClientRect: function() { return { left:0, top:0, right:0, bottom:0, width:0, height:0 }; },
+          focus: function() {},
+          blur: function() {},
+          removeChild: function() {},
+          style: {
+            display: 'block',
+            cssText: '',
+            setProperty: function() {},
+            removeProperty: function() {}
+          }
         };
       }
       return elements[id];
@@ -52,7 +64,8 @@ function createDOMStub() {
         className: '',
         textContent: '',
         innerHTML: '',
-        style: {},
+        title: '',
+        style: { cssText: '', setProperty: function() {}, removeProperty: function() {} },
         classList: {
           _classes: [],
           contains: function(cls) { return this._classes.indexOf(cls) > -1; },
@@ -60,10 +73,15 @@ function createDOMStub() {
           remove: function(cls) { this._classes = this._classes.filter(c => c !== cls); }
         },
         children: [],
-        appendChild: function(child) { this.children.push(child); },
+        parentNode: { removeChild: function() {} },
+        appendChild: function(child) { this.children.push(child); return child; },
         insertBefore: function(child, before) {},
         addEventListener: function() {},
-        querySelectorAll: function() { return []; }
+        removeEventListener: function() {},
+        querySelector: function() { return null; },
+        querySelectorAll: function() { return []; },
+        animate: function() { return { onfinish: null }; },
+        getBoundingClientRect: function() { return { left:0, top:0, right:0, bottom:0, width:0, height:0 }; }
       };
     },
     addEventListener: function() {},
@@ -82,12 +100,11 @@ const sandbox = {
   navigator: { serviceWorker: { register: function() {} } },
   console: console,
   setTimeout: function(fn, delay) { return fn(); },
-  Math: {
-    floor: Math.floor,
-    random: Math.random,
-    min: Math.min,
-    max: Math.max
-  },
+  clearTimeout: function() {},
+  Promise: Promise,
+  Math: Math,
+  JSON: JSON,
+  localStorage: (function(){ var s={}; return { getItem: function(k){return s[k]||null;}, setItem: function(k,v){s[k]=String(v);}, removeItem: function(k){delete s[k];}, clear: function(){s={};} }; })(),
   navigator: {
     serviceWorker: {
       register: function() {
@@ -284,9 +301,11 @@ test('Combat exhausts attacking unit', function() {
 // ========== DRAW AND FATIGUE CHECK ==========
 console.log('\n===== DRAW AND FATIGUE CHECK =====\n');
 
-test('Hand limit enforcement', function() {
-  // Check for board limit
-  assert(gameScript.includes('board.length < 5') || gameScript.includes('board.length >= 5'), 'Board has max size of 5');
+test('Board zone size limits', function() {
+  // Frontline limit 5, reserve limit 4 (zone-scoped)
+  assert(gameScript.includes('"frontline"'), 'frontline zone referenced');
+  assert(gameScript.includes('"reserve"'), 'reserve zone referenced');
+  assert(gameScript.includes('enemyFrontCount'), 'frontline count gate exists');
 });
 
 test('Draw logic exists', function() {
@@ -315,9 +334,176 @@ test('Supply costs are deducted when playing cards', function() {
   assert(gameScript.includes('G.player.supply -= instance.def.cost'), 'Supply deducted on play');
 });
 
-test('Max supply increases per turn', function() {
+test('Max supply increases per turn (cap removed in batch 5a)', function() {
   assert(gameScript.includes('G.player.maxSupply + 1'), 'Max supply increases');
-  assert(gameScript.includes('Math.min(G.player.maxSupply + 1, 10)'), 'Max supply capped at 10');
+  assert(!gameScript.includes('Math.min(G.player.maxSupply + 1, 10)'), 'Hard cap at 10 removed');
+  assert(!gameScript.includes('Math.min(G.enemy.maxSupply + 1, 10)'), 'Enemy hard cap at 10 removed');
+});
+
+// ========== BATCH 5a BEHAVIORAL TESTS ==========
+console.log('\n===== BATCH 5a TESTS =====\n');
+
+var LibertyTest = Liberty && Liberty._test;
+
+test('Batch 5a: _test handle exposed', function() {
+  assert(LibertyTest && typeof LibertyTest.getG === 'function', '_test handle present');
+  assert(typeof LibertyTest.getCardDefs === 'function', 'getCardDefs present');
+  assert(typeof LibertyTest.canPlayCard === 'function', 'canPlayCard present');
+  assert(typeof LibertyTest.moveToFrontline === 'function', 'moveToFrontline present');
+});
+
+// REGRESSION 1: no trap-type cards in pool
+test('REGRESSION: trap cards removed from CARDS pool', function() {
+  var defs = LibertyTest.getCardDefs();
+  var traps = defs.filter(function(d) { return d.type === 'trap'; });
+  assertEqual(traps.length, 0, 'No type:"trap" cards in pool');
+});
+
+// REGRESSION 2: surrender confirm dialog removed
+test('REGRESSION: surrender no longer calls confirm()', function() {
+  var surrenderBlock = gameScript.match(/surrenderBtn\.addEventListener[\s\S]{0,400}\}\);/);
+  assert(surrenderBlock, 'surrender handler exists');
+  assert(!/confirm\(/.test(surrenderBlock[0]), 'No confirm() in surrender handler');
+});
+
+// REGRESSION 3: trap system code gone (no checkTraps, no renderTraps)
+test('REGRESSION: trap system removed', function() {
+  assert(!gameScript.includes('function checkTraps'), 'No checkTraps function');
+  assert(!gameScript.includes('function renderTraps'), 'No renderTraps function');
+  assert(!gameScript.includes('G.player.traps'), 'No player.traps access');
+  assert(!gameScript.includes('G.enemy.traps'), 'No enemy.traps access');
+});
+
+// NEW 4: exhausted unit blocked from moveToFrontline
+test('Batch 5a: exhausted unit cannot moveToFrontline', function() {
+  Liberty.startGame('patriots', { skipIntro: true });
+  var G = LibertyTest.getG();
+  // Craft a fake reserve unit that is exhausted, with enough supply
+  var def = LibertyTest.getCardDefs().find(function(d) { return d.type === 'unit' && !d.blitz; });
+  var inst = LibertyTest.createCardInstance(def);
+  inst.zone = 'reserve';
+  inst.exhausted = true;
+  G.player.board.push(inst);
+  G.player.supply = 10;
+  G.phase = 'player';
+  var result = LibertyTest.moveToFrontline(inst);
+  assertEqual(result, false, 'Exhausted unit blocked from moving');
+  assertEqual(inst.zone, 'reserve', 'Unit stays in reserve');
+});
+
+// NEW 5: non-exhausted unit CAN moveToFrontline
+test('Batch 5a: non-exhausted unit can moveToFrontline', function() {
+  Liberty.startGame('patriots', { skipIntro: true });
+  var G = LibertyTest.getG();
+  var def = LibertyTest.getCardDefs().find(function(d) { return d.type === 'unit' && !d.blitz; });
+  var inst = LibertyTest.createCardInstance(def);
+  inst.zone = 'reserve';
+  inst.exhausted = false;
+  G.player.board.push(inst);
+  G.player.supply = 10;
+  G.phase = 'player';
+  var result = LibertyTest.moveToFrontline(inst);
+  assertEqual(result, true, 'Non-exhausted move succeeds');
+  assertEqual(inst.zone, 'frontline', 'Unit now on frontline');
+});
+
+// NEW 6: _carryoverNext initialized to 0
+test('Batch 5a: _carryoverNext initialized to 0 on startGame', function() {
+  Liberty.startGame('patriots', { skipIntro: true });
+  var G = LibertyTest.getG();
+  assertEqual(G.player._carryoverNext, 0, 'Player _carryoverNext = 0');
+  assertEqual(G.enemy._carryoverNext, 0, 'Enemy _carryoverNext = 0');
+});
+
+// NEW 7: overflow formula present in source (maxSupply > 10 branch)
+test('Batch 5a: overflow formula applied when maxSupply > 10', function() {
+  assert(gameScript.includes('G.player.maxSupply > 10'), 'Player overflow check present');
+  assert(gameScript.includes('G.enemy.maxSupply > 10'), 'Enemy overflow check present');
+  assert(gameScript.includes('G.player._carryoverNext'), 'Player _carryoverNext read');
+  assert(gameScript.includes('G.enemy._carryoverNext'), 'Enemy _carryoverNext read');
+});
+
+// NEW 8: overflow inactive at maxSupply <= 10 (preserves existing behavior — regression guard)
+test('REGRESSION: overflow does not trigger at maxSupply <= 10', function() {
+  // Source-level check: the else branch must set supply = maxSupply (no carryover)
+  var hasPlayerElse = /if\s*\(G\.player\.maxSupply\s*>\s*10\)\s*\{[\s\S]{0,200}\}\s*else\s*\{\s*G\.player\.supply\s*=\s*G\.player\.maxSupply;/.test(gameScript);
+  assert(hasPlayerElse, 'Player branch: supply = maxSupply when <= 10');
+  var hasEnemyElse = /if\s*\(G\.enemy\.maxSupply\s*>\s*10\)\s*\{[\s\S]{0,200}\}\s*else\s*\{\s*G\.enemy\.supply\s*=\s*G\.enemy\.maxSupply;/.test(gameScript);
+  assert(hasEnemyElse, 'Enemy branch: supply = maxSupply when <= 10');
+});
+
+// NEW 9: HQ heal caps at maxHP
+test('Batch 5a: Field Surgeon heal caps at maxHP', function() {
+  Liberty.startGame('patriots', { skipIntro: true });
+  var G = LibertyTest.getG();
+  var surgeon = LibertyTest.getCardDefs().find(function(d) { return d.id === 'patriot_field_surgeon'; });
+  assert(surgeon, 'Field Surgeon card exists');
+  G.player.hp = G.player.maxHP - 1;
+  var before = G.player.hp;
+  // Simulate _activeSide via the battleCry (inline _activeSide = G.player)
+  // The battleCry reads _activeSide || G.player — G.player fallback works.
+  surgeon.battleCry();
+  assert(G.player.hp > before, 'HP increased');
+  assert(G.player.hp <= G.player.maxHP, 'HP capped at maxHP: got ' + G.player.hp + ' max ' + G.player.maxHP);
+});
+
+// NEW 10: HQ heal for British hits enemy side (from AI context)
+test('Batch 5a: Royal Physician heal card exists for british faction', function() {
+  var phys = LibertyTest.getCardDefs().find(function(d) { return d.id === 'british_royal_physician'; });
+  assert(phys, 'Royal Physician exists');
+  assertEqual(phys.faction, 'british', 'British faction');
+  assertEqual(phys.type, 'order', 'Order type');
+  assertEqual(phys.cost, 2, 'Cost 2');
+});
+
+// NEW 11: buyPack pushes to unopenedPacks, does not auto-open
+test('Batch 5a: buyPack queues unopenedPacks without auto-opening', function() {
+  // Ensure _stats is loaded
+  LibertyTest.loadStats();
+  var stats = LibertyTest.getStats();
+  stats.gold = 500;
+  stats.unopenedPacks = [];
+  var beforeCount = stats.unopenedPacks.length;
+  var beforeOwned = JSON.stringify(stats.ownedCards);
+  LibertyTest.buyPack('normal');
+  var afterStats = LibertyTest.getStats();
+  assertEqual(afterStats.unopenedPacks.length, beforeCount + 1, 'Pack queued');
+  assertEqual(afterStats.unopenedPacks[0].type, 'normal', 'Pack type preserved');
+  assertEqual(JSON.stringify(afterStats.ownedCards), beforeOwned, 'Owned cards NOT touched by buy (only by open)');
+});
+
+// NEW 12: schema migration adds unopenedPacks to old saves
+test('Batch 5a: schema migration adds unopenedPacks = [] to old _stats', function() {
+  // Simulate old save without the field
+  LibertyTest.setStats({ wins: 5, achievements: [], gold: 100, ownedCards: { patriot_minuteman: 3 } });
+  // Re-run loadStats path (it reads from localStorage but also applies migration to current _stats)
+  // Since we can't easily intercept localStorage here, assert source-level migration.
+  assert(gameScript.includes('if (!_stats.unopenedPacks) _stats.unopenedPacks = []'), 'Migration line present in loadStats');
+});
+
+// NEW 13: enemyTurn returns a Promise (async)
+test('Batch 5a: enemyTurn is async (returns a Promise)', function() {
+  Liberty.startGame('patriots', { skipIntro: true });
+  var G = LibertyTest.getG();
+  G.phase = 'enemy';
+  G.gameOver = false;
+  // Give enemy nothing to play — should return quickly but still as a Promise
+  G.enemy.hand = [];
+  G.enemy.board = [];
+  var result = LibertyTest.enemyTurn();
+  assert(result && typeof result.then === 'function', 'enemyTurn returns a thenable (Promise)');
+});
+
+// NEW 14: KEYWORDS dict has icons + data for all 8 keywords
+test('Batch 5a: KEYWORDS dict is populated with 8 entries', function() {
+  var K = LibertyTest.getKeywords();
+  var expected = ['guard', 'blitz', 'fury', 'smokescreen', 'ambush', 'pincer', 'heavyArmor', 'veteran'];
+  for (var i = 0; i < expected.length; i++) {
+    assert(K[expected[i]], 'KEYWORDS has ' + expected[i]);
+    assert(K[expected[i]].icon, expected[i] + ' has icon');
+    assert(K[expected[i]].label, expected[i] + ' has label');
+    assert(K[expected[i]].desc, expected[i] + ' has desc');
+  }
 });
 
 // ========== SUMMARY ==========
