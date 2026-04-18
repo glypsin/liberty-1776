@@ -42,7 +42,7 @@ function createDOMStub() {
           querySelector: function() { return null; },
           querySelectorAll: function() { return []; },
           firstChild: null,
-          parentNode: { removeChild: function() {} },
+          parentNode: { removeChild: function() {}, style: { visibility: 'visible' } },
           remove: function() {},
           animate: function() { return { onfinish: null }; },
           getBoundingClientRect: function() { return { left:0, top:0, right:0, bottom:0, width:0, height:0 }; },
@@ -445,9 +445,11 @@ test('Batch 5a hotfix: Field Surgeon heal CAN exceed maxHP', function() {
   assert(G.player.hp > G.player.maxHP, 'HP exceeds maxHP (' + G.player.hp + ' > ' + G.player.maxHP + ')');
 });
 
-// NEW 9b: renderHPBar caps visual width at 100% when HP > maxHP
-test('Batch 5a hotfix: renderHPBar caps bar width at 100%', function() {
-  assert(gameScript.includes('Math.min(100, (hp / maxHP) * 100)'), 'HP bar width capped at 100%');
+// NEW 9b: renderHPBar hides bar when HP > maxHP (batch 5b item 15)
+test('Batch 5b: renderHPBar hides bar container when HP > maxHP', function() {
+  assert(gameScript.includes('if (hp > maxHP)'), 'overflow branch present');
+  assert(gameScript.includes('container.style.visibility = "hidden"'), 'bar container hidden on overflow');
+  assert(gameScript.includes('container.style.visibility = "visible"'), 'bar container shown when within range');
 });
 
 // NEW: no-blitz unit is exhausted after moving
@@ -548,6 +550,153 @@ test('Batch 5a: KEYWORDS dict is populated with 8 entries', function() {
     assert(K[expected[i]].label, expected[i] + ' has label');
     assert(K[expected[i]].desc, expected[i] + ' has desc');
   }
+});
+
+// ========== BATCH 5b TESTS ==========
+console.log('\n===== BATCH 5b TESTS =====\n');
+
+// Item 1: musket VFX per ATK
+test('Batch 5b: musket loop uses attacker.atk (not fixed 2)', function() {
+  assert(gameScript.includes('(attacker && attacker.atk)'), 'musket loop uses attacker.atk');
+  assert(!/for\s*\(var\s+v\s*=\s*0;\s*v\s*<\s*2;\s*v\+\+\)/.test(gameScript), 'old fixed-2 loop removed');
+});
+
+// Item 2+3: _vfxSource plumbing
+test('Batch 5b: _vfxSource module var declared', function() {
+  assert(gameScript.includes('var _vfxSource = null'), '_vfxSource declared');
+});
+
+test('Batch 5b: playCard wraps battleCry with _vfxSource (unit branch)', function() {
+  assert(gameScript.includes('_vfxSource = { instance: instance }'), 'unit battleCry sets _vfxSource from instance');
+});
+
+test('Batch 5b: playCard wraps order battleCry with _vfxSource (el ref)', function() {
+  assert(gameScript.includes('_vfxSource = { el: _orderEl }'), 'order battleCry sets _vfxSource from floating card');
+});
+
+test('Batch 5b: enemyTurn wraps battleCry with _vfxSource', function() {
+  assert(gameScript.includes('_vfxSource = { instance: bestCard }'), 'enemy unit battleCry sets _vfxSource');
+  assert(gameScript.includes('_vfxSource = { el: _enemyOrderEl }'), 'enemy order battleCry sets _vfxSource');
+});
+
+test('Batch 5b: _vfxSource cleared in finally block', function() {
+  // Two unit paths + two order paths should each have finally { _vfxSource = null; }
+  var finallyCount = (gameScript.match(/finally\s*\{\s*_vfxSource\s*=\s*null/g) || []).length;
+  assert(finallyCount >= 4, 'at least 4 finally clauses clearing _vfxSource (got ' + finallyCount + ')');
+});
+
+test('Batch 5b: _dealDamageToOpponent fires VFX via showAttackEffect when _vfxSource set', function() {
+  assert(gameScript.includes('var src = _vfxSource'), '_dealDamageToOpponent captures _vfxSource');
+  assert(gameScript.includes('showAttackEffect(src.instance, targetEl'), 'unit source fires showAttackEffect with instance');
+  assert(gameScript.includes('showAttackEffect(null, targetEl, "artillery", src.el)'), 'order source fires cannonball from element');
+});
+
+test('Batch 5b: showAttackEffect accepts srcElOverride param', function() {
+  assert(/function\s+showAttackEffect\s*\(attacker,\s*targetEl,\s*atkType,\s*srcElOverride\)/.test(gameScript),
+    'showAttackEffect signature accepts srcElOverride');
+});
+
+// REGRESSION: damage math unchanged after VFX wiring
+test('REGRESSION: Delaware (order card) still deals 3 damage', function() {
+  var delaware = LibertyTest.getCardDefs().find(function(d) { return d.id === 'patriot_delaware'; });
+  assert(delaware, 'Delaware exists');
+  assert(delaware.battleCryText.indexOf('3') >= 0, 'Delaware damage still 3');
+});
+
+test('REGRESSION: Knox (unit battleCry) still deals 2 damage', function() {
+  var knox = LibertyTest.getCardDefs().find(function(d) { return d.id === 'patriot_knox'; });
+  assert(knox, 'Knox exists');
+  assert(knox.battleCryText.indexOf('2') >= 0, 'Knox damage still 2');
+});
+
+// Item 6: FLIP slide
+test('Batch 5b: FRONTLINE_SLIDE_MS constant defined', function() {
+  assert(gameScript.includes('var FRONTLINE_SLIDE_MS = 600'), 'FRONTLINE_SLIDE_MS defined');
+});
+
+test('Batch 5b: FLIP helpers defined', function() {
+  assert(gameScript.includes('function _snapshotBoardPositions'), 'snapshot helper defined');
+  assert(gameScript.includes('function _applyFLIPFromSnapshot'), 'apply-FLIP helper defined');
+  assert(gameScript.includes('function moveUnitWithAnimation'), 'moveUnitWithAnimation wrapper defined');
+});
+
+test('Batch 5b: moveUnitWithAnimation sets G.phase = animating during slide', function() {
+  var block = gameScript.match(/function\s+moveUnitWithAnimation[\s\S]{0,600}/);
+  assert(block, 'function body found');
+  assert(/G\.phase\s*=\s*"animating"/.test(block[0]), 'phase set to animating');
+  assert(/FRONTLINE_SLIDE_MS/.test(block[0]), 'slide duration used');
+});
+
+// Item 7: arrow modes + click-to-move
+test('Batch 5b: showAttackArrow accepts mode param', function() {
+  assert(/function\s+showAttackArrow\s*\(fromEl,\s*toX,\s*toY,\s*mode\)/.test(gameScript),
+    'showAttackArrow signature includes mode');
+});
+
+test('Batch 5b: arrow CSS color states defined', function() {
+  assert(gameScript.includes('.mode-attack') || (typeof htmlContent === 'string' && htmlContent.includes('mode-attack')), 'attack mode CSS');
+  assert(gameScript.includes('.mode-move') || (typeof htmlContent === 'string' && htmlContent.includes('mode-move')), 'move mode CSS');
+  assert(gameScript.includes('.mode-invalid') || (typeof htmlContent === 'string' && htmlContent.includes('mode-invalid')), 'invalid mode CSS');
+});
+
+test('Batch 5b: _getArrowMode returns attack/move/invalid', function() {
+  assert(gameScript.includes('function _getArrowMode'), '_getArrowMode defined');
+  assert(gameScript.includes('return "move"'), 'move branch');
+  assert(gameScript.includes('return "attack"'), 'attack branch');
+  assert(gameScript.includes('return "invalid"'), 'invalid branch');
+});
+
+test('Batch 5b: reserve non-artillery units can be selected for move', function() {
+  // Selection extended: zone === reserve && unitType !== artillery/naval && !exhausted
+  assert(/instance\.zone\s*===\s*"reserve"\s*&&\s*iType\s*!==\s*"artillery"\s*&&\s*iType\s*!==\s*"naval"\s*&&\s*!instance\.exhausted/.test(gameScript),
+    'reserve selection rule present');
+});
+
+test('Batch 5b: frontline zone click triggers move when reserve unit selected', function() {
+  assert(gameScript.includes('playerFrontlineZone.addEventListener("click"'), 'frontline click listener installed');
+  assert(gameScript.includes('moveUnitWithAnimation(inst)'), 'move fired from frontline click');
+});
+
+test('Batch 5b: document click on empty area deselects', function() {
+  assert(gameScript.includes('selectedCard = null'), 'deselect on empty click');
+  assert(gameScript.includes('hideAttackArrow()'), 'arrow hidden on deselect');
+});
+
+// Item 8: touch-tap arrow
+test('Batch 5b: click handler updates arrow from pointer after selection', function() {
+  assert(gameScript.includes('_updateArrowFromPointer(e.clientX, e.clientY)'),
+    'arrow shown immediately on tap-select');
+});
+
+// Item 4: deploy-at-cursor
+test('Batch 5b: endDrag animates new card from drop position', function() {
+  // Slice of the whole script around endDrag
+  var idx = gameScript.indexOf('function endDrag');
+  assert(idx > -1, 'endDrag found');
+  var block = gameScript.substring(idx, idx + 3000);
+  assert(/droppedInst/.test(block), 'captures dropped instance');
+  assert(/translate\(/.test(block), 'applies translate transform');
+  assert(/transition\s*=\s*"transform 350ms/.test(block), 'animates transform');
+});
+
+test('Batch 5b: endDrag snapshots board before deploy (for slide-aside)', function() {
+  var idx = gameScript.indexOf('function endDrag');
+  assert(idx > -1, 'endDrag found');
+  var block = gameScript.substring(idx, idx + 3000);
+  assert(/_snapshotBoardPositions/.test(block), 'pre-snapshot taken on drop');
+  assert(/_applyFLIPFromSnapshot/.test(block), 'FLIP applied on drop');
+});
+
+// Item 15: HP bar overflow
+test('Batch 5b: HP bar hides container when HP exceeds maxHP', function() {
+  assert(gameScript.includes('if (hp > maxHP)'), 'overflow branch');
+  assert(gameScript.includes('container.style.visibility = "hidden"'), 'bar hidden on overflow');
+});
+
+// Item 5: reserve slide-aside CSS
+test('Batch 5b: drop-zone-hover expands gap for slide-aside', function() {
+  assert(htmlContent.indexOf('.board-zone.drop-zone-hover .zone-row') >= 0, 'slide-aside CSS selector exists');
+  assert(htmlContent.indexOf('gap: 32px') >= 0 || htmlContent.indexOf('gap:32px') >= 0, 'gap widens on hover');
 });
 
 // ========== SUMMARY ==========
