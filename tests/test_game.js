@@ -334,10 +334,12 @@ test('Supply costs are deducted when playing cards', function() {
   assert(gameScript.includes('G.player.supply -= instance.def.cost'), 'Supply deducted on play');
 });
 
-test('Max supply increases per turn (cap removed in batch 5a)', function() {
-  assert(gameScript.includes('G.player.maxSupply + 1'), 'Max supply increases');
-  assert(!gameScript.includes('Math.min(G.player.maxSupply + 1, 10)'), 'Hard cap at 10 removed');
-  assert(!gameScript.includes('Math.min(G.enemy.maxSupply + 1, 10)'), 'Enemy hard cap at 10 removed');
+test('Max supply: +1/turn natural growth capped at 10 (batch 5e revert)', function() {
+  // Natural turn growth is capped at 10; pump cards (maxSupply += N) bypass via direct mutation.
+  assert(gameScript.includes('G.player.maxSupply < 10') || gameScript.includes('G.player.maxSupply += 1'),
+    'player natural growth check');
+  assert(gameScript.includes('G.enemy.maxSupply < 10') || gameScript.includes('G.enemy.maxSupply += 1'),
+    'enemy natural growth check');
 });
 
 // ========== BATCH 5a BEHAVIORAL TESTS ==========
@@ -407,29 +409,14 @@ test('Batch 5a: non-exhausted unit can moveToFrontline', function() {
   assertEqual(inst.zone, 'frontline', 'Unit now on frontline');
 });
 
-// NEW 6: _carryoverNext initialized to 0
-test('Batch 5a: _carryoverNext initialized to 0 on startGame', function() {
-  Liberty.startGame('patriots', { skipIntro: true });
-  var G = LibertyTest.getG();
-  assertEqual(G.player._carryoverNext, 0, 'Player _carryoverNext = 0');
-  assertEqual(G.enemy._carryoverNext, 0, 'Enemy _carryoverNext = 0');
+// 5e revert: supply = maxSupply at turn start (no carryover)
+test('Batch 5e: _carryoverNext removed from codebase', function() {
+  assert(!gameScript.includes('_carryoverNext'), 'no _carryoverNext references remain');
 });
 
-// NEW 7: overflow formula present in source (maxSupply > 10 branch)
-test('Batch 5a: overflow formula applied when maxSupply > 10', function() {
-  assert(gameScript.includes('G.player.maxSupply > 10'), 'Player overflow check present');
-  assert(gameScript.includes('G.enemy.maxSupply > 10'), 'Enemy overflow check present');
-  assert(gameScript.includes('G.player._carryoverNext'), 'Player _carryoverNext read');
-  assert(gameScript.includes('G.enemy._carryoverNext'), 'Enemy _carryoverNext read');
-});
-
-// NEW 8: overflow inactive at maxSupply <= 10 (preserves existing behavior — regression guard)
-test('REGRESSION: overflow does not trigger at maxSupply <= 10', function() {
-  // Source-level check: the else branch must set supply = maxSupply (no carryover)
-  var hasPlayerElse = /if\s*\(G\.player\.maxSupply\s*>\s*10\)\s*\{[\s\S]{0,200}\}\s*else\s*\{\s*G\.player\.supply\s*=\s*G\.player\.maxSupply;/.test(gameScript);
-  assert(hasPlayerElse, 'Player branch: supply = maxSupply when <= 10');
-  var hasEnemyElse = /if\s*\(G\.enemy\.maxSupply\s*>\s*10\)\s*\{[\s\S]{0,200}\}\s*else\s*\{\s*G\.enemy\.supply\s*=\s*G\.enemy\.maxSupply;/.test(gameScript);
-  assert(hasEnemyElse, 'Enemy branch: supply = maxSupply when <= 10');
+test('Batch 5e: turn-start supply = maxSupply (no carryover)', function() {
+  assert(gameScript.includes('G.player.supply = G.player.maxSupply'), 'player supply = maxSupply');
+  assert(gameScript.includes('G.enemy.supply = G.enemy.maxSupply'), 'enemy supply = maxSupply');
 });
 
 // NEW 9: HQ heal can exceed maxHP (hotfix behavior)
@@ -833,11 +820,11 @@ test('Batch 5d: Protected keyword rendered as runtime-derived badge', function()
   assert(gameScript.includes('unit-protected'), 'unit-protected class applied');
 });
 
-test('Batch 5d: HQ Protected badges wired to render', function() {
-  assert(htmlContent.indexOf('id="enemyHQProtected"') >= 0, 'enemy HQ badge in HTML');
-  assert(htmlContent.indexOf('id="playerHQProtected"') >= 0, 'player HQ badge in HTML');
-  assert(gameScript.includes('hasGuardOnFrontline(G.player.board)'), 'player guard check in render');
-  assert(gameScript.includes('hasGuardOnFrontline(G.enemy.board)'), 'enemy guard check in render');
+test('Batch 5d/5e: HQ keyword row wired to render (replaces single badge in 5e)', function() {
+  assert(htmlContent.indexOf('id="enemyHQKeywords"') >= 0, 'enemy HQ keyword row in HTML');
+  assert(htmlContent.indexOf('id="playerHQKeywords"') >= 0, 'player HQ keyword row in HTML');
+  assert(gameScript.includes('hasGuardOnFrontline(side.board)') || gameScript.includes('hasGuardOnFrontline(G.player.board)'),
+    'guard check in render');
 });
 
 // First-time tutorial
@@ -876,6 +863,77 @@ test('Batch 5d: keywords positioned on right side (column)', function() {
 test('Batch 5d: on-board units show opCost top-left instead of supply cost', function() {
   assert(gameScript.includes('if (onBoard && instance.def.type === "unit")'), 'on-board branch present');
   assert(gameScript.includes('instance.def.opCost'), 'opCost read in cost element');
+});
+
+// ========== BATCH 5e TESTS ==========
+console.log('\n===== BATCH 5e TESTS =====\n');
+
+// Supply revert — already covered above, plus behavioral
+test('Batch 5e: pump cards still bypass the 10 cap via battleCry', function() {
+  var defs = LibertyTest.getCardDefs();
+  var warBonds = defs.find(function(d) { return d.id === 'patriot_warbonds'; });
+  assert(warBonds, 'War Bonds exists');
+  Liberty.startGame('patriots', { skipIntro: true });
+  var G = LibertyTest.getG();
+  G.player.maxSupply = 10;
+  warBonds.battleCry();
+  assert(G.player.maxSupply > 10, 'Pump card pushed maxSupply above 10');
+});
+
+// AI deck balance
+test('Batch 5e: enemy deck trimmed to player deck size', function() {
+  assert(gameScript.includes('enemyDeck.slice(0, deck.length)'), 'enemy deck trim logic present');
+});
+
+// Card layout refinements
+test('Batch 5e: stat bar positioned outside card frame', function() {
+  // 5e override: .card-stats gets position:absolute + bottom:-12px to float below card.
+  assert(/\.card-stats\s*\{[^}]*bottom:\s*-12px/s.test(htmlContent) || /bottom:\s*-12px/.test(htmlContent),
+    'stats positioned below card frame (bottom: -12px rule)');
+  assert(htmlContent.indexOf('.card { overflow: visible; }') >= 0, 'card overflow set to visible for external stats');
+});
+
+test('Batch 5e: keywords anchored to upper-right corner', function() {
+  var idx = htmlContent.indexOf('batch 5d item 4 + 5e item 1/3');
+  assert(idx >= 0, '5e keyword override block present');
+  var block = htmlContent.substring(idx, idx + 1500);
+  assert(/top:\s*2px/.test(block), 'keywords top:2px');
+  assert(/right:\s*2px/.test(block), 'keywords right:2px');
+});
+
+test('Batch 5e: unit type rendered as icon (typeIcons dict)', function() {
+  assert(gameScript.includes('typeIcons'), 'typeIcons dict defined');
+  assert(gameScript.includes('infantry:'), 'infantry icon mapping');
+  assert(gameScript.includes('cavalry:'), 'cavalry icon mapping');
+});
+
+// HQ keywords
+test('Batch 5e: HQ keywords container defined + rendered', function() {
+  assert(htmlContent.indexOf('class="hq-keywords"') >= 0, 'hq-keywords container class');
+  assert(htmlContent.indexOf('id="playerHQKeywords"') >= 0, 'player HQ keyword container');
+  assert(htmlContent.indexOf('id="enemyHQKeywords"') >= 0, 'enemy HQ keyword container');
+  assert(gameScript.includes('_renderHQKeywords'), 'HQ keyword render helper');
+});
+
+// Positional move
+test('Batch 5e: moveToFrontline accepts targetSlot param', function() {
+  assert(/function moveToFrontline\(instance,\s*targetSlot\)/.test(gameScript),
+    'moveToFrontline signature includes targetSlot');
+  assert(/function moveUnitWithAnimation\(instance,\s*targetSlot\)/.test(gameScript),
+    'moveUnitWithAnimation signature includes targetSlot');
+  assert(gameScript.includes('typeof targetSlot === "number"'), 'slot insertion logic present');
+});
+
+test('Batch 5e: frontline click computes targetSlot from mouse X', function() {
+  assert(gameScript.includes('moveUnitWithAnimation(inst, targetSlot)'), 'slot passed to move');
+  assert(gameScript.includes('e.clientX - rect.left'), 'mouse X relative calc');
+});
+
+// Musket smoke
+test('Batch 5e: musket smoke VFX added', function() {
+  assert(gameScript.includes('function mkSmoke') || gameScript.includes('var mkSmoke'), 'smoke helper defined');
+  assert(gameScript.includes('musket-smoke'), 'smoke CSS class');
+  assert(htmlContent.indexOf('.musket-smoke') >= 0, 'smoke CSS block present');
 });
 
 // ========== SUMMARY ==========

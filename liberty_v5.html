@@ -985,6 +985,22 @@
             box-shadow: 0 0 24px rgba(255,80,0,0.55), 0 0 8px rgba(255,160,0,0.8);
         }
 
+        /* Smoke puff that follows each musket volley (batch 5e item 4) */
+        .musket-smoke {
+            position: fixed;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(220,220,220,0.85) 0%, rgba(180,180,180,0.5) 45%, rgba(150,150,150,0) 80%);
+            pointer-events: none;
+            z-index: 599;
+            filter: blur(1.5px);
+        }
+        @keyframes musketSmoke {
+            0%   { transform: translate(-50%, -50%) scale(0.35); opacity: 0.9; }
+            40%  { transform: translate(-50%, calc(-50% - 10px)) scale(1.0); opacity: 0.75; }
+            100% { transform: translate(-50%, calc(-50% - 28px)) scale(1.6); opacity: 0; }
+        }
         .muzzle-flash {
             position: fixed;
             width: 60px;
@@ -1050,22 +1066,22 @@
         .attack-arrow.mode-invalid line { stroke: #888; stroke-dasharray: 4,4; opacity: 0.6; }
         .attack-arrow.mode-invalid .arrow-head-polygon { fill: #888; opacity: 0.6; }
 
-        /* Card redesigned layout (batch 5d item 4): Kards-inspired.
+        /* Card redesigned layout (batch 5d item 4 + 5e item 1/3): Kards-inspired.
            Top-left: cost circle (supply for hand cards, opCost for on-board — swapped in JS).
+           Upper-right corner: keywords column.
            Center: portrait/icon.
-           Right side (vertical): keywords column.
-           Bottom row: ATK (left) · unit type (middle) · HP (right). */
+           Bottom row: ATK (left) · unit type icon (middle) · HP (right). Stats float OUTSIDE card frame. */
         .card-keywords {
-            /* Override: was horizontal row at bottom. Now vertical column on the right side. */
+            /* 5e refinement: anchored to upper-right corner, not middle-right. */
             position: absolute;
-            top: 28px;
+            top: 2px;
             right: 2px;
             display: flex;
             flex-direction: column;
             align-items: flex-end;
             gap: 2px;
             justify-content: flex-start;
-            max-height: 60%;
+            max-height: 55%;
             z-index: 3;
             pointer-events: none;
         }
@@ -1073,21 +1089,42 @@
             font-size: 0.48em;
             padding: 1px 4px;
         }
-        /* Unit-type label bottom-middle (batch 5d item 4). */
+        /* Unit-type icon bottom-middle (batch 5e item 3 — replaces the text label). */
         .card-type-label {
             position: absolute;
-            bottom: 2px;
+            bottom: 1px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 0.5em;
-            color: #DAA520;
+            font-size: 0.95em;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             background: rgba(0,0,0,0.55);
-            padding: 1px 5px;
-            border-radius: 3px;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            font-weight: bold;
+            border-radius: 50%;
             pointer-events: none;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        }
+        /* Stats OUTSIDE the card frame (batch 5e item 1). ATK/HP float below the bottom edge. */
+        .card { overflow: visible; }
+        .card-stats {
+            position: absolute;
+            bottom: -12px;
+            left: -4px;
+            right: -4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0;
+            font-weight: bold;
+            font-size: 1em;
+            margin: 0;
+            pointer-events: none;
+            z-index: 4;
+        }
+        .card-stats .stat-box {
+            box-shadow: 0 2px 6px rgba(0,0,0,0.7);
         }
         /* On-board cards: hide name (was small and got crowded by right-side keywords). */
         .card.on-board .card-name { display: none; }
@@ -1159,21 +1196,27 @@
 
         /* Protected indicator (batch 5d item 2) — unit adjacent to Guard, or HQ when a Guard is on frontline */
         .keyword-badge.protected { background: #4169E1; color: #fff; }
-        .hq-protected-badge {
+        .hq-card { position: relative; }
+        /* HQ keyword row (batch 5e item 2): stacked badges in the upper-right corner */
+        .hq-keywords {
             position: absolute;
-            top: 4px;
-            right: 4px;
-            font-size: 1.1em;
-            background: rgba(65, 105, 225, 0.85);
-            border-radius: 50%;
-            width: 22px;
-            height: 22px;
+            top: 2px;
+            right: 2px;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 0 8px rgba(65, 105, 225, 0.6);
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 2px;
             z-index: 20;
             pointer-events: none;
+        }
+        .hq-keywords .keyword-badge {
+            font-size: 0.6em;
+            padding: 1px 5px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.6);
+        }
+        .hq-protected-badge {
+            /* Legacy shield-only badge (pre-5e) — hidden now that hq-keywords carries the label */
+            display: none !important;
         }
         .card.unit-protected {
             box-shadow: 0 0 0 2px rgba(65, 105, 225, 0.55) inset, 0 4px 10px rgba(0,0,0,0.6);
@@ -2401,7 +2444,7 @@
                         <span class="hq-hp" id="enemyHP">-</span>
                     </div>
                     <div class="hq-bar-mini"><div class="hq-bar-mini-fill enemy" id="enemyHPBar"></div></div>
-                    <div class="hq-protected-badge" id="enemyHQProtected" style="display:none;" title="Protected by Guard unit on frontline">&#x1F6E1;</div>
+                    <div class="hq-keywords" id="enemyHQKeywords"></div>
                 </div>
             </div>
         </div>
@@ -2421,7 +2464,7 @@
                         <span class="hq-hp" id="playerHP">-</span>
                     </div>
                     <div class="hq-bar-mini"><div class="hq-bar-mini-fill player" id="playerHPBar"></div></div>
-                    <div class="hq-protected-badge" id="playerHQProtected" style="display:none;" title="Protected by Guard unit on frontline">&#x1F6E1;</div>
+                    <div class="hq-keywords" id="playerHQKeywords"></div>
                 </div>
             </div>
         </div>
@@ -3277,6 +3320,8 @@
                 var useOwned = !_campaignMode;
                 var deck = createDeck(playerFaction, useOwned);
                 var enemyDeck = createDeck(enemyFaction);
+                // Balance: enemy deck size = player deck size (batch 5e item 10).
+                if (enemyDeck.length > deck.length) enemyDeck = enemyDeck.slice(0, deck.length);
 
                 var playerHP = options.playerHP || 30;
                 var enemyHP = options.enemyHP || 30;
@@ -3300,9 +3345,7 @@
                         board: [],
                         deck: deck,
                         supply: 1,
-                        maxSupply: 1,
-                        _carryoverNext: 0
-                    },
+                        maxSupply: 1                    },
                     enemy: {
                         name: enemyFaction === "patriots" ? "Washington" : "Cornwallis",
                         hp: enemyHP,
@@ -3311,9 +3354,7 @@
                         board: [],
                         deck: enemyDeck,
                         supply: 0,
-                        maxSupply: 0,
-                        _carryoverNext: 0
-                    },
+                        maxSupply: 0                    },
                     turn: 1,
                     log: [],
                     gameOver: false,
@@ -3418,7 +3459,6 @@
                     board: (s.board || []).map(_serializeInst).filter(function(x) { return x; }),
                     deck: (s.deck || []).map(function(d) { return d.id; }),
                     supply: s.supply, maxSupply: s.maxSupply,
-                    _carryoverNext: s._carryoverNext || 0
                 };
             }
             function _deserializeSide(o) {
@@ -3428,7 +3468,6 @@
                     board: (o.board || []).map(_deserializeInst).filter(function(x) { return x; }),
                     deck: (o.deck || []).map(_findDefById).filter(function(x) { return x; }),
                     supply: o.supply, maxSupply: o.maxSupply,
-                    _carryoverNext: o._carryoverNext || 0
                 };
             }
             function saveGame() {
@@ -3817,10 +3856,10 @@
             }
 
             // Wraps moveToFrontline with FLIP slide animation and input gate.
-            function moveUnitWithAnimation(instance) {
+            function moveUnitWithAnimation(instance, targetSlot) {
                 var snap = _snapshotBoardPositions();
                 var prevPhase = G ? G.phase : null;
-                if (!moveToFrontline(instance)) return false;
+                if (!moveToFrontline(instance, targetSlot)) return false;
                 if (G) G.phase = "animating";
                 render();
                 _applyFLIPFromSnapshot(snap, FRONTLINE_SLIDE_MS);
@@ -3833,7 +3872,7 @@
                 return true;
             }
 
-            function moveToFrontline(instance) {
+            function moveToFrontline(instance, targetSlot) {
                 if (G.phase !== "player") return false;
                 if (instance.zone !== "reserve") return false;
                 if (instance.exhausted) {
@@ -3853,6 +3892,27 @@
                 // Non-blitz units cannot attack after moving (batch 5a hotfix).
                 // Blitz units retain the ability to act after moving.
                 if (!instance.def.blitz) instance.exhausted = true;
+                // Position the unit at the clicked slot in the frontline (batch 5e item 7).
+                // Reorder G.player.board so the moved unit sits where targetSlot points.
+                if (typeof targetSlot === "number") {
+                    var idx = G.player.board.indexOf(instance);
+                    if (idx !== -1) {
+                        G.player.board.splice(idx, 1);
+                        var inserted = false;
+                        var frontCount = 0;
+                        for (var i = 0; i < G.player.board.length; i++) {
+                            if (G.player.board[i].zone === "frontline") {
+                                if (frontCount === targetSlot) {
+                                    G.player.board.splice(i, 0, instance);
+                                    inserted = true;
+                                    break;
+                                }
+                                frontCount++;
+                            }
+                        }
+                        if (!inserted) G.player.board.push(instance);
+                    }
+                }
                 _log(instance.def.name + " advances to the frontline!");
                 _playSound("card");
                 return true;
@@ -3978,9 +4038,6 @@
                 _cardsPlayedThisTurn = 0;
                 _unitsPlayedThisTurn = [];
 
-                // Capture unspent supply for overflow carryover (only active when maxSupply > 10)
-                G.player._carryoverNext = Math.max(0, G.player.supply || 0);
-
                 G.phase = "animating";
                 render();
                 setTimeout(function() {
@@ -4013,13 +4070,11 @@
                     G.enemy.hand.push(instance);
                 }
 
-                G.enemy.maxSupply = G.enemy.maxSupply + 1;
-                if (G.enemy.maxSupply > 10) {
-                    G.enemy.supply = G.enemy.maxSupply + (G.enemy._carryoverNext || 0);
-                } else {
-                    G.enemy.supply = G.enemy.maxSupply;
-                }
-                G.enemy._carryoverNext = 0;
+                // Natural +1/turn capped at 10 (batch 5e revert). Supply-pump cards
+                // (War Bonds, Quartermaster, Admiralty, Declaration, etc.) still push
+                // maxSupply above 10 directly via their battleCry.
+                if (G.enemy.maxSupply < 10) G.enemy.maxSupply += 1;
+                G.enemy.supply = G.enemy.maxSupply;
 
                 // Reserve some supply for attacks on hard difficulty
                 var effectiveDiff = _campaignMode ? currentBattles()[_currentBattle].difficulty : _difficulty;
@@ -4281,23 +4336,16 @@
                     return;
                 }
 
-                // Capture enemy unspent supply for overflow carryover
-                G.enemy._carryoverNext = Math.max(0, G.enemy.supply || 0);
-
                 // Reset player units for new turn
                 for (var r = 0; r < G.player.board.length; r++) {
                     G.player.board[r].exhausted = false;
                     G.player.board[r].attacksThisTurn = 0;
                 }
 
-                // Increase player supply
-                G.player.maxSupply = G.player.maxSupply + 1;
-                if (G.player.maxSupply > 10) {
-                    G.player.supply = G.player.maxSupply + (G.player._carryoverNext || 0);
-                } else {
-                    G.player.supply = G.player.maxSupply;
-                }
-                G.player._carryoverNext = 0;
+                // Natural +1/turn capped at 10 (batch 5e revert). Supply-pump cards
+                // push maxSupply above 10 directly via battleCry.
+                if (G.player.maxSupply < 10) G.player.maxSupply += 1;
+                G.player.supply = G.player.maxSupply;
 
                 // Draw for player
                 _activeSide = G.player;
@@ -4420,6 +4468,19 @@
                             document.body.appendChild(f);
                             setTimeout(function() { if (f.parentNode) f.parentNode.removeChild(f); }, 500 + delay);
                         };
+                        var mkSmoke = function(x, y, delay) {
+                            var p = document.createElement("div");
+                            p.className = "musket-smoke";
+                            p.style.left = x + "px";
+                            p.style.top = y + "px";
+                            document.body.appendChild(p);
+                            p.animate([
+                                { transform: "translate(-50%, -50%) scale(0.35)", opacity: 0.9 },
+                                { transform: "translate(-50%, calc(-50% - 10px)) scale(1.0)", opacity: 0.75, offset: 0.4 },
+                                { transform: "translate(-50%, calc(-50% - 28px)) scale(1.6)", opacity: 0 }
+                            ], { duration: 650, delay: delay, easing: "ease-out", fill: "forwards" });
+                            setTimeout(function() { if (p.parentNode) p.parentNode.removeChild(p); }, 700 + delay);
+                        };
                         var mkTrail = function(fromX, fromY, toX, toY, delay) {
                             var tr = document.createElement("div");
                             tr.className = "bullet-trail";
@@ -4443,8 +4504,10 @@
                         for (var v = 0; v < volleys; v++) {
                             var base = v * step;
                             mkFlash(src.x, src.y, base);
+                            mkSmoke(src.x, src.y, base + 30);
                             mkTrail(src.x, src.y, dst.x, dst.y, base + 40);
                             mkFlash(dst.x, dst.y, base + Math.round(step * 0.45));
+                            mkSmoke(dst.x, dst.y, base + Math.round(step * 0.5));
                             mkTrail(dst.x, dst.y, src.x, src.y, base + Math.round(step * 0.55));
                         }
                         targetEl.classList.add("hit");
@@ -4686,13 +4749,22 @@
                 }
                 renderSupplyBox("playerSupplyBox", G.player.supply, G.player.maxSupply);
 
-                // HQ Protected badges (batch 5d item 2): show when any Guard is on that side's frontline
-                var pGuard = hasGuardOnFrontline(G.player.board);
-                var eGuard = hasGuardOnFrontline(G.enemy.board);
-                var pBadge = document.getElementById("playerHQProtected");
-                if (pBadge) pBadge.style.display = pGuard ? "flex" : "none";
-                var eBadge = document.getElementById("enemyHQProtected");
-                if (eBadge) eBadge.style.display = eGuard ? "flex" : "none";
+                // HQ keyword row (batch 5e item 2): stack badges in upper-right of each HQ.
+                // Current supported keyword: Protected (when a Guard is on that side's frontline).
+                function _renderHQKeywords(containerId, side) {
+                    var el = document.getElementById(containerId);
+                    if (!el) return;
+                    el.innerHTML = "";
+                    if (hasGuardOnFrontline(side.board)) {
+                        var b = document.createElement("span");
+                        b.className = "keyword-badge protected";
+                        b.title = "Protected: adjacent Guard on frontline blocks non-artillery attacks";
+                        b.textContent = "\uD83D\uDEE1 Protected";
+                        el.appendChild(b);
+                    }
+                }
+                _renderHQKeywords("playerHQKeywords", G.player);
+                _renderHQKeywords("enemyHQKeywords", G.enemy);
 
                 setTxt("enemyName", G.enemy.name);
                 renderHPBar("enemyHPBar", "enemyHP", G.enemy.hp, G.enemy.maxHP);
@@ -5058,11 +5130,14 @@
                 }
                 card.appendChild(cost);
 
-                // Bottom-middle unit type label (batch 5d item 4).
+                // Bottom-middle unit-type icon (batch 5e item 3 — replaces text label).
                 if (instance.def.type === "unit") {
                     var typeLabel = document.createElement("div");
                     typeLabel.className = "card-type-label";
-                    typeLabel.textContent = (instance.def.unitType || "infantry").toUpperCase();
+                    var ut = instance.def.unitType || "infantry";
+                    var typeIcons = { infantry: "\uD83E\uDE96", cavalry: "\uD83D\uDC0E", artillery: "\uD83D\uDCA5", naval: "\u2693" };
+                    typeLabel.textContent = typeIcons[ut] || "\uD83E\uDE96";
+                    typeLabel.title = ut.charAt(0).toUpperCase() + ut.slice(1);
                     card.appendChild(typeLabel);
                 } else if (instance.def.type === "order") {
                     var badge = document.createElement("div");
@@ -5400,7 +5475,8 @@
 
             // ========== UI EVENTS ==========
             function setupEventListeners() {
-                // Click on player frontline zone: if a reserve unit is selected, move it (batch 5b item 7).
+                // Click on player frontline zone: if a reserve unit is selected, move it
+                // to the slot nearest the click position (batch 5b item 7 + 5e item 7).
                 var playerFrontlineZone = document.querySelector(".frontline-zone");
                 if (playerFrontlineZone) {
                     playerFrontlineZone.addEventListener("click", function(e) {
@@ -5409,9 +5485,20 @@
                         var canMove = selectedCard.zone === "reserve" && iType !== "artillery" && iType !== "naval" && !selectedCard.exhausted;
                         if (canMove) {
                             e.stopPropagation();
+                            // Compute target slot index from mouse X within the player frontline row.
+                            var targetSlot;
+                            var row = document.getElementById("playerFrontline");
+                            if (row) {
+                                var rect = row.getBoundingClientRect();
+                                var frontCount = getUnitsInZone(G.player.board, "frontline").length;
+                                // After move, the row will have frontCount+1 slots. Distribute by X position.
+                                var relX = e.clientX - rect.left;
+                                var total = frontCount + 1;
+                                targetSlot = Math.max(0, Math.min(total - 1, Math.floor((relX / Math.max(1, rect.width)) * total)));
+                            }
                             var inst = selectedCard;
                             selectedCard = null;
-                            moveUnitWithAnimation(inst);
+                            moveUnitWithAnimation(inst, targetSlot);
                         }
                     });
                 }
@@ -5603,14 +5690,12 @@
                                 name: faction === "patriots" ? "Washington" : "Cornwallis",
                                 hp: 30, maxHP: 30,
                                 hand: [], board: [], deck: playerDeck,
-                                supply: 1, maxSupply: 1, _carryoverNext: 0
-                            },
+                                supply: 1, maxSupply: 1                            },
                             enemy: {
                                 name: enemyFaction === "patriots" ? "Washington" : "Cornwallis",
                                 hp: 30, maxHP: 30,
                                 hand: [], board: [], deck: enemyDeck,
-                                supply: 0, maxSupply: 0, _carryoverNext: 0
-                            },
+                                supply: 0, maxSupply: 0                            },
                             turn: 1, log: [], gameOver: false, winner: null
                         };
                         _drawCards(3);
@@ -6731,9 +6816,7 @@
                         board: [],
                         deck: playerDeck,
                         supply: 1,
-                        maxSupply: 1,
-                        _carryoverNext: 0
-                    },
+                        maxSupply: 1                    },
                     enemy: {
                         name: enemyFaction === "patriots" ? "Washington" : "Cornwallis",
                         hp: enemyHP,
@@ -6742,9 +6825,7 @@
                         board: [],
                         deck: enemyDeck,
                         supply: 0,
-                        maxSupply: 0,
-                        _carryoverNext: 0
-                    },
+                        maxSupply: 0                    },
                     turn: 1,
                     log: [],
                     gameOver: false,
