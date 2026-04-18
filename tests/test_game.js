@@ -728,9 +728,10 @@ test('Batch 5c: endGame clears saved game', function() {
   assert(/clearSavedGame\(\)/.test(block[0]), 'endGame calls clearSavedGame');
 });
 
-test('Batch 5c: Save & Quit button wired', function() {
-  assert(htmlContent.indexOf('id="saveQuitBtn"') >= 0, 'saveQuitBtn in HTML');
-  assert(gameScript.includes('saveQuitBtn.addEventListener'), 'saveQuitBtn listener');
+test('Batch 5c/5f: in-game Menu button wired (replaces saveQuitBtn in 5f)', function() {
+  assert(htmlContent.indexOf('id="menuBtn"') >= 0, 'in-game Menu button in HTML');
+  assert(gameScript.includes('menuBtn.addEventListener'), 'menuBtn listener');
+  assert(htmlContent.indexOf('id="menuSaveExitBtn"') >= 0, 'menu-level Save & Exit button');
   assert(gameScript.includes('resumeGameBtn'), 'resumeGameBtn referenced');
 });
 
@@ -886,11 +887,10 @@ test('Batch 5e: enemy deck trimmed to player deck size', function() {
 });
 
 // Card layout refinements
-test('Batch 5e: stat bar positioned outside card frame', function() {
-  // 5e override: .card-stats gets position:absolute + bottom:-12px to float below card.
-  assert(/\.card-stats\s*\{[^}]*bottom:\s*-12px/s.test(htmlContent) || /bottom:\s*-12px/.test(htmlContent),
-    'stats positioned below card frame (bottom: -12px rule)');
-  assert(htmlContent.indexOf('.card { overflow: visible; }') >= 0, 'card overflow set to visible for external stats');
+test('Batch 5f: stat bar reverted inside card frame', function() {
+  // 5f reverts 5e: stats back inside card, bottom: 2px.
+  assert(!/bottom:\s*-12px/.test(htmlContent), '5e outside-stat rule removed');
+  assert(/\.card-stats\s*\{[^}]*bottom:\s*2px/s.test(htmlContent), 'stats positioned inside (bottom: 2px)');
 });
 
 test('Batch 5e: keywords anchored to upper-right corner', function() {
@@ -934,6 +934,49 @@ test('Batch 5e: musket smoke VFX added', function() {
   assert(gameScript.includes('function mkSmoke') || gameScript.includes('var mkSmoke'), 'smoke helper defined');
   assert(gameScript.includes('musket-smoke'), 'smoke CSS class');
   assert(htmlContent.indexOf('.musket-smoke') >= 0, 'smoke CSS block present');
+});
+
+// ========== BATCH 5f TESTS ==========
+console.log('\n===== BATCH 5f TESTS =====\n');
+
+test('Batch 5f: player name stored + rendered on menu', function() {
+  assert(gameScript.includes('_stats.playerName'), 'playerName referenced');
+  assert(htmlContent.indexOf('id="menuPlayerName"') >= 0, 'menu player name element');
+});
+
+test('Batch 5f: profile avatar click triggers rename', function() {
+  assert(/prompt\(["']Enter your name/.test(gameScript), 'rename prompt fires on avatar click');
+  assert(gameScript.includes('_renameWired'), 'rename handler guarded');
+});
+
+test('Batch 5f: menu redesigned with columns + bigger title', function() {
+  assert(htmlContent.indexOf('class="menu-columns"') >= 0, 'menu-columns wrapper');
+  assert(htmlContent.indexOf('class="menu-column center"') >= 0, 'center column');
+  // Title bumped to 5.5em
+  assert(/\.menu-title\s*\{[^}]*font-size:\s*5\.5em/s.test(htmlContent), 'title bumped to 5.5em');
+});
+
+test('Batch 5f: enemy hand face-down card backs rendered', function() {
+  assert(htmlContent.indexOf('id="enemyHand"') >= 0, 'enemy hand container in HTML');
+  assert(htmlContent.indexOf('.enemy-hand-row') >= 0, 'CSS for enemy hand row');
+  assert(htmlContent.indexOf('.card-back') >= 0, 'card-back CSS');
+  assert(gameScript.includes('card-back'), 'card-back rendered in JS');
+});
+
+test('Batch 5f: AI advance uses FLIP animation', function() {
+  assert(gameScript.includes('preAdvanceSnap'), 'AI advance takes pre-snapshot');
+  assert(/anyAdvanced[\s\S]{0,400}_applyFLIPFromSnapshot/.test(gameScript), 'FLIP applied after advance');
+});
+
+test('Batch 5f: phaseIndicator humanized (no raw phase strings)', function() {
+  assert(!gameScript.includes('"Phase: " + G.phase'), 'old code-looking "Phase: X" removed');
+  assert(gameScript.includes('Your Turn') || gameScript.includes('Enemy Turn'), 'humanized phase label');
+});
+
+test('Batch 5f: collection brief shows flavor + effect + history per tile', function() {
+  assert(gameScript.includes('brief.innerHTML = lines.join'), 'brief populated with lines');
+  assert(gameScript.includes('d.flavor') && gameScript.includes('d.battleCryText') && gameScript.includes('d.history'),
+    'all three brief fields referenced');
 });
 
 // ========== SUMMARY ==========
