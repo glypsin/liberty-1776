@@ -361,7 +361,7 @@ test('REGRESSION: trap cards removed from CARDS pool', function() {
 
 // REGRESSION 2: surrender confirm dialog removed
 test('REGRESSION: surrender no longer calls confirm()', function() {
-  var surrenderBlock = gameScript.match(/surrenderBtn\.addEventListener[\s\S]{0,400}\}\);/);
+  var surrenderBlock = gameScript.match(/surrenderBtn\.addEventListener[\s\S]{0,800}\}\);/);
   assert(surrenderBlock, 'surrender handler exists');
   assert(!/confirm\(/.test(surrenderBlock[0]), 'No confirm() in surrender handler');
 });
@@ -432,19 +432,63 @@ test('REGRESSION: overflow does not trigger at maxSupply <= 10', function() {
   assert(hasEnemyElse, 'Enemy branch: supply = maxSupply when <= 10');
 });
 
-// NEW 9: HQ heal caps at maxHP
-test('Batch 5a: Field Surgeon heal caps at maxHP', function() {
+// NEW 9: HQ heal can exceed maxHP (hotfix behavior)
+test('Batch 5a hotfix: Field Surgeon heal CAN exceed maxHP', function() {
   Liberty.startGame('patriots', { skipIntro: true });
   var G = LibertyTest.getG();
   var surgeon = LibertyTest.getCardDefs().find(function(d) { return d.id === 'patriot_field_surgeon'; });
   assert(surgeon, 'Field Surgeon card exists');
-  G.player.hp = G.player.maxHP - 1;
+  G.player.hp = G.player.maxHP;  // Start at full
   var before = G.player.hp;
-  // Simulate _activeSide via the battleCry (inline _activeSide = G.player)
-  // The battleCry reads _activeSide || G.player — G.player fallback works.
   surgeon.battleCry();
-  assert(G.player.hp > before, 'HP increased');
-  assert(G.player.hp <= G.player.maxHP, 'HP capped at maxHP: got ' + G.player.hp + ' max ' + G.player.maxHP);
+  assertEqual(G.player.hp, before + 3, 'HP overflows past maxHP by heal amount');
+  assert(G.player.hp > G.player.maxHP, 'HP exceeds maxHP (' + G.player.hp + ' > ' + G.player.maxHP + ')');
+});
+
+// NEW 9b: renderHPBar caps visual width at 100% when HP > maxHP
+test('Batch 5a hotfix: renderHPBar caps bar width at 100%', function() {
+  assert(gameScript.includes('Math.min(100, (hp / maxHP) * 100)'), 'HP bar width capped at 100%');
+});
+
+// NEW: no-blitz unit is exhausted after moving
+test('Batch 5a hotfix: non-blitz unit exhausted after moveToFrontline', function() {
+  Liberty.startGame('patriots', { skipIntro: true });
+  var G = LibertyTest.getG();
+  var def = LibertyTest.getCardDefs().find(function(d) { return d.type === 'unit' && !d.blitz; });
+  var inst = LibertyTest.createCardInstance(def);
+  inst.zone = 'reserve';
+  inst.exhausted = false;
+  G.player.board.push(inst);
+  G.player.supply = 10;
+  G.phase = 'player';
+  var result = LibertyTest.moveToFrontline(inst);
+  assertEqual(result, true, 'Move succeeded');
+  assertEqual(inst.exhausted, true, 'Non-blitz unit exhausted after moving');
+});
+
+// NEW: blitz unit is NOT exhausted after moving
+test('Batch 5a hotfix: blitz unit stays non-exhausted after moveToFrontline', function() {
+  Liberty.startGame('patriots', { skipIntro: true });
+  var G = LibertyTest.getG();
+  var def = LibertyTest.getCardDefs().find(function(d) { return d.type === 'unit' && d.blitz === true; });
+  assert(def, 'Blitz unit exists in pool');
+  var inst = LibertyTest.createCardInstance(def);
+  inst.zone = 'reserve';
+  inst.exhausted = false;
+  G.player.board.push(inst);
+  G.player.supply = 10;
+  G.phase = 'player';
+  var result = LibertyTest.moveToFrontline(inst);
+  assertEqual(result, true, 'Move succeeded');
+  assertEqual(inst.exhausted, false, 'Blitz unit retains ability to act after moving');
+});
+
+// NEW: surrender handler calls render() to trigger game-over screen
+test('Batch 5a hotfix: surrender handler calls render() after endGame()', function() {
+  var surrenderBlock = gameScript.match(/surrenderBtn\.addEventListener[\s\S]{0,800}\}\);/);
+  assert(surrenderBlock, 'surrender handler exists');
+  assert(/endGame\(\);[\s\S]{0,200}render\(\);/.test(surrenderBlock[0]),
+    'render() called after endGame() in surrender handler');
 });
 
 // NEW 10: HQ heal for British hits enemy side (from AI context)
