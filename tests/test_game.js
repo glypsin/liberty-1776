@@ -794,6 +794,90 @@ test('Batch 5c: How to Play mentions new batch 5 features', function() {
   assert(!/陷阱/.test(htmlContent.substring(htmlContent.indexOf('helpOverlay'))), 'no traps mentioned in help');
 });
 
+// ========== BATCH 5d TESTS ==========
+console.log('\n===== BATCH 5d TESTS =====\n');
+
+// Profile page
+test('Batch 5d: avatar state in _stats', function() {
+  assert(gameScript.includes('_stats.avatar'), 'avatar field referenced');
+  assert(gameScript.includes('AVATAR_EMOJI_CHOICES'), 'avatar choices defined');
+  assert(gameScript.includes('function getAvailableAvatars'), 'avatar list helper defined');
+});
+
+test('Batch 5d: losses tracked in _stats', function() {
+  assert(gameScript.includes('_stats.losses'), 'losses field referenced');
+});
+
+test('Batch 5d: menu avatar button + profile screen defined', function() {
+  assert(htmlContent.indexOf('id="menuAvatarBtn"') >= 0, 'menu avatar button in HTML');
+  assert(htmlContent.indexOf('id="profileScreen"') >= 0, 'profile screen in HTML');
+  assert(gameScript.includes('function showProfileScreen'), 'showProfileScreen defined');
+  assert(gameScript.includes('function renderProfile'), 'renderProfile defined');
+  assert(gameScript.includes('function updateMenuAvatar'), 'updateMenuAvatar defined');
+});
+
+test('Batch 5d: profile wiring', function() {
+  assert(gameScript.includes('menuAvatarBtn.addEventListener'), 'avatar button wired');
+  assert(gameScript.includes('profileBackBtn.addEventListener'), 'back button wired');
+  assert(gameScript.includes('updateMenuAvatar()'), 'avatar updated on showMenu');
+});
+
+// Protected keyword
+test('Batch 5d: isProtected helper defined', function() {
+  assert(gameScript.includes('function isProtected'), 'isProtected defined');
+});
+
+test('Batch 5d: Protected keyword rendered as runtime-derived badge', function() {
+  assert(gameScript.includes('protectedNow'), 'protected detection in render');
+  assert(gameScript.includes('"Protected"'), 'Protected label present');
+  assert(gameScript.includes('unit-protected'), 'unit-protected class applied');
+});
+
+test('Batch 5d: HQ Protected badges wired to render', function() {
+  assert(htmlContent.indexOf('id="enemyHQProtected"') >= 0, 'enemy HQ badge in HTML');
+  assert(htmlContent.indexOf('id="playerHQProtected"') >= 0, 'player HQ badge in HTML');
+  assert(gameScript.includes('hasGuardOnFrontline(G.player.board)'), 'player guard check in render');
+  assert(gameScript.includes('hasGuardOnFrontline(G.enemy.board)'), 'enemy guard check in render');
+});
+
+// First-time tutorial
+test('Batch 5d: tutorial state in _stats', function() {
+  assert(gameScript.includes('tutorialSeen'), 'tutorialSeen field referenced');
+});
+
+test('Batch 5d: tutorial steps + controls defined', function() {
+  assert(gameScript.includes('TUTORIAL_STEPS'), 'TUTORIAL_STEPS array defined');
+  assert(gameScript.includes('function shouldShowTutorial'), 'shouldShowTutorial defined');
+  assert(gameScript.includes('function showTutorial'), 'showTutorial defined');
+  assert(gameScript.includes('function dismissTutorial'), 'dismissTutorial defined');
+  assert(htmlContent.indexOf('id="tutorialOverlay"') >= 0, 'tutorial overlay in HTML');
+});
+
+test('Batch 5d: tutorial fires on first game', function() {
+  assert(gameScript.includes('if (shouldShowTutorial()) showTutorial()'), 'tutorial trigger in startGame');
+});
+
+// Card layout redesign
+test('Batch 5d: card-type-label in bottom-middle', function() {
+  assert(htmlContent.indexOf('.card-type-label') >= 0, 'card-type-label CSS defined');
+  assert(gameScript.includes('card-type-label'), 'card-type-label in render');
+});
+
+test('Batch 5d: keywords positioned on right side (column)', function() {
+  // The 5d override block has a marker comment; verify the new layout rules are present
+  assert(htmlContent.indexOf('batch 5d item 4') >= 0, '5d CSS override block present');
+  // Within the 5d block, flex column + right positioning should exist
+  var idx = htmlContent.indexOf('batch 5d item 4');
+  var block = htmlContent.substring(idx, idx + 2000);
+  assert(/flex-direction:\s*column/.test(block), 'keywords flex column in override');
+  assert(/right:\s*2px/.test(block), 'keywords positioned right in override');
+});
+
+test('Batch 5d: on-board units show opCost top-left instead of supply cost', function() {
+  assert(gameScript.includes('if (onBoard && instance.def.type === "unit")'), 'on-board branch present');
+  assert(gameScript.includes('instance.def.opCost'), 'opCost read in cost element');
+});
+
 // ========== SUMMARY ==========
 console.log('\n===== TEST SUMMARY =====\n');
 console.log('Passed: ' + results.passed.length);

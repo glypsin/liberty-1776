@@ -1050,6 +1050,260 @@
         .attack-arrow.mode-invalid line { stroke: #888; stroke-dasharray: 4,4; opacity: 0.6; }
         .attack-arrow.mode-invalid .arrow-head-polygon { fill: #888; opacity: 0.6; }
 
+        /* Card redesigned layout (batch 5d item 4): Kards-inspired.
+           Top-left: cost circle (supply for hand cards, opCost for on-board — swapped in JS).
+           Center: portrait/icon.
+           Right side (vertical): keywords column.
+           Bottom row: ATK (left) · unit type (middle) · HP (right). */
+        .card-keywords {
+            /* Override: was horizontal row at bottom. Now vertical column on the right side. */
+            position: absolute;
+            top: 28px;
+            right: 2px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 2px;
+            justify-content: flex-start;
+            max-height: 60%;
+            z-index: 3;
+            pointer-events: none;
+        }
+        .card-keywords .keyword-badge {
+            font-size: 0.48em;
+            padding: 1px 4px;
+        }
+        /* Unit-type label bottom-middle (batch 5d item 4). */
+        .card-type-label {
+            position: absolute;
+            bottom: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.5em;
+            color: #DAA520;
+            background: rgba(0,0,0,0.55);
+            padding: 1px 5px;
+            border-radius: 3px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            font-weight: bold;
+            pointer-events: none;
+        }
+        /* On-board cards: hide name (was small and got crowded by right-side keywords). */
+        .card.on-board .card-name { display: none; }
+
+        /* First-time tutorial overlay (batch 5d item 3) */
+        #tutorialOverlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.78);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        #tutorialOverlay.active { display: flex; }
+        .tutorial-box {
+            background: linear-gradient(180deg, #2C1810 0%, #1A0F0A 100%);
+            border: 3px solid #FFD700;
+            border-radius: 12px;
+            padding: 26px 28px;
+            max-width: 520px;
+            width: 100%;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.8), 0 0 30px rgba(255,215,0,0.25);
+            color: #F0E0C0;
+            font-family: Georgia, serif;
+        }
+        .tutorial-title {
+            color: #FFD700;
+            font-size: 1.6em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .tutorial-text {
+            font-size: 1.02em;
+            line-height: 1.5;
+            margin-bottom: 16px;
+            color: #DAA520;
+        }
+        .tutorial-text strong { color: #FFD700; }
+        .tutorial-progress {
+            text-align: center;
+            color: #8B6914;
+            font-size: 0.85em;
+            margin-bottom: 14px;
+        }
+        .tutorial-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .tutorial-buttons button {
+            background: linear-gradient(180deg, #DAA520 0%, #8B6914 100%);
+            color: #1A0F0A;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: Georgia, serif;
+            font-size: 0.95em;
+        }
+        .tutorial-buttons button.secondary {
+            background: linear-gradient(180deg, #5A4310 0%, #3A2A0A 100%);
+            color: #C9A961;
+        }
+        .tutorial-buttons button:hover { filter: brightness(1.12); }
+
+        /* Protected indicator (batch 5d item 2) — unit adjacent to Guard, or HQ when a Guard is on frontline */
+        .keyword-badge.protected { background: #4169E1; color: #fff; }
+        .hq-protected-badge {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            font-size: 1.1em;
+            background: rgba(65, 105, 225, 0.85);
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 8px rgba(65, 105, 225, 0.6);
+            z-index: 20;
+            pointer-events: none;
+        }
+        .card.unit-protected {
+            box-shadow: 0 0 0 2px rgba(65, 105, 225, 0.55) inset, 0 4px 10px rgba(0,0,0,0.6);
+        }
+
+        /* Menu avatar button (batch 5d item 1): top-left of menu, click to open profile */
+        .menu-avatar-btn {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(180deg, #3A2A0A, #2C1810);
+            border: 3px solid #DAA520;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            cursor: pointer;
+            z-index: 50;
+            transition: transform 0.15s, box-shadow 0.15s;
+            overflow: hidden;
+        }
+        .menu-avatar-btn:hover {
+            transform: scale(1.06);
+            box-shadow: 0 3px 18px rgba(218,165,32,0.5);
+        }
+        .menu-avatar-btn img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Profile screen */
+        #profileScreen {
+            display: none;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            flex-direction: column;
+            background: linear-gradient(135deg, #2C1810 0%, #1A0F0A 100%);
+            padding: 20px;
+            overflow-y: auto;
+        }
+        #profileScreen .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 18px;
+            background: rgba(0,0,0,0.3);
+            border: 2px solid #DAA520;
+            border-radius: 10px;
+            margin-bottom: 18px;
+        }
+        #profileScreen .profile-avatar-large {
+            width: 96px;
+            height: 96px;
+            border-radius: 50%;
+            background: linear-gradient(180deg, #3A2A0A, #2C1810);
+            border: 3px solid #FFD700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3em;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        #profileScreen .profile-avatar-large img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        #profileScreen .profile-stats {
+            flex: 1;
+            color: #DAA520;
+            font-size: 1em;
+            line-height: 1.6;
+        }
+        #profileScreen .profile-stats .big {
+            font-size: 1.6em;
+            color: #FFD700;
+            font-weight: bold;
+        }
+        #profileScreen .avatar-picker-title {
+            color: #FFD700;
+            font-size: 1.3em;
+            margin: 10px 0 8px;
+        }
+        #profileScreen .avatar-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            background: rgba(0,0,0,0.25);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        #profileScreen .avatar-choice {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: linear-gradient(180deg, #3A2A0A, #2C1810);
+            border: 2px solid #DAA520;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2em;
+            cursor: pointer;
+            overflow: hidden;
+            transition: transform 0.15s, border-color 0.15s;
+        }
+        #profileScreen .avatar-choice:hover {
+            transform: scale(1.08);
+            border-color: #FFD700;
+        }
+        #profileScreen .avatar-choice.selected {
+            border-color: #FFD700;
+            box-shadow: 0 0 14px rgba(255,215,0,0.6);
+        }
+        #profileScreen .avatar-choice img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
         /* Reserve unit pointer cursor + subtle pulse for discoverability */
         .card.in-reserve.unit-card:not(.exhausted):not(.disabled) {
             cursor: pointer;
@@ -2074,6 +2328,10 @@
 <body>
     <!-- Menu Screen -->
     <div id="menuScreen" class="active">
+        <!-- Avatar button top-left (batch 5d item 1): click to open profile -->
+        <div id="menuAvatarBtn" class="menu-avatar-btn" title="Profile">
+            <span id="menuAvatarContent"></span>
+        </div>
         <div class="menu-container">
             <div class="menu-title">Liberty 1776</div>
             <div class="menu-subtitle">
@@ -2143,6 +2401,7 @@
                         <span class="hq-hp" id="enemyHP">-</span>
                     </div>
                     <div class="hq-bar-mini"><div class="hq-bar-mini-fill enemy" id="enemyHPBar"></div></div>
+                    <div class="hq-protected-badge" id="enemyHQProtected" style="display:none;" title="Protected by Guard unit on frontline">&#x1F6E1;</div>
                 </div>
             </div>
         </div>
@@ -2155,13 +2414,14 @@
         <div class="board-zone player-support-zone">
             <div class="zone-label">Your Reserve</div>
             <div class="zone-cards" id="playerReserve">
-                <div class="hq-card player-hq">
+                <div class="hq-card player-hq" id="playerHQCard">
                     <div class="hq-name" id="playerName">-</div>
                     <div class="hq-shield">
                         <svg viewBox="0 0 40 46"><path d="M20 2 L38 10 L38 26 Q38 40 20 44 Q2 40 2 26 L2 10 Z" fill="rgba(65,105,225,0.35)" stroke="#4169E1" stroke-width="2"/></svg>
                         <span class="hq-hp" id="playerHP">-</span>
                     </div>
                     <div class="hq-bar-mini"><div class="hq-bar-mini-fill player" id="playerHPBar"></div></div>
+                    <div class="hq-protected-badge" id="playerHQProtected" style="display:none;" title="Protected by Guard unit on frontline">&#x1F6E1;</div>
                 </div>
             </div>
         </div>
@@ -2286,6 +2546,39 @@
             <div id="packInventoryList" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:20px;"></div>
             <div id="packInventoryOpened" style="margin:14px 0;"></div>
             <button class="campaign-back-btn" id="packInventoryBackBtn">Back to Menu</button>
+        </div>
+    </div>
+
+    <!-- First-time tutorial overlay (batch 5d item 3) -->
+    <div id="tutorialOverlay">
+        <div class="tutorial-box">
+            <div class="tutorial-title" id="tutorialTitle">Welcome, General</div>
+            <div class="tutorial-text" id="tutorialText"></div>
+            <div class="tutorial-progress" id="tutorialProgress">Step 1 / 5</div>
+            <div class="tutorial-buttons">
+                <button class="secondary" id="tutorialSkipBtn">Skip</button>
+                <button id="tutorialNextBtn">Next</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Screen (batch 5d item 1) -->
+    <div id="profileScreen">
+        <div style="max-width:800px;width:100%;margin:0 auto;">
+            <div style="font-size:2em;color:#FFD700;font-weight:bold;text-align:center;margin-bottom:12px;">Profile</div>
+            <div class="profile-header">
+                <div class="profile-avatar-large" id="profileAvatarLarge"></div>
+                <div class="profile-stats">
+                    <div><span class="big" id="profileWinrate">0%</span> winrate</div>
+                    <div>Wins: <strong id="profileWins">0</strong> &middot; Losses: <strong id="profileLosses">0</strong></div>
+                    <div>Pounds: <strong>&pound;<span id="profilePounds">0</span></strong></div>
+                    <div>Medals: <strong><span id="profileMedals">0</span> / <span id="profileMedalsMax">0</span></strong></div>
+                </div>
+            </div>
+            <div class="avatar-picker-title">Choose Avatar</div>
+            <div style="color:#C9A961;font-size:0.85em;margin-bottom:8px;">Unlock more avatars by collecting cards with portraits.</div>
+            <div class="avatar-grid" id="avatarGrid"></div>
+            <button class="campaign-back-btn" id="profileBackBtn">Back to Menu</button>
         </div>
     </div>
 
@@ -2619,11 +2912,37 @@
                     if (saved) _stats = JSON.parse(saved);
                 } catch (e) {}
                 if (!_stats) {
-                    _stats = { wins: 0, achievements: [], gold: 50, ownedCards: null, unopenedPacks: [] };
+                    _stats = { wins: 0, losses: 0, achievements: [], gold: 50, ownedCards: null, unopenedPacks: [], avatar: "\uD83D\uDC82", tutorialSeen: false };
                 }
                 if (_stats.gold === undefined) _stats.gold = 50;
+                if (_stats.losses === undefined) _stats.losses = 0;
                 if (!_stats.ownedCards) _stats.ownedCards = getStarterCards();
                 if (!_stats.unopenedPacks) _stats.unopenedPacks = [];
+                if (!_stats.avatar) _stats.avatar = "\uD83D\uDC82"; // default: guard emoji
+                if (_stats.tutorialSeen === undefined) _stats.tutorialSeen = false;
+            }
+
+            // Avatar choices: 6 emoji + unlockable portraits from card collection (batch 5d item 1).
+            var AVATAR_EMOJI_CHOICES = [
+                "\uD83D\uDC82", // guard
+                "\uD83C\uDFAF", // target/rifleman
+                "\uD83D\uDC0E", // horse/cavalry
+                "\uD83D\uDCA5", // explosion/artillery
+                "\uD83D\uDEA2", // ship
+                "\u2694\uFE0F"    // crossed swords
+            ];
+            function getAvailableAvatars() {
+                var list = AVATAR_EMOJI_CHOICES.slice();
+                // Add portraits of cards the player owns
+                if (_stats && _stats.ownedCards) {
+                    for (var i = 0; i < cardDefs.length; i++) {
+                        var d = cardDefs[i];
+                        if (d.image && (_stats.ownedCards[d.id] || 0) > 0) {
+                            list.push("img:" + d.image);
+                        }
+                    }
+                }
+                return list;
             }
 
             function getStarterCards() {
@@ -2725,6 +3044,12 @@
             function checkAchievements() {
                 if (!G || !G.gameOver) return;
                 var won = G.winner === "player";
+
+                // Track losses (batch 5d: winrate in profile)
+                if (!won && !_draftMode) {
+                    _stats.losses = (_stats.losses || 0) + 1;
+                    saveStats();
+                }
 
                 if (won) {
                     // First win
@@ -3616,6 +3941,28 @@
                 return result;
             }
 
+            // Protected status (batch 5d item 2).
+            // A unit is "Protected" when it is on the frontline AND has an
+            // adjacent Guard unit on the same side. Protected units can't be
+            // attacked by non-artillery non-naval units (existing rule — this
+            // function just exposes the visual state). Artillery / naval bypass.
+            function isProtected(unit, side) {
+                if (!unit || !side || unit.def.guard) return false;
+                if (unit.zone !== "frontline") return false;
+                var front = getUnitsInZone(side.board, "frontline");
+                var idx = front.indexOf(unit);
+                if (idx === -1) return false;
+                for (var i = 0; i < front.length; i++) {
+                    var f = front[i];
+                    if (f === unit) continue;
+                    if (f.def.guard && !f.dead && !f.hasSmokescreen) {
+                        var gIdx = front.indexOf(f);
+                        if (Math.abs(gIdx - idx) === 1) return true;
+                    }
+                }
+                return false;
+            }
+
             function hasGuardOnFrontline(board) {
                 for (var i = 0; i < board.length; i++) {
                     if (board[i].zone === "frontline" && board[i].def.guard && !board[i].dead) return true;
@@ -4339,6 +4686,14 @@
                 }
                 renderSupplyBox("playerSupplyBox", G.player.supply, G.player.maxSupply);
 
+                // HQ Protected badges (batch 5d item 2): show when any Guard is on that side's frontline
+                var pGuard = hasGuardOnFrontline(G.player.board);
+                var eGuard = hasGuardOnFrontline(G.enemy.board);
+                var pBadge = document.getElementById("playerHQProtected");
+                if (pBadge) pBadge.style.display = pGuard ? "flex" : "none";
+                var eBadge = document.getElementById("enemyHQProtected");
+                if (eBadge) eBadge.style.display = eGuard ? "flex" : "none";
+
                 setTxt("enemyName", G.enemy.name);
                 renderHPBar("enemyHPBar", "enemyHP", G.enemy.hp, G.enemy.maxHP);
                 setTxt("enemyHandCount", G.enemy.hand.length);
@@ -4689,32 +5044,31 @@
                     }
                 }
 
-                // Cost
+                // Top-left cost (batch 5d item 4):
+                //   On-board units show opCost (move/operation cost — primary on-board stat).
+                //   Hand/collection cards show supply cost (what you pay to play it).
                 var cost = document.createElement("div");
                 cost.className = "card-cost";
-                cost.textContent = instance.def.cost;
+                if (onBoard && instance.def.type === "unit") {
+                    cost.textContent = instance.def.opCost || 1;
+                    cost.title = "Move/attack cost: " + (instance.def.opCost || 1) + " supply";
+                } else {
+                    cost.textContent = instance.def.cost;
+                    cost.title = "Supply cost to play";
+                }
                 card.appendChild(cost);
 
-                // Type badge
-                if (instance.def.type === "order") {
+                // Bottom-middle unit type label (batch 5d item 4).
+                if (instance.def.type === "unit") {
+                    var typeLabel = document.createElement("div");
+                    typeLabel.className = "card-type-label";
+                    typeLabel.textContent = (instance.def.unitType || "infantry").toUpperCase();
+                    card.appendChild(typeLabel);
+                } else if (instance.def.type === "order") {
                     var badge = document.createElement("div");
                     badge.className = "card-type-badge";
                     badge.textContent = "ORDER";
                     card.appendChild(badge);
-                } else if (instance.def.unitType && instance.def.unitType !== "infantry") {
-                    var badge = document.createElement("div");
-                    badge.className = "card-type-badge unit-type-" + instance.def.unitType;
-                    badge.textContent = instance.def.unitType.toUpperCase();
-                    card.appendChild(badge);
-                }
-
-                // OpCost indicator (for units with opCost > 1)
-                if (instance.def.type === "unit" && (instance.def.opCost || 1) > 1) {
-                    var opBadge = document.createElement("div");
-                    opBadge.className = "op-cost-badge";
-                    opBadge.textContent = "\u2699" + (instance.def.opCost || 1);
-                    opBadge.title = "Operation cost: " + (instance.def.opCost || 1) + " supply to attack/move";
-                    card.appendChild(opBadge);
                 }
 
                 // Name (hidden on board for compact display)
@@ -4767,6 +5121,20 @@
                         var val = instance.def[key];
                         var active = meta.counted ? (val > 0) : !!val;
                         if (active) kwEntries.push({ key: key, meta: meta, val: val });
+                    }
+                    // Protected (runtime-derived, batch 5d item 2): unit on frontline adjacent to own-side Guard.
+                    var protectedNow = false;
+                    if (onBoard && G && instance.zone === "frontline") {
+                        var side = isPlayerUnit ? G.player : G.enemy;
+                        protectedNow = isProtected(instance, side);
+                        if (protectedNow) {
+                            addClass(card, "unit-protected");
+                            kwEntries.push({
+                                key: "protected",
+                                meta: { icon: "\uD83D\uDEE1", label: "Protected", desc: "Adjacent Guard blocks non-artillery attacks", cls: "protected" },
+                                val: true
+                            });
+                        }
                     }
                     if (kwEntries.length > 0) {
                         var keywords = document.createElement("div");
@@ -5384,6 +5752,20 @@
                 if (openPacksBtn) openPacksBtn.addEventListener("click", showPackInventory);
                 var packInvBackBtn = document.getElementById("packInventoryBackBtn");
                 if (packInvBackBtn) packInvBackBtn.addEventListener("click", showMenu);
+                var menuAvatarBtn = document.getElementById("menuAvatarBtn");
+                if (menuAvatarBtn) menuAvatarBtn.addEventListener("click", showProfileScreen);
+                var profileBackBtn = document.getElementById("profileBackBtn");
+                if (profileBackBtn) profileBackBtn.addEventListener("click", showMenu);
+                var tutNext = document.getElementById("tutorialNextBtn");
+                if (tutNext) {
+                    tutNext.addEventListener("click", function() {
+                        _tutorialStep++;
+                        if (_tutorialStep >= TUTORIAL_STEPS.length) dismissTutorial();
+                        else renderTutorialStep();
+                    });
+                }
+                var tutSkip = document.getElementById("tutorialSkipBtn");
+                if (tutSkip) tutSkip.addEventListener("click", dismissTutorial);
                 var buyN = document.getElementById("buyNormalPack");
                 if (buyN) buyN.addEventListener("click", function() { buyPack("normal"); });
                 var buyE = document.getElementById("buyEnhancedPack");
@@ -5402,12 +5784,12 @@
             }
 
             function hideAllScreens() {
-                var screens = ["menuScreen", "gameScreen", "gameOverScreen", "campaignScreen", "deckBuilderScreen", "draftScreen", "shopScreen", "collectionScreen", "packInventoryScreen"];
+                var screens = ["menuScreen", "gameScreen", "gameOverScreen", "campaignScreen", "deckBuilderScreen", "draftScreen", "shopScreen", "collectionScreen", "packInventoryScreen", "profileScreen"];
                 for (var i = 0; i < screens.length; i++) {
                     var el = document.getElementById(screens[i]);
                     if (el) {
                         removeClass(el, "active");
-                        if (el.id === "shopScreen" || el.id === "collectionScreen" || el.id === "packInventoryScreen") el.style.display = "none";
+                        if (el.id === "shopScreen" || el.id === "collectionScreen" || el.id === "packInventoryScreen" || el.id === "profileScreen") el.style.display = "none";
                     }
                 }
                 // Remove any battle intros
@@ -5673,6 +6055,10 @@
 
                 selectedCard = null;
                 render();
+
+                // First-time tutorial (batch 5d item 3): show overlay on the
+                // player's very first game (zero wins, zero losses, not seen).
+                if (shouldShowTutorial()) showTutorial();
             }
 
             function showMenu() {
@@ -5686,6 +6072,7 @@
                 renderAchievements();
                 updatePackCountBadge();
                 updateResumeButton();
+                updateMenuAvatar();
             }
 
             function updatePackCountBadge() {
@@ -5696,6 +6083,124 @@
             function updateResumeButton() {
                 var btn = document.getElementById("resumeGameBtn");
                 if (btn) btn.style.display = hasSavedGame() ? "block" : "none";
+            }
+
+            // ========== TUTORIAL (batch 5d item 3) ==========
+            var TUTORIAL_STEPS = [
+                {
+                    title: "Welcome, General",
+                    text: "Liberty 1776 is a turn-based card game set in the American Revolution. Play cards from your <strong>hand</strong>, command units on the <strong>frontline</strong>, and drop the enemy's HQ to 0 HP to win."
+                },
+                {
+                    title: "Your Supply",
+                    text: "<strong>Supply</strong> is your resource. Every card has a cost. You start with 1 Supply and gain +1 each turn. Playing cards or attacking both cost Supply."
+                },
+                {
+                    title: "Deploy and Advance",
+                    text: "<strong>Drag</strong> a unit card from your hand onto the board to deploy it. Units land in <strong>reserve</strong> first (unless they have Blitz or Cavalry). Next turn, click the unit and tap the <strong>frontline zone</strong> to advance."
+                },
+                {
+                    title: "Attack",
+                    text: "Click a <strong>frontline unit</strong> to select it (red arrow = attack mode). Click an enemy unit or the enemy HQ to attack. A <strong>Guard</strong> on the enemy frontline must be killed first."
+                },
+                {
+                    title: "Your Turn",
+                    text: "When done, click <strong>End Turn</strong>. The enemy will play their cards one at a time. Save and quit any time with <strong>Save &amp; Quit</strong>. Good luck!"
+                }
+            ];
+            var _tutorialStep = 0;
+            function shouldShowTutorial() {
+                return _stats && !_stats.tutorialSeen && (_stats.wins || 0) === 0 && (_stats.losses || 0) === 0;
+            }
+            function showTutorial() {
+                _tutorialStep = 0;
+                var ov = document.getElementById("tutorialOverlay");
+                if (ov) addClass(ov, "active");
+                renderTutorialStep();
+            }
+            function renderTutorialStep() {
+                var step = TUTORIAL_STEPS[_tutorialStep];
+                if (!step) return;
+                var title = document.getElementById("tutorialTitle");
+                var text = document.getElementById("tutorialText");
+                var prog = document.getElementById("tutorialProgress");
+                var nextBtn = document.getElementById("tutorialNextBtn");
+                if (title) title.textContent = step.title;
+                if (text) text.innerHTML = step.text;
+                if (prog) prog.textContent = "Step " + (_tutorialStep + 1) + " / " + TUTORIAL_STEPS.length;
+                if (nextBtn) nextBtn.textContent = _tutorialStep === TUTORIAL_STEPS.length - 1 ? "Start playing" : "Next";
+            }
+            function dismissTutorial() {
+                var ov = document.getElementById("tutorialOverlay");
+                if (ov) removeClass(ov, "active");
+                if (_stats) {
+                    _stats.tutorialSeen = true;
+                    saveStats();
+                }
+            }
+
+            // ========== PROFILE (batch 5d item 1) ==========
+            function _renderAvatarInto(el, avatar) {
+                if (!el) return;
+                el.innerHTML = "";
+                if (!avatar) avatar = "\uD83D\uDC82";
+                if (avatar.indexOf("img:") === 0) {
+                    var img = document.createElement("img");
+                    img.src = avatar.substring(4);
+                    img.onerror = function() { el.textContent = "\uD83D\uDC82"; };
+                    el.appendChild(img);
+                } else {
+                    el.textContent = avatar;
+                }
+            }
+            function updateMenuAvatar() {
+                var el = document.getElementById("menuAvatarContent");
+                _renderAvatarInto(el, (_stats && _stats.avatar) || "\uD83D\uDC82");
+            }
+            function showProfileScreen() {
+                hideAllScreens();
+                var el = document.getElementById("profileScreen");
+                if (el) el.style.display = "flex";
+                renderProfile();
+            }
+            function renderProfile() {
+                _renderAvatarInto(document.getElementById("profileAvatarLarge"), _stats.avatar);
+                var wins = _stats.wins || 0;
+                var losses = _stats.losses || 0;
+                var total = wins + losses;
+                var rate = total > 0 ? Math.round((wins / total) * 100) : 0;
+                var winrateEl = document.getElementById("profileWinrate");
+                if (winrateEl) winrateEl.textContent = rate + "%";
+                var winsEl = document.getElementById("profileWins");
+                if (winsEl) winsEl.textContent = wins;
+                var lossesEl = document.getElementById("profileLosses");
+                if (lossesEl) lossesEl.textContent = losses;
+                var poundsEl = document.getElementById("profilePounds");
+                if (poundsEl) poundsEl.textContent = _stats.gold || 0;
+                var medalsEl = document.getElementById("profileMedals");
+                if (medalsEl) medalsEl.textContent = (_stats.achievements || []).length;
+                var medalsMaxEl = document.getElementById("profileMedalsMax");
+                if (medalsMaxEl) medalsMaxEl.textContent = ACHIEVEMENTS.length;
+                // Render avatar picker grid
+                var grid = document.getElementById("avatarGrid");
+                if (!grid) return;
+                grid.innerHTML = "";
+                var choices = getAvailableAvatars();
+                for (var i = 0; i < choices.length; i++) {
+                    (function(avatar) {
+                        var el = document.createElement("div");
+                        el.className = "avatar-choice";
+                        if (avatar === _stats.avatar) el.className += " selected";
+                        _renderAvatarInto(el, avatar);
+                        el.addEventListener("click", function() {
+                            _stats.avatar = avatar;
+                            saveStats();
+                            renderProfile();
+                            updateMenuAvatar();
+                        });
+                        grid.appendChild(el);
+                    })(choices[i]);
+                }
             }
 
             // ========== DECK BUILDER ==========
