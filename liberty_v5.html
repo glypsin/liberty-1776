@@ -2745,11 +2745,11 @@
                     { id: "british_taxact", name: "New Tax Act", faction: "british", type: "order", cost: 3, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDCDC", flavor: "Crown taxation", rarity: "rare", battleCry: function() { var side = _activeSide || G.enemy; side.maxSupply += 1; side.supply += 1; }, battleCryText: "+1 Max Supply slot", effect: null, history: "Parliament repeatedly raised taxes on colonies" },
                     { id: "british_admiralty", name: "Admiralty Decree", faction: "british", type: "order", cost: 4, atk: 0, hp: 0, opCost: 0, icon: "\u2696\uFE0F", flavor: "Royal logistics", rarity: "rare", battleCry: function() { var side = _activeSide || G.enemy; side.maxSupply += 2; side.supply += 2; }, battleCryText: "+2 Max Supply slots", effect: null, history: "The Royal Admiralty controlled all naval logistics" },
 
-                    // HQ heal cards (batch 5a) - restore HQ HP, capped at maxHP
-                    { id: "patriot_field_surgeon", name: "Field Surgeon", faction: "patriots", type: "order", cost: 2, atk: 0, hp: 0, opCost: 0, icon: "\u2695\uFE0F", flavor: "Battlefield medic", rarity: "common", battleCry: function() { var side = _activeSide || G.player; side.hp = Math.min(side.hp + 3, side.maxHP); _log("Field Surgeon heals HQ for 3!"); }, battleCryText: "Heal HQ for 3", effect: null, history: "Army surgeons saved countless lives on the battlefield" },
-                    { id: "patriot_winter_quarters", name: "Winter Quarters", faction: "patriots", type: "order", cost: 4, atk: 0, hp: 0, opCost: 0, icon: "\u2744\uFE0F", flavor: "Valley Forge", rarity: "rare", battleCry: function() { var side = _activeSide || G.player; side.hp = Math.min(side.hp + 6, side.maxHP); _log("Winter Quarters heals HQ for 6!"); }, battleCryText: "Heal HQ for 6", effect: null, history: "Valley Forge hardened the Continental Army through the winter of 1777-78" },
-                    { id: "british_royal_physician", name: "Royal Physician", faction: "british", type: "order", cost: 2, atk: 0, hp: 0, opCost: 0, icon: "\u2695\uFE0F", flavor: "Crown's healer", rarity: "common", battleCry: function() { var side = _activeSide || G.enemy; side.hp = Math.min(side.hp + 3, side.maxHP); _log("Royal Physician heals HQ for 3!"); }, battleCryText: "Heal HQ for 3", effect: null, history: "Royal physicians tended wounded officers in field hospitals" },
-                    { id: "british_loyalist_aid", name: "Loyalist Aid", faction: "british", type: "order", cost: 4, atk: 0, hp: 0, opCost: 0, icon: "\uD83C\uDFE5", flavor: "Crown's comfort", rarity: "rare", battleCry: function() { var side = _activeSide || G.enemy; side.hp = Math.min(side.hp + 6, side.maxHP); _log("Loyalist Aid heals HQ for 6!"); }, battleCryText: "Heal HQ for 6", effect: null, history: "Loyalist communities provided supplies and care to British forces" },
+                    // HQ heal cards (batch 5a, hotfix: HP can exceed maxHP)
+                    { id: "patriot_field_surgeon", name: "Field Surgeon", faction: "patriots", type: "order", cost: 2, atk: 0, hp: 0, opCost: 0, icon: "\u2695\uFE0F", flavor: "Battlefield medic", rarity: "common", battleCry: function() { var side = _activeSide || G.player; side.hp = side.hp + 3; _log("Field Surgeon heals HQ for 3!"); }, battleCryText: "Heal HQ for 3", effect: null, history: "Army surgeons saved countless lives on the battlefield" },
+                    { id: "patriot_winter_quarters", name: "Winter Quarters", faction: "patriots", type: "order", cost: 4, atk: 0, hp: 0, opCost: 0, icon: "\u2744\uFE0F", flavor: "Valley Forge", rarity: "rare", battleCry: function() { var side = _activeSide || G.player; side.hp = side.hp + 6; _log("Winter Quarters heals HQ for 6!"); }, battleCryText: "Heal HQ for 6", effect: null, history: "Valley Forge hardened the Continental Army through the winter of 1777-78" },
+                    { id: "british_royal_physician", name: "Royal Physician", faction: "british", type: "order", cost: 2, atk: 0, hp: 0, opCost: 0, icon: "\u2695\uFE0F", flavor: "Crown's healer", rarity: "common", battleCry: function() { var side = _activeSide || G.enemy; side.hp = side.hp + 3; _log("Royal Physician heals HQ for 3!"); }, battleCryText: "Heal HQ for 3", effect: null, history: "Royal physicians tended wounded officers in field hospitals" },
+                    { id: "british_loyalist_aid", name: "Loyalist Aid", faction: "british", type: "order", cost: 4, atk: 0, hp: 0, opCost: 0, icon: "\uD83C\uDFE5", flavor: "Crown's comfort", rarity: "rare", battleCry: function() { var side = _activeSide || G.enemy; side.hp = side.hp + 6; _log("Loyalist Aid heals HQ for 6!"); }, battleCryText: "Heal HQ for 6", effect: null, history: "Loyalist communities provided supplies and care to British forces" },
 
                     // Additional historical cards (item 17)
                     { id: "patriot_lafayette", name: "Marquis de Lafayette", faction: "patriots", type: "unit", unitType: "infantry", cost: 4, atk: 4, hp: 4, opCost: 1, icon: "\u269C", flavor: "French volunteer", rarity: "rare", blitz: true, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 1, pincer: true, battleCry: null, effect: null, history: "Lafayette served as a major general at age 19 and helped secure French aid" },
@@ -3147,6 +3147,9 @@
                 G.player.supply -= moveCost;
                 instance.zone = "frontline";
                 if (instance.hasSmokescreen) instance.hasSmokescreen = false;
+                // Non-blitz units cannot attack after moving (batch 5a hotfix).
+                // Blitz units retain the ability to act after moving.
+                if (!instance.def.blitz) instance.exhausted = true;
                 _log(instance.def.name + " advances to the frontline!");
                 _playSound("card");
                 return true;
@@ -3410,6 +3413,7 @@
 
                 // Move reserve units to frontline (Artillery stays in reserve, respect frontline limit of 5)
                 // No-blitz units cannot move on the turn they deploy (summoning sickness).
+                // Non-blitz units that move become exhausted (cannot attack after moving) — 5a hotfix.
                 for (var i = 0; i < G.enemy.board.length; i++) {
                     var unit = G.enemy.board[i];
                     var ut = unit.def.unitType || "infantry";
@@ -3417,6 +3421,7 @@
                         if (getUnitsInZone(G.enemy.board, "frontline").length >= 5) break;
                         unit.zone = "frontline";
                         if (unit.hasSmokescreen) unit.hasSmokescreen = false;
+                        if (!unit.def.blitz) unit.exhausted = true;
                         _log("Enemy " + unit.def.name + " advances to frontline.");
                     }
                 }
@@ -3865,7 +3870,9 @@
             function renderHPBar(barId, textId, hp, maxHP) {
                 var bar = document.getElementById(barId);
                 var txt = document.getElementById(textId);
-                if (bar) bar.style.width = Math.max(0, (hp / maxHP) * 100) + "%";
+                // HQ HP can exceed maxHP via heal cards; cap the visual bar at 100%
+                // so it doesn't overflow the container, but show the real number.
+                if (bar) bar.style.width = Math.max(0, Math.min(100, (hp / maxHP) * 100)) + "%";
                 if (txt) txt.textContent = hp;
             }
 
@@ -4594,6 +4601,9 @@
                         G.gameOver = true;
                         G.winner = "enemy";
                         endGame();
+                        // render() triggers the game-over screen. Without it,
+                        // surrender freezes the UI silently (pre-5a latent bug).
+                        render();
                     });
                 }
 
