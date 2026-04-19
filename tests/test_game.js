@@ -642,7 +642,8 @@ test('Batch 5b: reserve non-artillery units can be selected for move', function(
 
 test('Batch 5b: frontline zone click triggers move when reserve unit selected', function() {
   assert(gameScript.includes('playerFrontlineZone.addEventListener("click"'), 'frontline click listener installed');
-  assert(gameScript.includes('moveUnitWithAnimation(inst)'), 'move fired from frontline click');
+  // 5h: Advance button removed; frontline click uses moveUnitWithAnimation(inst, targetSlot).
+  assert(gameScript.includes('moveUnitWithAnimation(inst, targetSlot)'), 'move fired from frontline click');
 });
 
 test('Batch 5b: document click on empty area deselects', function() {
@@ -728,10 +729,11 @@ test('Batch 5c: endGame clears saved game', function() {
   assert(/clearSavedGame\(\)/.test(block[0]), 'endGame calls clearSavedGame');
 });
 
-test('Batch 5c/5f: in-game Menu button wired (replaces saveQuitBtn in 5f)', function() {
-  assert(htmlContent.indexOf('id="menuBtn"') >= 0, 'in-game Menu button in HTML');
-  assert(gameScript.includes('menuBtn.addEventListener'), 'menuBtn listener');
-  assert(htmlContent.indexOf('id="menuSaveExitBtn"') >= 0, 'menu-level Save & Exit button');
+test('Batch 5h: in-game Menu button removed; auto-save on endTurn preserves Resume', function() {
+  // 5h item 4: in-battle Menu button deleted per feedback; endTurn() now auto-saves.
+  assert(htmlContent.indexOf('id="menuBtn"') < 0, 'in-game Menu button removed from HTML');
+  assert(gameScript.includes('try { saveGame(); } catch'), 'endTurn auto-save present');
+  assert(htmlContent.indexOf('id="menuSaveExitBtn"') >= 0, 'menu-level Save & Exit still available');
   assert(gameScript.includes('resumeGameBtn'), 'resumeGameBtn referenced');
 });
 
@@ -851,14 +853,16 @@ test('Batch 5d: card-type-label in bottom-middle', function() {
   assert(gameScript.includes('card-type-label'), 'card-type-label in render');
 });
 
-test('Batch 5d: keywords positioned on right side (column)', function() {
-  // The 5d override block has a marker comment; verify the new layout rules are present
-  assert(htmlContent.indexOf('batch 5d item 4') >= 0, '5d CSS override block present');
-  // Within the 5d block, flex column + right positioning should exist
-  var idx = htmlContent.indexOf('batch 5d item 4');
-  var block = htmlContent.substring(idx, idx + 2000);
-  assert(/flex-direction:\s*column/.test(block), 'keywords flex column in override');
-  assert(/right:\s*2px/.test(block), 'keywords positioned right in override');
+test('Batch 5h: keywords float outside card to the right (icon-only)', function() {
+  // 5h item 2: keywords moved OUTSIDE the card's right edge and render as icons only.
+  assert(htmlContent.indexOf('Batch 5h item 2') >= 0, '5h keyword CSS block present');
+  var idx = htmlContent.indexOf('Batch 5h item 2: keywords float OUTSIDE');
+  assert(idx >= 0, '5h keyword anchor comment present');
+  var block = htmlContent.substring(idx, idx + 800);
+  assert(/flex-direction:\s*column/.test(block), 'keywords stacked vertically');
+  assert(/left:\s*100%/.test(block), 'keywords anchored to card right edge (outside)');
+  // Card must allow overflow so badges render beyond the frame.
+  assert(/\.card\s*\{[^}]*overflow:\s*visible/s.test(htmlContent), 'card overflow set to visible');
 });
 
 test('Batch 5d: on-board units show opCost top-left instead of supply cost', function() {
@@ -893,12 +897,14 @@ test('Batch 5f: stat bar reverted inside card frame', function() {
   assert(/\.card-stats\s*\{[^}]*bottom:\s*2px/s.test(htmlContent), 'stats positioned inside (bottom: 2px)');
 });
 
-test('Batch 5e: keywords anchored to upper-right corner', function() {
-  var idx = htmlContent.indexOf('batch 5d item 4 + 5e item 1/3');
-  assert(idx >= 0, '5e keyword override block present');
-  var block = htmlContent.substring(idx, idx + 1500);
-  assert(/top:\s*2px/.test(block), 'keywords top:2px');
-  assert(/right:\s*2px/.test(block), 'keywords right:2px');
+test('Batch 5h: keyword badges render icon only (no label text)', function() {
+  // 5h item 2: the keyword renderer should emit just the icon for booleans
+  // (counted keywords like heavyArmor/veteran still append their numeric value).
+  assert(gameScript.includes('Batch 5h item 2: icon-only'), '5h icon-only comment present in renderer');
+  // Icon-only path: the first rendered text is just the meta.icon (no " " + label).
+  assert(gameScript.includes('var text = entry.meta.icon;'), 'default icon-only assignment');
+  // Legacy "icon + label" pattern should no longer appear in the keyword loop.
+  assert(!gameScript.includes('entry.meta.icon + " " + entry.meta.label'), 'label text suffix removed');
 });
 
 test('Batch 5e: unit type rendered as icon (typeIcons dict)', function() {
@@ -1031,6 +1037,49 @@ test('Batch 5g: showDraftScreen uses styled modal (async)', function() {
 test('Batch 5g: playerName migration guard in loadStats', function() {
   assert(gameScript.includes('if (!_stats.playerName) _stats.playerName = "General"'),
     'migration guard present');
+});
+
+// ========== BATCH 5h TESTS ==========
+console.log('\n===== BATCH 5h TESTS =====\n');
+
+test('Batch 5h item 1: Advance button removed from unit cards', function() {
+  // The old reserve-card Advance button should no longer be emitted.
+  assert(!gameScript.includes('moveBtn.textContent = "Advance'), 'Advance button text gone');
+  assert(!gameScript.includes('moveBtn.className = "move-btn"'), 'move-btn element gone');
+  // Players advance by selecting a reserve unit and tapping the frontline zone.
+  assert(gameScript.includes('moveUnitWithAnimation(inst, targetSlot)'), 'frontline-click path still wired');
+});
+
+test('Batch 5h item 3: profile name is clickable to rename', function() {
+  // Both the avatar AND the name should open the rename prompt.
+  // The profileName element must have a cursor:pointer style (either before or after id=).
+  var profileNameMatch = htmlContent.match(/<div[^>]*id="profileName"[^>]*>/);
+  assert(profileNameMatch, 'profileName element exists');
+  assert(/cursor:\s*pointer/.test(profileNameMatch[0]), 'profileName shown as clickable');
+  assert(gameScript.includes('nameEl.addEventListener("click", _promptRename)'),
+    'profileName click handler wired');
+  assert(gameScript.includes('avatarLarge.addEventListener("click", _promptRename)'),
+    'profile avatar still renames too');
+});
+
+test('Batch 5h item 5: battle nameplates render portrait + name for both sides', function() {
+  // HTML nameplate containers present
+  assert(htmlContent.indexOf('id="playerNamePortrait"') >= 0, 'player portrait element');
+  assert(htmlContent.indexOf('id="enemyNamePortrait"') >= 0, 'enemy portrait element');
+  assert(htmlContent.indexOf('id="playerNameplateName"') >= 0, 'player name element');
+  assert(htmlContent.indexOf('id="enemyNameplateName"') >= 0, 'enemy name element');
+  assert(htmlContent.indexOf('battle-nameplate') >= 0, 'nameplate CSS class present');
+  // render() populates both portraits + names
+  assert(gameScript.includes('setTxt("playerNameplateName"'), 'player name written in render');
+  assert(gameScript.includes('setTxt("enemyNameplateName"'), 'enemy name written in render');
+  assert(gameScript.includes('_renderAvatarInto(playerPortrait'), 'player portrait rendered');
+  assert(gameScript.includes('_renderAvatarInto(enemyPortrait'), 'enemy portrait rendered');
+});
+
+test('Batch 5h item 5: game start uses player\'s chosen name', function() {
+  // G.player.name prefers _stats.playerName over the faction-default commander name.
+  assert(gameScript.includes('var playerDisplayName = (_stats && _stats.playerName)'),
+    'player display name reads from _stats');
 });
 
 // ========== SUMMARY ==========
