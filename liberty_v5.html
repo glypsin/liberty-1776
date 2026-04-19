@@ -3832,7 +3832,7 @@
             var _unitsPlayedThisTurn = [];
 
             // ========== PLAYING CARDS ==========
-            function playCard(instance) {
+            function playCard(instance, targetSlot) {
                 if (!canPlayCard(instance)) {
                     return false;
                 }
@@ -3858,7 +3858,25 @@
                         instance.exhausted = !instance.def.blitz;
                     }
                     instance._justDeployed = true;
-                    G.player.board.push(instance);
+                    // Batch 5i item 2: honor drop position — splice the new unit into its
+                    // destination zone at targetSlot, not at the end of the board array.
+                    if (typeof targetSlot === "number") {
+                        var inserted = false;
+                        var zoneCount = 0;
+                        for (var bi = 0; bi < G.player.board.length; bi++) {
+                            if (G.player.board[bi].zone === instance.zone) {
+                                if (zoneCount === targetSlot) {
+                                    G.player.board.splice(bi, 0, instance);
+                                    inserted = true;
+                                    break;
+                                }
+                                zoneCount++;
+                            }
+                        }
+                        if (!inserted) G.player.board.push(instance);
+                    } else {
+                        G.player.board.push(instance);
+                    }
                     _playSound("card");
 
                     var zoneMsg = instance.zone === "frontline" ? (instance.def.unitType === "cavalry" ? " (Cavalry!)" : " to frontline") : (instance.def.blitz ? " to reserve (Blitz!)" : " to reserve");
@@ -4181,29 +4199,26 @@
                 }
 
                 // Guard check: only adjacent guard units protect their neighbors
-                // Artillery and Naval bypass guards entirely
+                // Artillery and Naval bypass guards entirely.
+                // Batch 5i item 1: frontline Guards only shield their own frontline neighbors.
+                // Attacks on reserve units / HQ are blocked only by Guards in the enemy reserve.
                 var enemyFrontline = getUnitsInZone(G.enemy.board, "frontline");
                 if (atkType !== "naval" && atkType !== "artillery") {
                     var defenderIdx = enemyFrontline.indexOf(defender);
-                    var protectingGuards = [];
-                    for (var i = 0; i < enemyFrontline.length; i++) {
-                        var u = enemyFrontline[i];
-                        if (u.def.guard && !u.dead && !u.hasSmokescreen && u !== defender) {
-                            protectingGuards.push(u);
-                        }
-                    }
-                    if (protectingGuards.length > 0 && !defender.def.guard) {
-                        // Check if any guard is adjacent and protecting
+                    if (!defender.def.guard) {
                         var blocked = false;
                         if (defenderIdx !== -1) {
-                            // Adjacent guards block (idx-1 or idx+1)
-                            for (var gi = 0; gi < protectingGuards.length; gi++) {
-                                var gIdx = enemyFrontline.indexOf(protectingGuards[gi]);
-                                if (Math.abs(gIdx - defenderIdx) === 1) { blocked = true; break; }
+                            // Frontline defender: adjacent frontline Guard blocks.
+                            for (var i = 0; i < enemyFrontline.length; i++) {
+                                var u = enemyFrontline[i];
+                                if (u === defender) continue;
+                                if (u.def.guard && !u.dead && !u.hasSmokescreen) {
+                                    if (Math.abs(i - defenderIdx) === 1) { blocked = true; break; }
+                                }
                             }
                         } else {
-                            // Defender not in frontline list (e.g. reserve) — any guard blocks
-                            blocked = true;
+                            // Reserve defender (unit or HQ): only a reserve Guard shields.
+                            blocked = hasGuardNearHQ(G.enemy.board);
                         }
                         if (blocked) {
                             _log("Must attack adjacent Guard unit first!");
@@ -4261,9 +4276,11 @@
                 return false;
             }
 
-            function hasGuardOnFrontline(board) {
+            // Batch 5i item 1: Guards only protect the HQ when stationed near it (reserve zone).
+            // Frontline Guards still protect their adjacent frontline neighbors via isProtected().
+            function hasGuardNearHQ(board) {
                 for (var i = 0; i < board.length; i++) {
-                    if (board[i].zone === "frontline" && board[i].def.guard && !board[i].dead) return true;
+                    if (board[i].zone === "reserve" && board[i].def.guard && !board[i].dead && !board[i].hasSmokescreen) return true;
                 }
                 return false;
             }
@@ -4486,7 +4503,9 @@
                             targets = targets.filter(function(u) { return !u.dead && !u.hasSmokescreen; });
                         }
 
-                        // Guard check: only adjacent guards block, artillery and naval bypass entirely
+                        // Guard check: only adjacent guards block, artillery and naval bypass entirely.
+                        // Batch 5i item 1: frontline Guards shield their frontline neighbors only;
+                        // reserve-zone targets are shielded only by Guards in the player reserve.
                         if (aType !== "naval" && aType !== "artillery") {
                             var pFrontline = getUnitsInZone(G.player.board, "frontline");
                             var guardSet = {};
@@ -4495,7 +4514,7 @@
                                     guardSet[pFrontline.indexOf(pFrontline[g])] = pFrontline[g];
                                 }
                             }
-                            // For each candidate target, determine if blocked by adjacent guard
+                            var reserveGuardActive = hasGuardNearHQ(G.player.board);
                             var validTargets = [];
                             for (var t = 0; t < targets.length; t++) {
                                 var cand = targets[t];
@@ -4503,17 +4522,25 @@
                                 var idx = pFrontline.indexOf(cand);
                                 var blocked = false;
                                 if (idx === -1) {
-                                    // Reserve target — any guard on frontline blocks
-                                    for (var k in guardSet) { blocked = true; break; }
+                                    // Reserve unit / HQ: blocked only when a reserve Guard stands near HQ.
+                                    blocked = reserveGuardActive;
                                 } else {
                                     if (guardSet[idx-1] || guardSet[idx+1]) blocked = true;
                                 }
                                 if (!blocked) validTargets.push(cand);
                             }
-                            // If no valid non-guarded targets but guards exist, must attack a guard
+                            // If everything is guarded, attack any available frontline OR reserve Guard.
                             if (validTargets.length === 0) {
                                 for (var g2 = 0; g2 < pFrontline.length; g2++) {
                                     if (pFrontline[g2].def.guard && !pFrontline[g2].dead && !pFrontline[g2].hasSmokescreen) validTargets.push(pFrontline[g2]);
+                                }
+                                if (reserveGuardActive) {
+                                    var pReserveUnits = getUnitsInZone(G.player.board, "reserve");
+                                    for (var g3 = 0; g3 < pReserveUnits.length; g3++) {
+                                        if (pReserveUnits[g3].def.guard && !pReserveUnits[g3].dead && !pReserveUnits[g3].hasSmokescreen) {
+                                            validTargets.push(pReserveUnits[g3]);
+                                        }
+                                    }
                                 }
                             }
                             targets = validTargets;
@@ -5006,10 +5033,10 @@
                     var el = document.getElementById(containerId);
                     if (!el) return;
                     el.innerHTML = "";
-                    if (hasGuardOnFrontline(side.board)) {
+                    if (hasGuardNearHQ(side.board)) {
                         var b = document.createElement("span");
                         b.className = "keyword-badge protected";
-                        b.title = "Protected: adjacent Guard on frontline blocks non-artillery attacks";
+                        b.title = "Protected: a Guard in the reserve zone blocks non-artillery attacks on the HQ";
                         b.textContent = "\uD83D\uDEE1 Protected";
                         el.appendChild(b);
                     }
@@ -5206,7 +5233,29 @@
                 if (target) {
                     // Snapshot existing reserve/frontline positions for slide-aside + new card deploy animation (batch 5b items 4+5+6).
                     var preSnap = _snapshotBoardPositions();
-                    playCard(droppedInst);
+                    // Batch 5i item 2: compute the drop-slot index from mouse X within the
+                    // unit's destination zone (cavalry→frontline row, others→reserve row),
+                    // so the card lands at the cursor rather than at the row's end.
+                    var targetSlot;
+                    if (droppedInst.def.type === "unit") {
+                        var destRowId, destZoneKey;
+                        if ((droppedInst.def.unitType || "infantry") === "cavalry") {
+                            destRowId = "playerFrontline";
+                            destZoneKey = "frontline";
+                        } else {
+                            destRowId = "playerReserve";
+                            destZoneKey = "reserve";
+                        }
+                        var destRow = document.getElementById(destRowId);
+                        if (destRow) {
+                            var rect = destRow.getBoundingClientRect();
+                            var zoneCountBefore = getUnitsInZone(G.player.board, destZoneKey).length;
+                            var total = zoneCountBefore + 1;
+                            var relX = dropX - rect.left;
+                            targetSlot = Math.max(0, Math.min(total - 1, Math.floor((relX / Math.max(1, rect.width)) * total)));
+                        }
+                    }
+                    playCard(droppedInst, targetSlot);
                     selectedCard = null;
                     render();
                     // Animate existing cards sliding aside to make room (FLIP).
@@ -5373,7 +5422,8 @@
                     card.className += " exhausted";
                 }
 
-                if (instance.def.guard && instance.zone === "frontline") {
+                // Batch 5i item 1: reserve Guards visually glow too — they now shield the HQ.
+                if (instance.def.guard && (instance.zone === "frontline" || instance.zone === "reserve")) {
                     card.className += " guard-unit";
                 }
 

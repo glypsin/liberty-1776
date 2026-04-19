@@ -662,7 +662,8 @@ test('Batch 5b: endDrag animates new card from drop position', function() {
   // Slice of the whole script around endDrag
   var idx = gameScript.indexOf('function endDrag');
   assert(idx > -1, 'endDrag found');
-  var block = gameScript.substring(idx, idx + 3000);
+  // Raised to 5000 in 5i — endDrag grew to compute targetSlot from the drop position.
+  var block = gameScript.substring(idx, idx + 5000);
   assert(/droppedInst/.test(block), 'captures dropped instance');
   assert(/translate\(/.test(block), 'applies translate transform');
   assert(/transition\s*=\s*"transform 350ms/.test(block), 'animates transform');
@@ -826,8 +827,8 @@ test('Batch 5d: Protected keyword rendered as runtime-derived badge', function()
 test('Batch 5d/5e: HQ keyword row wired to render (replaces single badge in 5e)', function() {
   assert(htmlContent.indexOf('id="enemyHQKeywords"') >= 0, 'enemy HQ keyword row in HTML');
   assert(htmlContent.indexOf('id="playerHQKeywords"') >= 0, 'player HQ keyword row in HTML');
-  assert(gameScript.includes('hasGuardOnFrontline(side.board)') || gameScript.includes('hasGuardOnFrontline(G.player.board)'),
-    'guard check in render');
+  // 5i: HQ Protected now keyed off reserve-zone Guards (hasGuardNearHQ) instead of frontline.
+  assert(gameScript.includes('hasGuardNearHQ(side.board)'), 'guard check in render');
 });
 
 // First-time tutorial
@@ -1080,6 +1081,55 @@ test('Batch 5h item 5: game start uses player\'s chosen name', function() {
   // G.player.name prefers _stats.playerName over the faction-default commander name.
   assert(gameScript.includes('var playerDisplayName = (_stats && _stats.playerName)'),
     'player display name reads from _stats');
+});
+
+// ========== BATCH 5i TESTS ==========
+console.log('\n===== BATCH 5i TESTS =====\n');
+
+test('Batch 5i item 1: HQ Protected keyed off reserve-zone Guards only', function() {
+  // hasGuardNearHQ (reserve zone) replaces the old hasGuardOnFrontline for HQ protection.
+  assert(gameScript.includes('function hasGuardNearHQ(board)'), 'hasGuardNearHQ defined');
+  assert(!gameScript.includes('function hasGuardOnFrontline'), 'old frontline-only helper removed');
+  // Must check zone === "reserve" with a guard flag.
+  var idx = gameScript.indexOf('function hasGuardNearHQ(board)');
+  var body = gameScript.substring(idx, idx + 400);
+  assert(/zone\s*===\s*"reserve"/.test(body), 'reserve zone check');
+  assert(/\.def\.guard/.test(body), 'guard flag check');
+});
+
+test('Batch 5i item 1: attack targeting uses reserve-guard rule for HQ / reserve', function() {
+  // Player-attack path: reserve defenders are shielded only by hasGuardNearHQ.
+  assert(gameScript.includes('blocked = hasGuardNearHQ(G.enemy.board)'),
+    'player-attack reserve defender uses reserve-guard rule');
+  // Enemy AI path: reserveGuardActive flag gates reserve-target blocking.
+  assert(gameScript.includes('var reserveGuardActive = hasGuardNearHQ(G.player.board)'),
+    'AI targeting reads reserveGuardActive');
+  assert(gameScript.includes('blocked = reserveGuardActive'),
+    'AI reserve-target block tied to reserveGuardActive');
+});
+
+test('Batch 5i item 1: reserve Guards receive the guard-unit visual glow', function() {
+  // Both frontline AND reserve Guards should get the .guard-unit halo now.
+  assert(gameScript.includes('instance.zone === "frontline" || instance.zone === "reserve"'),
+    'guard-unit class applied for frontline OR reserve guards');
+});
+
+test('Batch 5i item 2: playCard accepts targetSlot and splices at drop position', function() {
+  assert(gameScript.includes('function playCard(instance, targetSlot)'),
+    'playCard signature extended with targetSlot');
+  // Splice path must find the correct zone slot and insert, falling back to push.
+  var idx = gameScript.indexOf('function playCard(instance, targetSlot)');
+  var body = gameScript.substring(idx, idx + 3500);
+  assert(/if\s*\(typeof targetSlot === "number"\)/.test(body), 'targetSlot guarded by type check');
+  assert(/G\.player\.board\.splice\(bi, 0, instance\)/.test(body), 'splice inserts at zone slot');
+});
+
+test('Batch 5i item 2: endDrag computes targetSlot from drop X within destination row', function() {
+  var idx = gameScript.indexOf('function endDrag(e)');
+  var body = gameScript.substring(idx, idx + 5000);
+  assert(/destRowId\s*=\s*"playerFrontline"/.test(body), 'cavalry routes to frontline row');
+  assert(/destRowId\s*=\s*"playerReserve"/.test(body), 'others route to reserve row');
+  assert(/playCard\(droppedInst, targetSlot\)/.test(body), 'targetSlot passed to playCard');
 });
 
 // ========== SUMMARY ==========
