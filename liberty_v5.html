@@ -1055,6 +1055,16 @@
             content: "\2694";
             text-shadow: 0 1px 3px rgba(0,0,0,0.6);
         }
+        .enemy-hand-row .card-back.more-indicator::before {
+            content: "";
+        }
+        .enemy-hand-row .card-back.more-indicator {
+            font-size: 0.9em !important;
+            font-weight: bold;
+            color: #FFD700;
+            background: rgba(0,0,0,0.45);
+            border-color: #DAA520;
+        }
 
         /* Smoke puff that follows each musket volley (batch 5e item 4) */
         .musket-smoke {
@@ -1198,6 +1208,67 @@
         }
         /* On-board cards: hide name (was small and got crowded by right-side keywords). */
         .card.on-board .card-name { display: none; }
+
+        /* In-app confirm modal (batch 5g item 6) — replaces native confirm() for game dialogs */
+        #confirmModalOverlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.72);
+            z-index: 1100;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        #confirmModalOverlay.active { display: flex; }
+        .confirm-modal-box {
+            background: linear-gradient(180deg, #2C1810 0%, #1A0F0A 100%);
+            border: 3px solid #DAA520;
+            border-radius: 10px;
+            padding: 22px 26px;
+            max-width: 460px;
+            width: 100%;
+            box-shadow: 0 10px 36px rgba(0,0,0,0.8), 0 0 22px rgba(218,165,32,0.3);
+            color: #F0E0C0;
+            font-family: Georgia, serif;
+        }
+        .confirm-modal-title {
+            color: #FFD700;
+            font-size: 1.35em;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        .confirm-modal-text {
+            color: #DAA520;
+            font-size: 1em;
+            line-height: 1.5;
+            margin-bottom: 18px;
+        }
+        .confirm-modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .confirm-modal-buttons button {
+            padding: 10px 22px;
+            border-radius: 6px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: Georgia, serif;
+            font-size: 0.95em;
+            min-width: 120px;
+        }
+        .confirm-modal-buttons .btn-confirm {
+            background: linear-gradient(180deg, #DAA520 0%, #8B6914 100%);
+            color: #1A0F0A;
+        }
+        .confirm-modal-buttons .btn-cancel {
+            background: linear-gradient(180deg, #5A4310 0%, #3A2A0A 100%);
+            color: #C9A961;
+        }
+        .confirm-modal-buttons button:hover { filter: brightness(1.15); }
 
         /* First-time tutorial overlay (batch 5d item 3) */
         #tutorialOverlay {
@@ -2678,6 +2749,18 @@
         </div>
     </div>
 
+    <!-- In-app confirm modal (batch 5g item 6) -->
+    <div id="confirmModalOverlay">
+        <div class="confirm-modal-box">
+            <div class="confirm-modal-title" id="confirmModalTitle">Confirm</div>
+            <div class="confirm-modal-text" id="confirmModalText"></div>
+            <div class="confirm-modal-buttons">
+                <button class="btn-cancel" id="confirmModalCancel">Cancel</button>
+                <button class="btn-confirm" id="confirmModalConfirm">OK</button>
+            </div>
+        </div>
+    </div>
+
     <!-- First-time tutorial overlay (batch 5d item 3) -->
     <div id="tutorialOverlay">
         <div class="tutorial-box">
@@ -2708,7 +2791,10 @@
             <div class="avatar-picker-title">Choose Avatar</div>
             <div style="color:#C9A961;font-size:0.85em;margin-bottom:8px;">Unlock more avatars by collecting cards with portraits.</div>
             <div class="avatar-grid" id="avatarGrid"></div>
-            <button class="campaign-back-btn" id="profileBackBtn">Back to Menu</button>
+            <div style="display:flex;gap:10px;justify-content:center;margin-top:16px;">
+                <button class="campaign-back-btn" id="replayTutorialBtn" style="background:linear-gradient(180deg,#1B4F72,#154360);color:#fff;">Replay Tutorial</button>
+                <button class="campaign-back-btn" id="profileBackBtn">Back to Menu</button>
+            </div>
         </div>
     </div>
 
@@ -4866,28 +4952,37 @@
                 setTxt("enemyName", G.enemy.name);
                 renderHPBar("enemyHPBar", "enemyHP", G.enemy.hp, G.enemy.maxHP);
 
-                // Enemy hand face-down cards (batch 5f item 4).
+                // Enemy hand face-down cards (batch 5f item 4 + 5g item 4 overflow indicator).
                 var eHand = document.getElementById("enemyHand");
                 if (eHand) {
                     eHand.innerHTML = "";
-                    var n = Math.min(G.enemy.hand.length, 10);
+                    var total = G.enemy.hand.length;
+                    var n = Math.min(total, 10);
                     for (var eh = 0; eh < n; eh++) {
                         var back = document.createElement("div");
                         back.className = "card-back";
                         eHand.appendChild(back);
+                    }
+                    if (total > 10) {
+                        var more = document.createElement("div");
+                        more.className = "card-back more-indicator";
+                        more.textContent = "+" + (total - 10);
+                        more.title = (total - 10) + " more cards in enemy hand";
+                        eHand.appendChild(more);
                     }
                 }
                 setTxt("enemyHandCount", G.enemy.hand.length);
                 setTxt("enemyDeckCount", G.enemy.deck.length);
                 renderSupplyBox("enemySupplyBox", G.enemy.supply, G.enemy.maxSupply);
 
-                // Humanized phase indicator (batch 5f item 11): no code-looking "Phase: player"
+                // Humanized phase indicator (batch 5f item 11 + 5g item 5).
+                // During "animating" phase we hide the indicator entirely rather than
+                // showing a cryptic "—" placeholder.
                 var phaseLabel = "";
                 if (G.phase === "player") phaseLabel = "Your Turn \u2014 Turn " + (G.turn || 1);
                 else if (G.phase === "enemy") phaseLabel = "Enemy Turn";
-                else if (G.phase === "animating") phaseLabel = "\u2014";
                 else if (G.phase === "over") phaseLabel = "Battle Ended";
-                else phaseLabel = "";
+                // G.phase === "animating" or unknown → blank
                 setTxt("phaseIndicator", phaseLabel);
 
                 // Render boards
@@ -5422,15 +5517,39 @@
                     removeClass(tooltip, "visible");
                 });
 
-                card.addEventListener("touchstart", function(e) {
-                    addClass(tooltip, "visible");
-                    e.preventDefault();
+                // Touch: long-press (~300ms) shows tooltip, taps do not (so taps can
+                // still trigger selection/attack). Tap elsewhere dismisses it.
+                // Batch 5g item 1: previously tooltip showed on touchstart and hid on
+                // touchend, which made it invisible on mobile.
+                var _tooltipPressTimer = null;
+                var _tooltipHideTimer = null;
+                card.addEventListener("touchstart", function() {
+                    _tooltipPressTimer = setTimeout(function() {
+                        // Hide any other visible card tooltip first
+                        var visible = document.querySelectorAll(".card-tooltip.visible");
+                        for (var i = 0; i < visible.length; i++) removeClass(visible[i], "visible");
+                        addClass(tooltip, "visible");
+                        _tooltipPressTimer = null;
+                        // Auto-dismiss after 3 seconds so tooltip doesn't stick forever on mobile
+                        if (_tooltipHideTimer) clearTimeout(_tooltipHideTimer);
+                        _tooltipHideTimer = setTimeout(function() {
+                            removeClass(tooltip, "visible");
+                            _tooltipHideTimer = null;
+                        }, 3000);
+                    }, 350);
+                }, { passive: true });
+                card.addEventListener("touchend", function() {
+                    if (_tooltipPressTimer) {
+                        clearTimeout(_tooltipPressTimer);
+                        _tooltipPressTimer = null;
+                    }
                 });
-
-                card.addEventListener("touchend", function(e) {
-                    removeClass(tooltip, "visible");
-                    e.preventDefault();
-                });
+                card.addEventListener("touchmove", function() {
+                    if (_tooltipPressTimer) {
+                        clearTimeout(_tooltipPressTimer);
+                        _tooltipPressTimer = null;
+                    }
+                }, { passive: true });
 
                 card.appendChild(tooltip);
 
@@ -5980,6 +6099,17 @@
                 }
                 var tutSkip = document.getElementById("tutorialSkipBtn");
                 if (tutSkip) tutSkip.addEventListener("click", dismissTutorial);
+                // Replay Tutorial button on profile page (batch 5g item 3)
+                var replayTutorialBtn = document.getElementById("replayTutorialBtn");
+                if (replayTutorialBtn) {
+                    replayTutorialBtn.addEventListener("click", function() {
+                        if (_stats) {
+                            _stats.tutorialSeen = false;
+                            saveStats();
+                        }
+                        showTutorial();
+                    });
+                }
                 var buyN = document.getElementById("buyNormalPack");
                 if (buyN) buyN.addEventListener("click", function() { buyPack("normal"); });
                 var buyE = document.getElementById("buyEnhancedPack");
@@ -6098,14 +6228,24 @@
                     opened.appendChild(label);
                     var row = document.createElement("div");
                     row.style.cssText = "display:flex;flex-wrap:wrap;gap:6px;justify-content:center;";
+                    // Batch 5g item 2: staggered flip-in reveal so opening a pack feels
+                    // like flipping cards one by one, not a silent batch drop.
                     for (var i = 0; i < justOpenedPicks.length; i++) {
                         var def = null;
                         for (var j = 0; j < cardDefs.length; j++) { if (cardDefs[j].id === justOpenedPicks[i]) { def = cardDefs[j]; break; } }
                         if (!def) continue;
                         var inst = createCardInstance(def);
                         var card = createCardElement(inst, false, false, false);
-                        card.style.transform = "scale(0.85)";
+                        card.style.transform = "scale(0.85) rotateY(90deg) translateX(-24px)";
+                        card.style.opacity = "0";
+                        card.style.transition = "transform 0.45s ease-out, opacity 0.3s ease-out";
                         row.appendChild(card);
+                        (function(el, idx) {
+                            setTimeout(function() {
+                                el.style.transform = "scale(0.85) rotateY(0) translateX(0)";
+                                el.style.opacity = "1";
+                            }, 120 + idx * 140);
+                        })(card, i);
                     }
                     opened.appendChild(row);
                 }
@@ -6309,6 +6449,42 @@
             function updateResumeButton() {
                 var btn = document.getElementById("resumeGameBtn");
                 if (btn) btn.style.display = hasSavedGame() ? "block" : "none";
+            }
+
+            // ========== CONFIRM MODAL (batch 5g item 6) ==========
+            // Promise-based styled confirm. Drop-in replacement for native window.confirm
+            // but with game aesthetic and async/await ergonomics.
+            function _showConfirmModal(title, text, options) {
+                options = options || {};
+                var confirmText = options.confirmText || "OK";
+                var cancelText = options.cancelText || "Cancel";
+                return new Promise(function(resolve) {
+                    var overlay = document.getElementById("confirmModalOverlay");
+                    var titleEl = document.getElementById("confirmModalTitle");
+                    var textEl = document.getElementById("confirmModalText");
+                    var okBtn = document.getElementById("confirmModalConfirm");
+                    var cancelBtn = document.getElementById("confirmModalCancel");
+                    if (!overlay || !titleEl || !textEl || !okBtn || !cancelBtn) {
+                        // Defensive fallback: native confirm
+                        resolve(window.confirm(text));
+                        return;
+                    }
+                    titleEl.textContent = title || "Confirm";
+                    textEl.innerHTML = text || "";
+                    okBtn.textContent = confirmText;
+                    cancelBtn.textContent = cancelText;
+                    function cleanup(result) {
+                        removeClass(overlay, "active");
+                        okBtn.removeEventListener("click", onOk);
+                        cancelBtn.removeEventListener("click", onCancel);
+                        resolve(result);
+                    }
+                    function onOk() { cleanup(true); }
+                    function onCancel() { cleanup(false); }
+                    okBtn.addEventListener("click", onOk);
+                    cancelBtn.addEventListener("click", onCancel);
+                    addClass(overlay, "active");
+                });
             }
 
             // ========== TUTORIAL (batch 5d item 3) ==========
@@ -6766,10 +6942,14 @@
                 return counts;
             }
 
-            function showDraftScreen() {
-                // If a saved arena run exists, offer to resume without charging entry (batch 5c).
+            async function showDraftScreen() {
+                // If a saved arena run exists, offer to resume without charging entry (batch 5c + 5g item 6: styled modal).
                 if (_hasSavedArena()) {
-                    var resume = confirm("You have an Arena run in progress. Resume it? (Cancel starts a new run and forfeits the old one.)");
+                    var resume = await _showConfirmModal(
+                        "Resume Arena Run?",
+                        "You have an Arena run in progress. <br><br><strong>Resume</strong> continues where you left off. <br><strong>Start Fresh</strong> forfeits the current run and begins a new one.",
+                        { confirmText: "Resume", cancelText: "Start Fresh" }
+                    );
                     if (resume) {
                         if (_loadDraftRun()) {
                             hideAllScreens();
@@ -6787,7 +6967,12 @@
                     alert("Arena entry costs \u00A375. You have \u00A3" + (_stats.gold || 0) + ".");
                     return;
                 }
-                if (!confirm("Enter Arena? Cost: \u00A375. Reward: enhanced pack + \u00A3100 for winning, \u00A3100 for 3+ wins. (Less than 3 wins: nothing)")) return;
+                var entryOk = await _showConfirmModal(
+                    "Enter the Arena?",
+                    "<strong>Cost:</strong> \u00A375<br><strong>Rewards:</strong> 7 wins = enhanced pack + \u00A3100 &middot; 3+ wins = \u00A3100 &middot; fewer than 3 wins = nothing.",
+                    { confirmText: "Enter (\u00A375)", cancelText: "Not yet" }
+                );
+                if (!entryOk) return;
                 _stats.gold -= 75;
                 saveStats();
                 hideAllScreens();

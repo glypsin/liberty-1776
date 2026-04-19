@@ -979,6 +979,60 @@ test('Batch 5f: collection brief shows flavor + effect + history per tile', func
     'all three brief fields referenced');
 });
 
+// ========== BATCH 5g TESTS ==========
+console.log('\n===== BATCH 5g TESTS =====\n');
+
+test('Batch 5g: tooltip uses long-press on touch (not touchstart-show)', function() {
+  assert(gameScript.includes('_tooltipPressTimer'), 'tooltip press timer defined');
+  assert(gameScript.includes('_tooltipHideTimer'), 'tooltip auto-hide timer defined');
+  // Old behavior removed: touchstart no longer immediately addClass tooltip visible
+  assert(!/card\.addEventListener\("touchstart",\s*function\(e\)\s*\{\s*addClass\(tooltip,\s*"visible"\)/.test(gameScript),
+    'old instant-show touchstart handler removed');
+});
+
+test('Batch 5g: pack reveal uses staggered flip-in animation', function() {
+  assert(gameScript.includes('rotateY(90deg)'), 'rotateY flip transform present');
+  assert(gameScript.includes('120 + idx * 140'), 'staggered per-index delay');
+});
+
+test('Batch 5g: Replay Tutorial button wired on profile', function() {
+  assert(htmlContent.indexOf('id="replayTutorialBtn"') >= 0, 'button in HTML');
+  assert(gameScript.includes('replayTutorialBtn.addEventListener'), 'click listener wired');
+  assert(/replayTutorialBtn[\s\S]{0,400}tutorialSeen = false/.test(gameScript), 'resets tutorialSeen');
+});
+
+test('Batch 5g: enemy hand +N more indicator when > 10 cards', function() {
+  assert(gameScript.includes('more-indicator'), 'more-indicator class referenced');
+  assert(gameScript.includes('total > 10'), 'overflow threshold check');
+  assert(htmlContent.indexOf('.more-indicator') >= 0, 'more-indicator CSS present');
+});
+
+test('Batch 5g: phase indicator hidden during animations', function() {
+  // Old "—" placeholder for animating phase removed.
+  assert(!/G\.phase === "animating"\) phaseLabel = "\\u2014"/.test(gameScript), 'old "—" removed');
+  assert(gameScript.includes('"animating" or unknown'), 'animating now produces blank label');
+});
+
+test('Batch 5g: _showConfirmModal helper defined', function() {
+  assert(gameScript.includes('function _showConfirmModal'), 'helper defined');
+  assert(htmlContent.indexOf('id="confirmModalOverlay"') >= 0, 'modal overlay in HTML');
+  assert(htmlContent.indexOf('id="confirmModalConfirm"') >= 0, 'confirm button in HTML');
+  assert(htmlContent.indexOf('id="confirmModalCancel"') >= 0, 'cancel button in HTML');
+});
+
+test('Batch 5g: showDraftScreen uses styled modal (async)', function() {
+  assert(/async function showDraftScreen/.test(gameScript), 'showDraftScreen is async');
+  assert(gameScript.includes('await _showConfirmModal'), 'awaits styled modal');
+  // Old native confirm() calls for arena removed
+  assert(!gameScript.includes('confirm("You have an Arena run in progress'), 'native arena resume confirm removed');
+  assert(!gameScript.includes('confirm("Enter Arena?'), 'native arena entry confirm removed');
+});
+
+test('Batch 5g: playerName migration guard in loadStats', function() {
+  assert(gameScript.includes('if (!_stats.playerName) _stats.playerName = "General"'),
+    'migration guard present');
+});
+
 // ========== SUMMARY ==========
 console.log('\n===== TEST SUMMARY =====\n');
 console.log('Passed: ' + results.passed.length);
