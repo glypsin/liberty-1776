@@ -30,7 +30,7 @@
         }
 
         /* Screens */
-        #menuScreen, #gameScreen, #gameOverScreen, #campaignScreen, #deckBuilderScreen, #draftScreen {
+        #menuScreen, #gameScreen, #gameOverScreen, #campaignScreen, #deckBuilderScreen, #draftScreen, #rankedScreen {
             display: none;
             width: 100%;
             height: 100%;
@@ -40,7 +40,7 @@
             z-index: 10;
         }
 
-        #menuScreen.active, #gameScreen.active, #gameOverScreen.active, #campaignScreen.active, #deckBuilderScreen.active, #draftScreen.active {
+        #menuScreen.active, #gameScreen.active, #gameOverScreen.active, #campaignScreen.active, #deckBuilderScreen.active, #draftScreen.active, #rankedScreen.active {
             display: flex;
         }
 
@@ -147,19 +147,98 @@
             box-shadow: 0 0 20px rgba(218, 165, 32, 0.4);
         }
 
-        /* Game Screen - War Map */
+        /* Game Screen - Battlefield table style (KARDS-like reference pass) */
         #gameScreen {
             flex-direction: column;
             align-items: stretch;
             justify-content: space-between;
+            position: relative;
             background:
-                repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(255,255,255,0.01) 40px, rgba(255,255,255,0.01) 41px),
-                repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(255,255,255,0.01) 40px, rgba(255,255,255,0.01) 41px),
-                radial-gradient(ellipse at 50% 40%, rgba(80, 60, 30, 0.25) 0%, transparent 60%),
-                linear-gradient(180deg, #12100a 0%, #1e1a10 30%, #1a160e 70%, #0e0c08 100%);
+                radial-gradient(120% 84% at 50% 50%, rgba(156,166,114,0.16) 0%, rgba(156,166,114,0) 63%),
+                radial-gradient(88% 62% at 50% 42%, rgba(82,90,54,0.42) 0%, rgba(82,90,54,0) 72%),
+                radial-gradient(78% 46% at 50% 105%, rgba(12,15,10,0.62) 0%, rgba(12,15,10,0) 60%),
+                radial-gradient(78% 46% at 50% -8%, rgba(12,15,10,0.55) 0%, rgba(12,15,10,0) 60%),
+                linear-gradient(180deg, #060808 0%, #121712 7%, #2E3625 18%, #465037 48%, #323A2A 74%, #161A13 90%, #090B09 100%);
             padding: 6px;
             gap: 2px;
             overflow-y: auto;
+        }
+        /* Keep battlefield UI above smoke layer */
+        #gameScreen > * {
+            position: relative;
+            z-index: 1;
+        }
+        /* Explicit visual marker so build changes are unmistakable. */
+        .battlefield-theme-badge {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+            pointer-events: none;
+            font-size: 0.7em;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: rgba(255, 225, 140, 0.9);
+            border: 1px solid rgba(190, 150, 80, 0.8);
+            border-radius: 999px;
+            padding: 2px 10px;
+            background: rgba(15, 18, 12, 0.6);
+            text-shadow: 0 0 6px rgba(0, 0, 0, 0.9);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.45), inset 0 0 8px rgba(255, 210, 120, 0.15);
+        }
+        /* Ambient smoke/fog pass */
+        #gameScreen::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            background:
+                radial-gradient(ellipse at 50% 52%, rgba(240,220,155,0.10) 0%, rgba(240,220,155,0) 52%),
+                radial-gradient(ellipse at 10% 32%, rgba(190,190,190,0.14) 0%, rgba(190,190,190,0) 45%),
+                radial-gradient(ellipse at 86% 24%, rgba(150,150,150,0.12) 0%, rgba(150,150,150,0) 44%),
+                repeating-linear-gradient(13deg, rgba(255,255,255,0.02), rgba(255,255,255,0.02) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 11px);
+            opacity: 0.68;
+            animation: battlefieldSmokeDrift 22s ease-in-out infinite alternate;
+        }
+        /* Foreground haze + vignette for depth */
+        #gameScreen::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            background:
+                /* center frontline trench marker */
+                repeating-linear-gradient(90deg, rgba(60,14,14,0.72), rgba(60,14,14,0.72) 10px, rgba(20,0,0,0.25) 10px, rgba(20,0,0,0.25) 18px) center 50% / 44% 5px no-repeat,
+                /* left-side pistol silhouette */
+                radial-gradient(ellipse 70px 40px at 14% 73%, rgba(18,20,22,0.88) 0%, rgba(18,20,22,0.2) 62%, rgba(18,20,22,0) 100%),
+                linear-gradient(206deg, rgba(18,20,22,0) 35%, rgba(18,20,22,0.72) 36%, rgba(18,20,22,0.72) 44%, rgba(18,20,22,0) 45%) left 12% top 72% / 140px 170px no-repeat,
+                /* right-side drum magazine silhouette */
+                radial-gradient(circle at 90% 35%, rgba(18,20,22,0.85) 0 70px, rgba(18,20,22,0) 74px),
+                /* shell casings on left top */
+                radial-gradient(ellipse 24px 8px at 17% 18%, rgba(189,142,75,0.72), rgba(189,142,75,0) 70%),
+                radial-gradient(ellipse 24px 8px at 12% 29%, rgba(189,142,75,0.6), rgba(189,142,75,0) 70%),
+                radial-gradient(ellipse 24px 8px at 7% 33%, rgba(189,142,75,0.58), rgba(189,142,75,0) 70%),
+                linear-gradient(180deg, rgba(255,230,170,0.08) 0%, rgba(255,230,170,0.02) 24%, rgba(0,0,0,0.14) 60%, rgba(0,0,0,0.42) 100%),
+                radial-gradient(130% 110% at 50% 50%, rgba(0,0,0,0) 56%, rgba(0,0,0,0.45) 100%);
+            mix-blend-mode: normal;
+            opacity: 0.94;
+        }
+        @keyframes battlefieldSmokeDrift {
+            0% {
+                transform: translateX(-1.8%) translateY(0.3%) scale(1);
+                opacity: 0.62;
+            }
+            50% {
+                transform: translateX(1.4%) translateY(-1.1%) scale(1.03);
+                opacity: 0.82;
+            }
+            100% {
+                transform: translateX(2.8%) translateY(0.9%) scale(1.02);
+                opacity: 0.68;
+            }
         }
 
         .enemy-info, .player-info {
@@ -397,7 +476,7 @@
         .zone-cards, .zone-row {
             display: flex;
             justify-content: center;
-            gap: 6px;
+            gap: 10px;
             flex-wrap: wrap;
             min-height: 80px;
             align-items: center;
@@ -419,8 +498,23 @@
             background:
                 repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,215,0,0.02) 10px, rgba(255,215,0,0.02) 11px),
                 rgba(255, 215, 0, 0.04);
-            border: 1px solid rgba(255, 215, 0, 0.2);
+            border: 1px solid rgba(255, 215, 0, 0.3);
             padding: 2px 8px;
+            position: relative;
+        }
+        .frontline-zone::before {
+            content: "";
+            position: absolute;
+            left: 15%;
+            right: 15%;
+            top: 50%;
+            height: 6px;
+            transform: translateY(-50%);
+            background:
+                repeating-linear-gradient(90deg, rgba(95,20,20,0.9), rgba(95,20,20,0.9) 12px, rgba(28,4,4,0.35) 12px, rgba(28,4,4,0.35) 22px);
+            box-shadow: 0 0 8px rgba(0,0,0,0.5);
+            opacity: 0.95;
+            pointer-events: none;
         }
 
         .frontline-zone .zone-row {
@@ -598,21 +692,7 @@
         }
 
         .card.hero::after {
-            content: "";
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: conic-gradient(from 0deg, transparent, rgba(255,215,0,0.05), transparent, rgba(255,215,0,0.05));
-            animation: shimmer 4s linear infinite;
-            clip-path: inset(25% round 6px);
-            pointer-events: none;
-        }
-
-        @keyframes shimmer {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+            content: none;
         }
 
         .card.disabled {
@@ -1110,6 +1190,68 @@
             background: rgba(0,0,0,0.45);
             border-color: #DAA520;
         }
+        .enemy-intel-panel {
+            display: flex;
+            gap: 8px;
+            padding: 2px 10px 4px;
+            align-items: stretch;
+        }
+        .enemy-intel-box {
+            flex: 1;
+            min-height: 44px;
+            background: rgba(0,0,0,0.32);
+            border: 1px solid rgba(218,165,32,0.38);
+            border-radius: 8px;
+            padding: 4px 6px;
+        }
+        .enemy-intel-title {
+            font-size: 0.72em;
+            color: #D6B77A;
+            margin-bottom: 3px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .enemy-intel-cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3px;
+            max-height: 44px;
+            overflow: hidden;
+        }
+        .enemy-intel-chip {
+            font-size: 0.66em;
+            line-height: 1.15;
+            padding: 2px 5px;
+            border-radius: 10px;
+            background: rgba(0,0,0,0.42);
+            border: 1px solid rgba(255,255,255,0.18);
+            color: #E7D6B5;
+            white-space: nowrap;
+        }
+        .enemy-intel-chip.deck { border-color: rgba(87,132,180,0.42); color: #CFDEED; }
+        .enemy-intel-chip.burn { border-color: rgba(214,108,79,0.5); color: #FFD0B8; }
+        .enemy-draw-ghost {
+            position: fixed;
+            z-index: 760;
+            width: 60px;
+            height: 84px;
+            border-radius: 6px;
+            background:
+                linear-gradient(135deg, #5A0E0E, #2C0808),
+                repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(255,215,0,0.08) 4px, rgba(255,215,0,0.08) 5px);
+            border: 1.5px solid #DAA520;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.6), 0 0 8px rgba(218,165,32,0.35);
+            color: #F2D08A;
+            font-size: 0.6em;
+            text-align: center;
+            padding: 6px 4px;
+            pointer-events: none;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.7);
+            overflow: hidden;
+        }
 
         /* Smoke puff that follows each musket volley (batch 5e item 4) */
         .musket-smoke {
@@ -1149,6 +1291,16 @@
             z-index: 700;
             pointer-events: none;
         }
+        .burning-bomb-proj {
+            position: fixed;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #FFF3A0 0%, #FF8A2A 35%, #D14116 72%, rgba(0,0,0,0) 86%);
+            box-shadow: 0 0 14px rgba(255,120,30,0.85), 0 0 22px rgba(255,70,20,0.65);
+            z-index: 710;
+            pointer-events: none;
+        }
 
         .bullet-trail {
             position: fixed;
@@ -1171,6 +1323,23 @@
 
         .hq-card.hit {
             animation: hqHit 0.5s ease-out;
+        }
+        .hq-card.burning::after {
+            content: "";
+            position: absolute;
+            inset: -4px;
+            border-radius: 6px;
+            pointer-events: none;
+            background:
+                radial-gradient(circle at 20% 75%, rgba(255,120,30,0.65), rgba(255,120,30,0) 44%),
+                radial-gradient(circle at 50% 25%, rgba(255,190,70,0.55), rgba(255,190,70,0) 46%),
+                radial-gradient(circle at 78% 70%, rgba(255,70,20,0.6), rgba(255,70,20,0) 42%);
+            mix-blend-mode: screen;
+            animation: hqBurning 0.35s ease-in-out infinite alternate;
+        }
+        @keyframes hqBurning {
+            from { opacity: 0.5; transform: scale(0.99); filter: saturate(0.95); }
+            to { opacity: 0.9; transform: scale(1.02); filter: saturate(1.2); }
         }
 
         .attack-arrow {
@@ -1198,20 +1367,42 @@
            Center: portrait/icon.
            Bottom row: ATK (left) · unit type icon (middle) · HP (right). Stats float OUTSIDE card frame. */
         .card-keywords {
-            /* Batch 5h item 2: keywords float OUTSIDE the card's right edge as icon-only badges,
-               so they no longer crowd the portrait. Requires .card { overflow: visible }. */
             position: absolute;
-            top: 0;
-            left: 100%;
-            margin-left: 3px;
             display: flex;
-            flex-direction: column;
-            align-items: flex-start;
             gap: 3px;
-            justify-content: flex-start;
             z-index: 3;
             pointer-events: none;
         }
+        /* Hand/deck cards: keep keywords INSIDE the card frame. */
+        .card:not(.on-board) .card-keywords {
+            top: 3px;
+            right: 3px;
+            left: auto;
+            margin-left: 0;
+            max-width: 68%;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 2px;
+        }
+        /* Batch 5h item 2: keywords float OUTSIDE the card's right edge as icon-only badges
+           for deployed units, so portrait/stat readability stays high in battle. */
+        .card.on-board .card-keywords {
+            top: 0;
+            left: 100%;
+            right: auto;
+            margin-left: 6px;
+            max-width: none;
+            flex-direction: column;
+            flex-wrap: nowrap;
+            justify-content: flex-start;
+            align-items: flex-start;
+            gap: 3px;
+        }
+        /* Deployed units: slight zig-zag to reduce badge overlap between neighboring cards. */
+        .card.on-board .card-keywords .keyword-badge:nth-child(odd) { transform: translateX(0); }
+        .card.on-board .card-keywords .keyword-badge:nth-child(even) { transform: translateX(8px); }
         .card-keywords .keyword-badge {
             font-size: 0.95em;
             padding: 2px 4px;
@@ -2386,6 +2577,61 @@
         .draft-win { color: #4CAF50; }
         .draft-loss { color: #DC3545; }
 
+        #rankedScreen {
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1F1028 0%, #120A1A 100%);
+            padding: 20px;
+        }
+        .ranked-container {
+            width: min(720px, 96vw);
+            border: 3px solid #DAA520;
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.35);
+            box-shadow: 0 8px 26px rgba(0,0,0,0.6);
+            padding: 22px;
+            text-align: center;
+        }
+        .ranked-title {
+            font-size: 2.2em;
+            color: #FFD700;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
+        }
+        .ranked-subtitle {
+            color: #D7C08A;
+            margin-bottom: 14px;
+            font-size: 0.95em;
+        }
+        .ranked-row {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+        .ranked-select {
+            min-width: 300px;
+            max-width: 96%;
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: 2px solid #8B6914;
+            background: #1A0F0A;
+            color: #F5DEB3;
+            font-family: Georgia, serif;
+            font-size: 0.95em;
+        }
+        .ranked-status {
+            min-height: 38px;
+            color: #F5DEB3;
+            font-size: 0.92em;
+            margin: 10px 0;
+            white-space: pre-line;
+        }
+
         /* Unit type badges */
         .unit-type-cavalry { background: #8B6914 !important; color: #FFE0A0 !important; }
         .unit-type-artillery { background: #6B3410 !important; color: #FFB074 !important; }
@@ -2463,7 +2709,7 @@
 
             .zone-cards, .zone-row {
                 min-height: 70px;
-                gap: 4px;
+                gap: 6px;
             }
 
             .frontline-zone .zone-row {
@@ -2520,9 +2766,8 @@
                 padding-left: 12px;
             }
 
-            .card-keywords {
-                display: none;
-            }
+            .card.on-board .card-keywords { display: none; }
+            .card:not(.on-board) .card-keywords { display: flex; gap: 1px; max-width: 72%; }
 
             .enemy-info, .player-info {
                 font-size: 0.7em;
@@ -2570,6 +2815,13 @@
         <div class="menu-container">
             <div class="menu-title">Liberty 1776</div>
             <div class="menu-playername" id="menuPlayerName">&nbsp;</div>
+            <div style="display:flex;justify-content:center;align-items:center;gap:8px;margin:4px 0 8px;">
+                <span id="languageLabel" style="color:#DAA520;font-size:0.85em;">Language</span>
+                <select id="languageSelect" style="background:#2C1810;color:#F0E0C0;border:1px solid #DAA520;border-radius:6px;padding:4px 8px;font-family:Georgia,serif;">
+                    <option value="en">English</option>
+                    <option value="zh">中文</option>
+                </select>
+            </div>
 
             <div class="menu-columns">
                 <!-- LEFT: utility / meta buttons -->
@@ -2585,10 +2837,10 @@
                 <!-- CENTER: resume + difficulty + medals -->
                 <div class="menu-column center">
                     <button class="menu-btn" id="resumeGameBtn" style="display:none;background:linear-gradient(180deg,#2E5D3A 0%,#1B3D24 100%);">Resume Game</button>
-                    <div class="menu-subtitle" style="margin:8px 0 12px;">
+                    <div class="menu-subtitle" id="menuSubtitle" style="margin:8px 0 12px;">
                         Command your forces through the American Revolution.
                     </div>
-                    <div class="difficulty-label">Skirmish Difficulty:</div>
+                    <div class="difficulty-label" id="difficultyLabel">Skirmish Difficulty:</div>
                     <div class="difficulty-selector">
                         <button class="diff-btn" id="diffEasy">Easy</button>
                         <button class="diff-btn selected" id="diffNormal">Normal</button>
@@ -2596,7 +2848,7 @@
                     </div>
                     <div class="stats-line" id="statsLine"></div>
                     <div class="achievements-section">
-                        <div class="achievements-title">Medals</div>
+                        <div class="achievements-title" id="achievementsTitle">Medals</div>
                         <div class="achievements-grid" id="achievementsGrid"></div>
                     </div>
                 </div>
@@ -2607,6 +2859,7 @@
                     <button class="menu-btn" id="campaignUkBtn" style="background: linear-gradient(180deg, #8B1A1A 0%, #6B1010 100%);">Campaign (British)</button>
                     <button class="menu-btn" id="deckBuilderPatriotsBtn" style="background: linear-gradient(180deg, #1B4F72 0%, #154360 100%);">Deck Builder — Patriots</button>
                     <button class="menu-btn" id="deckBuilderBritishBtn" style="background: linear-gradient(180deg, #8B1A1A 0%, #6B1010 100%);">Deck Builder — British</button>
+                    <button class="menu-btn" id="rankedBtn" style="background: linear-gradient(180deg, #7A2D8B 0%, #4C1C58 100%);">Ranked Mode</button>
                     <button class="menu-btn" id="draftBtn" style="background: linear-gradient(180deg, #6B2D8B 0%, #4A235A 100%);">Draft Mode</button>
                 </div>
             </div>
@@ -2625,29 +2878,44 @@
 
     <!-- Game Screen -->
     <div id="gameScreen">
+        <div class="battlefield-theme-badge">Battlefield Theme Mk-II</div>
         <div class="enemy-info" id="enemyInfoBar" style="cursor: pointer;">
             <div class="battle-nameplate">
                 <div class="np-portrait" id="enemyNamePortrait"></div>
                 <div class="np-name" id="enemyNameplateName">-</div>
             </div>
             <div class="info-section">
-                <div class="info-label">Hand:</div>
+                <div class="info-label" id="enemyHandLabel">Hand:</div>
                 <div class="info-value" id="enemyHandCount">-</div>
             </div>
             <div class="info-section">
-                <div class="info-label">Deck:</div>
+                <div class="info-label" id="enemyDeckLabel">Deck:</div>
                 <div class="deck-count-box" id="enemyDeckCount">-</div>
             </div>
             <div class="info-section">
-                <div class="info-label">Supply:</div>
+                <div class="info-label" id="enemyBurnedLabel">Burned:</div>
+                <div class="deck-count-box" id="enemyBurnedCount">0</div>
+            </div>
+            <div class="info-section">
+                <div class="info-label" id="enemySupplyLabel">Supply:</div>
                 <div class="supply-box" id="enemySupplyBox">0/0</div>
             </div>
         </div>
         <!-- Enemy hand: face-down card backs at top (batch 5f item 4) -->
         <div class="enemy-hand-row" id="enemyHand"></div>
+        <div class="enemy-intel-panel">
+            <div class="enemy-intel-box">
+                <div class="enemy-intel-title" id="enemyDeckTopLabel">Enemy Deck (top)</div>
+                <div class="enemy-intel-cards" id="enemyDeckPreview"></div>
+            </div>
+            <div class="enemy-intel-box">
+                <div class="enemy-intel-title" id="enemyBurnedTopLabel">Enemy Burned</div>
+                <div class="enemy-intel-cards" id="enemyBurnedPreview"></div>
+            </div>
+        </div>
 
         <div class="board-zone enemy-support-zone">
-            <div class="zone-label">Enemy Reserve</div>
+            <div class="zone-label" id="enemyReserveLabel">Enemy Reserve</div>
             <div class="zone-cards" id="enemyReserve">
                 <div class="hq-card enemy-hq" id="enemyHQCard" style="cursor:pointer;">
                     <div class="hq-name" id="enemyName">-</div>
@@ -2667,7 +2935,7 @@
         </div>
 
         <div class="board-zone player-support-zone">
-            <div class="zone-label">Your Reserve</div>
+            <div class="zone-label" id="playerReserveLabel">Your Reserve</div>
             <div class="zone-cards" id="playerReserve">
                 <div class="hq-card player-hq" id="playerHQCard">
                     <div class="hq-name" id="playerName">-</div>
@@ -2687,15 +2955,15 @@
                 <div class="np-name" id="playerNameplateName">-</div>
             </div>
             <div class="info-section">
-                <div class="info-label">Hand:</div>
+                <div class="info-label" id="playerHandLabel">Hand:</div>
                 <div class="info-value" id="playerHandCount">-</div>
             </div>
             <div class="info-section">
-                <div class="info-label">Deck:</div>
+                <div class="info-label" id="playerDeckLabel">Deck:</div>
                 <div class="deck-count-box" id="playerDeckCount">-</div>
             </div>
             <div class="info-section">
-                <div class="info-label">Supply:</div>
+                <div class="info-label" id="playerSupplyLabel">Supply:</div>
                 <div class="supply-box" id="playerSupplyBox">0/0</div>
             </div>
         </div>
@@ -2772,6 +3040,25 @@
             <div class="draft-deck-preview" id="draftDeckPreview"></div>
             <button class="menu-btn" id="draftStartBtn" style="display:none">Start Battle!</button>
             <button class="campaign-back-btn" id="draftBackBtn">Back</button>
+        </div>
+    </div>
+
+    <!-- Ranked Screen -->
+    <div id="rankedScreen">
+        <div class="ranked-container">
+            <div class="ranked-title" id="rankedTitle">Ranked Match</div>
+            <div class="ranked-subtitle" id="rankedSubtitle">Select a card set, then queue to find another player.</div>
+            <div class="ranked-row">
+                <input id="rankedServerUrlInput" class="ranked-select" type="text" placeholder="ws://localhost:8787/ranked" />
+            </div>
+            <div class="ranked-row">
+                <select id="rankedDeckSetSelect" class="ranked-select"></select>
+            </div>
+            <div id="rankedStatus" class="ranked-status">Choose a deck set to begin matchmaking.</div>
+            <div class="ranked-row">
+                <button class="menu-btn" id="rankedSearchBtn" style="background:linear-gradient(180deg,#2E5D3A 0%,#1B3D24 100%);">Search Match</button>
+                <button class="campaign-back-btn" id="rankedBackBtn">Back to Menu</button>
+            </div>
         </div>
     </div>
 
@@ -2890,6 +3177,182 @@
             var _activeSide = null; // tracks which side is currently acting (for battleCry context)
             var _difficulty = "normal"; // easy, normal, hard
             var _campaignMode = false;
+            var _rankedMode = false;
+            var _rankedOnline = false;
+            var _rankedSocket = null;
+            var _rankedRoom = null;
+            var _rankedChosenSet = null;
+            var _rankedSyncMute = false;
+            var _rankedSyncTimer = null;
+            var _rankedServerUrlStorageKey = "liberty1776_ranked_server_url";
+            var _langStorageKey = "liberty1776_lang";
+            var _lang = "en";
+            var UI_TEXT = {
+                en: {
+                    "lang.label": "Language",
+                    "menu.shop": "Shop (Card Packs)",
+                    "menu.openPacks": "Open Packs",
+                    "menu.collection": "Card Collection",
+                    "menu.help": "How to Play",
+                    "menu.fullscreen": "Toggle Fullscreen",
+                    "menu.saveExit": "Save & Exit",
+                    "menu.resume": "Resume Game",
+                    "menu.subtitle": "Command your forces through the American Revolution. [Build: audio-update-1]",
+                    "menu.diffLabel": "Skirmish Difficulty:",
+                    "menu.easy": "Easy",
+                    "menu.normal": "Normal",
+                    "menu.hard": "Hard",
+                    "menu.medals": "Medals",
+                    "menu.campaignPatriots": "Campaign (Patriots)",
+                    "menu.campaignBritish": "Campaign (British)",
+                    "menu.deckPatriots": "Deck Builder — Patriots",
+                    "menu.deckBritish": "Deck Builder — British",
+                    "menu.ranked": "Ranked Mode",
+                    "menu.draft": "Draft Mode",
+                    "game.hand": "Hand:",
+                    "game.deck": "Deck:",
+                    "game.burned": "Burned:",
+                    "game.supply": "Supply:",
+                    "game.enemyDeckTop": "Enemy Deck (top)",
+                    "game.enemyBurnedTop": "Enemy Burned",
+                    "game.enemyReserve": "Enemy Reserve",
+                    "game.yourReserve": "Your Reserve",
+                    "game.endTurn": "End Turn",
+                    "game.surrender": "Surrender",
+                    "game.phase.your": "Your Turn — Turn {turn}",
+                    "game.phase.enemy": "Enemy Turn",
+                    "game.phase.ended": "Battle Ended",
+                    "ranked.title": "Ranked Match",
+                    "ranked.subtitle": "Select a card set, then queue to find another player.",
+                    "ranked.search": "Search Match",
+                    "ranked.back": "Back to Menu",
+                    "ranked.chooseDeck": "Choose a deck set to begin matchmaking.",
+                    "ranked.selectValidDeck": "Please select a valid deck set.",
+                    "ranked.searching": "Searching for players...\nQueueing with: {deck}",
+                    "ranked.needUrl": "Please enter a ranked server WebSocket URL."
+                },
+                zh: {
+                    "lang.label": "语言",
+                    "menu.shop": "商店（卡包）",
+                    "menu.openPacks": "打开卡包",
+                    "menu.collection": "卡牌收藏",
+                    "menu.help": "游戏说明",
+                    "menu.fullscreen": "切换全屏",
+                    "menu.saveExit": "保存并退出",
+                    "menu.resume": "继续游戏",
+                    "menu.subtitle": "指挥你的部队，穿越美国独立战争。 [构建: audio-update-1]",
+                    "menu.diffLabel": "遭遇战难度：",
+                    "menu.easy": "简单",
+                    "menu.normal": "普通",
+                    "menu.hard": "困难",
+                    "menu.medals": "勋章",
+                    "menu.campaignPatriots": "战役（爱国者）",
+                    "menu.campaignBritish": "战役（英军）",
+                    "menu.deckPatriots": "构筑牌组 — 爱国者",
+                    "menu.deckBritish": "构筑牌组 — 英军",
+                    "menu.ranked": "排位模式",
+                    "menu.draft": "竞技场选秀",
+                    "game.hand": "手牌：",
+                    "game.deck": "牌库：",
+                    "game.burned": "爆牌：",
+                    "game.supply": "补给：",
+                    "game.enemyDeckTop": "敌方牌库（顶部）",
+                    "game.enemyBurnedTop": "敌方爆牌",
+                    "game.enemyReserve": "敌方后方",
+                    "game.yourReserve": "我方后方",
+                    "game.endTurn": "结束回合",
+                    "game.surrender": "投降",
+                    "game.phase.your": "你的回合 — 第 {turn} 回合",
+                    "game.phase.enemy": "敌方回合",
+                    "game.phase.ended": "战斗结束",
+                    "ranked.title": "排位对战",
+                    "ranked.subtitle": "选择一套卡组，然后匹配另一位玩家。",
+                    "ranked.search": "开始匹配",
+                    "ranked.back": "返回菜单",
+                    "ranked.chooseDeck": "选择一套卡组后开始匹配。",
+                    "ranked.selectValidDeck": "请选择有效的卡组。",
+                    "ranked.searching": "正在搜索玩家...\n当前队列卡组：{deck}",
+                    "ranked.needUrl": "请输入排位服务器 WebSocket 地址。"
+                }
+            };
+            function _tx(key, fallback, vars) {
+                var table = UI_TEXT[_lang] || UI_TEXT.en;
+                var txt = table[key] || (UI_TEXT.en && UI_TEXT.en[key]) || fallback || key;
+                if (vars) {
+                    for (var vk in vars) {
+                        if (!Object.prototype.hasOwnProperty.call(vars, vk)) continue;
+                        txt = txt.replace(new RegExp("\\{" + vk + "\\}", "g"), vars[vk]);
+                    }
+                }
+                return txt;
+            }
+            function _setTextById(id, text) {
+                var el = document.getElementById(id);
+                if (el) el.textContent = text;
+            }
+            function _applyLanguageUI() {
+                _setTextById("languageLabel", _tx("lang.label", "Language"));
+                _setTextById("shopBtn", _tx("menu.shop", "Shop (Card Packs)"));
+                var openPacksBtn = document.getElementById("openPacksBtn");
+                var openCount = document.getElementById("openPacksCount");
+                if (openPacksBtn) {
+                    var count = openCount ? openCount.textContent : "0";
+                    openPacksBtn.innerHTML = _tx("menu.openPacks", "Open Packs") + ' (<span id="openPacksCount">' + count + "</span>)";
+                }
+                _setTextById("collectionBtn", _tx("menu.collection", "Card Collection"));
+                _setTextById("helpMenuBtn", _tx("menu.help", "How to Play"));
+                _setTextById("fullscreenMenuBtn", _tx("menu.fullscreen", "Toggle Fullscreen"));
+                _setTextById("menuSaveExitBtn", _tx("menu.saveExit", "Save & Exit"));
+                _setTextById("resumeGameBtn", _tx("menu.resume", "Resume Game"));
+                _setTextById("menuSubtitle", _tx("menu.subtitle", "Command your forces through the American Revolution."));
+                _setTextById("difficultyLabel", _tx("menu.diffLabel", "Skirmish Difficulty:"));
+                _setTextById("diffEasy", _tx("menu.easy", "Easy"));
+                _setTextById("diffNormal", _tx("menu.normal", "Normal"));
+                _setTextById("diffHard", _tx("menu.hard", "Hard"));
+                _setTextById("achievementsTitle", _tx("menu.medals", "Medals"));
+                _setTextById("campaignBtn", _tx("menu.campaignPatriots", "Campaign (Patriots)"));
+                _setTextById("campaignUkBtn", _tx("menu.campaignBritish", "Campaign (British)"));
+                _setTextById("deckBuilderPatriotsBtn", _tx("menu.deckPatriots", "Deck Builder — Patriots"));
+                _setTextById("deckBuilderBritishBtn", _tx("menu.deckBritish", "Deck Builder — British"));
+                _setTextById("rankedBtn", _tx("menu.ranked", "Ranked Mode"));
+                _setTextById("draftBtn", _tx("menu.draft", "Draft Mode"));
+                _setTextById("enemyHandLabel", _tx("game.hand", "Hand:"));
+                _setTextById("enemyDeckLabel", _tx("game.deck", "Deck:"));
+                _setTextById("enemyBurnedLabel", _tx("game.burned", "Burned:"));
+                _setTextById("enemySupplyLabel", _tx("game.supply", "Supply:"));
+                _setTextById("enemyDeckTopLabel", _tx("game.enemyDeckTop", "Enemy Deck (top)"));
+                _setTextById("enemyBurnedTopLabel", _tx("game.enemyBurnedTop", "Enemy Burned"));
+                _setTextById("enemyReserveLabel", _tx("game.enemyReserve", "Enemy Reserve"));
+                _setTextById("playerReserveLabel", _tx("game.yourReserve", "Your Reserve"));
+                _setTextById("playerHandLabel", _tx("game.hand", "Hand:"));
+                _setTextById("playerDeckLabel", _tx("game.deck", "Deck:"));
+                _setTextById("playerSupplyLabel", _tx("game.supply", "Supply:"));
+                _setTextById("endTurnBtn", _tx("game.endTurn", "End Turn"));
+                _setTextById("surrenderBtn", _tx("game.surrender", "Surrender"));
+                _setTextById("rankedTitle", _tx("ranked.title", "Ranked Match"));
+                _setTextById("rankedSubtitle", _tx("ranked.subtitle", "Select a card set, then queue to find another player."));
+                _setTextById("rankedSearchBtn", _tx("ranked.search", "Search Match"));
+                _setTextById("rankedBackBtn", _tx("ranked.back", "Back to Menu"));
+                if (!_rankedSocket && !_rankedRoom) {
+                    _setTextById("rankedStatus", _tx("ranked.chooseDeck", "Choose a deck set to begin matchmaking."));
+                }
+                var langSel = document.getElementById("languageSelect");
+                if (langSel) langSel.value = _lang;
+                updatePackCountBadge();
+            }
+            function _loadLanguage() {
+                try {
+                    var saved = localStorage.getItem(_langStorageKey);
+                    if (saved && UI_TEXT[saved]) _lang = saved;
+                } catch (e) {}
+            }
+            function _setLanguage(lang) {
+                if (!UI_TEXT[lang]) return;
+                _lang = lang;
+                try { localStorage.setItem(_langStorageKey, lang); } catch (e) {}
+                _applyLanguageUI();
+                render();
+            }
             var _currentBattle = 0;
             var _campaignProgress = null;
             var AI_PLAY_DELAY_MS = 450;
@@ -3399,6 +3862,8 @@
             }
 
             // ========== CARD DEFINITIONS ==========
+            // Rule: do not add battleCry effects that grant immediate Supply.
+            // If a card would grant +N Supply, reduce its cost by N instead.
             function initCardDefs() {
                 cardDefs = [
                     // Patriots
@@ -3408,14 +3873,14 @@
                     { id: "patriot_regular", name: "Continental Regular", faction: "patriots", type: "unit", unitType: "infantry", cost: 4, atk: 4, hp: 4, opCost: 1, icon: "\uD83E\uDE96", flavor: "Professional soldier", rarity: "common", blitz: false, guard: true, fury: false, smokescreen: false, heavyArmor: 1, ambush: false, veteran: 0, battleCry: null, effect: null, history: "Regular army troops strengthened forces" },
                     { id: "patriot_french", name: "French Infantry", faction: "patriots", type: "unit", unitType: "infantry", cost: 5, atk: 5, hp: 5, opCost: 1, icon: "\u269C", flavor: "Allied forces", rarity: "rare", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 3, battleCry: null, effect: null, history: "France joined the war in 1778" },
                     { id: "patriot_washington", name: "George Washington", faction: "patriots", type: "unit", unitType: "infantry", cost: 6, atk: 6, hp: 7, opCost: 2, icon: "\uD83C\uDF96", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Gilbert_Stuart_Williamstown_Portrait_of_George_Washington.jpg/200px-Gilbert_Stuart_Williamstown_Portrait_of_George_Washington.jpg", flavor: "Commander in Chief", rarity: "legendary", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 1, ambush: false, veteran: 0, battleCry: function(instance) { _drawCards(2); }, battleCryText: "Battle Cry: Draw 2", effect: null, history: "Washington led the Continental Army" },
-                    { id: "patriot_lafayette", name: "Lafayette", faction: "patriots", type: "unit", unitType: "cavalry", cost: 4, atk: 4, hp: 5, opCost: 1, icon: "\uD83D\uDDFD", image: "assets/portraits/lafayette.jpg", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Marquis_de_Lafayette_2.jpg/200px-Marquis_de_Lafayette_2.jpg", flavor: "Young general", rarity: "rare", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, battleCry: function(instance) { var side = _activeSide || G.player; side.supply += 1; }, battleCryText: "Battle Cry: +1 Supply", effect: null, history: "Lafayette served without pay" },
-                    { id: "patriot_franklin", name: "Benjamin Franklin", faction: "patriots", type: "unit", unitType: "infantry", cost: 3, atk: 1, hp: 4, opCost: 1, icon: "\uD83D\uDD11", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/BenFranklinDuplessis.jpg/200px-BenFranklinDuplessis.jpg", flavor: "Diplomat & sage", rarity: "rare", blitz: false, guard: false, fury: false, smokescreen: true, heavyArmor: 0, ambush: false, veteran: 0, battleCry: function(instance) { _drawCards(1); var side = _activeSide || G.player; side.supply += 1; }, battleCryText: "Battle Cry: Draw 1, +1 Supply", effect: null, history: "Franklin secured French alliance" },
+                    { id: "patriot_lafayette", name: "Lafayette", faction: "patriots", type: "unit", unitType: "cavalry", cost: 3, atk: 4, hp: 5, opCost: 1, icon: "\uD83D\uDDFD", image: "assets/portraits/lafayette.jpg", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Marquis_de_Lafayette_2.jpg/200px-Marquis_de_Lafayette_2.jpg", flavor: "Young general", rarity: "rare", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, battleCry: null, battleCryText: null, effect: null, history: "Lafayette served without pay" },
+                    { id: "patriot_franklin", name: "Benjamin Franklin", faction: "patriots", type: "unit", unitType: "infantry", cost: 2, atk: 1, hp: 4, opCost: 1, icon: "\uD83D\uDD11", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/BenFranklinDuplessis.jpg/200px-BenFranklinDuplessis.jpg", flavor: "Diplomat & sage", rarity: "rare", blitz: false, guard: false, fury: false, smokescreen: true, heavyArmor: 0, ambush: false, veteran: 0, battleCry: function(instance) { _drawCards(1); }, battleCryText: "Battle Cry: Draw 1", effect: null, history: "Franklin secured French alliance" },
                     { id: "patriot_lighthorse", name: "Light Horse Harry", faction: "patriots", type: "unit", unitType: "cavalry", cost: 3, atk: 3, hp: 3, opCost: 1, icon: "\uD83D\uDC0E", image: "assets/portraits/henry_lee.jpg", flavor: "Swift raider", rarity: "common", blitz: false, guard: false, fury: true, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, battleCry: null, effect: null, history: "Henry Lee's cavalry raided British supply lines" },
                     { id: "patriot_knox", name: "Henry Knox", faction: "patriots", type: "unit", unitType: "artillery", cost: 4, atk: 5, hp: 3, opCost: 1, icon: "\uD83D\uDCA5", image: "assets/portraits/henry_knox.jpg", flavor: "Artillery chief", rarity: "rare", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, battleCry: function(instance) { _dealDamageToOpponent(2); }, battleCryText: "Battle Cry: Deal 2 damage", effect: null, history: "Knox hauled cannons from Fort Ticonderoga" },
                     { id: "patriot_morgan", name: "Daniel Morgan", faction: "patriots", type: "unit", unitType: "infantry", cost: 4, atk: 3, hp: 4, opCost: 1, icon: "\uD83C\uDFAF", image: "assets/portraits/daniel_morgan.jpg", flavor: "Riflemen leader", rarity: "rare", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: true, veteran: 2, battleCry: null, effect: null, history: "Morgan's riflemen won the Battle of Cowpens" },
-                    { id: "patriot_delaware", name: "Crossing Delaware", faction: "patriots", type: "order", cost: 3, atk: 0, hp: 0, opCost: 0, icon: "\uD83C\uDF0A", flavor: "Surprise attack", rarity: "common", battleCry: function() { _dealDamageToOpponent(3); }, battleCryText: "Deal 3 damage", effect: null, history: "Famous 1776 surprise attack" },
+                    // Removed per content request: Crossing Delaware
                     { id: "patriot_declaration", name: "Declaration of Independence", faction: "patriots", type: "order", cost: 2, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDCDC", flavor: "Independence declared", rarity: "common", battleCry: function() { _drawCards(2); }, battleCryText: "Draw 2", effect: null, history: "Declared independence July 4, 1776" },
-                    { id: "patriot_saratoga", name: "Victory at Saratoga", faction: "patriots", type: "order", cost: 4, atk: 0, hp: 0, opCost: 0, icon: "\uD83C\uDFC6", flavor: "Major victory", rarity: "rare", battleCry: function() { _drawCards(2); var side = _activeSide || G.player; side.supply += 1; }, battleCryText: "Draw 2, +1 Supply", effect: null, history: "Turning point battle in 1777" },
+                    { id: "patriot_saratoga", name: "Victory at Saratoga", faction: "patriots", type: "order", cost: 3, atk: 0, hp: 0, opCost: 0, icon: "\uD83C\uDFC6", flavor: "Major victory", rarity: "rare", battleCry: function() { _drawCards(2); }, battleCryText: "Draw 2", effect: null, history: "Turning point battle in 1777" },
                     // Naval & expansion cards
                     { id: "patriot_privateer", name: "Privateer Ship", faction: "patriots", type: "unit", unitType: "infantry", cost: 3, atk: 3, hp: 4, opCost: 1, icon: "\uD83D\uDEA2", flavor: "Licensed raider", rarity: "common", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, battleCry: function(instance) { _dealDamageToOpponent(1); }, battleCryText: "Battle Cry: Deal 1 damage", effect: null, history: "Congress authorized privateers to raid British ships" },
                     { id: "patriot_jones", name: "John Paul Jones", faction: "patriots", type: "unit", unitType: "infantry", cost: 5, atk: 5, hp: 4, opCost: 2, icon: "\u2693", flavor: "Naval hero", rarity: "legendary", blitz: true, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, battleCry: function(instance) { _dealDamageToOpponent(3); _drawCards(1); }, battleCryText: "Battle Cry: Deal 3 damage, Draw 1", effect: null, history: "I have not yet begun to fight!" },
@@ -3429,7 +3894,7 @@
                     { id: "patriot_molly", name: "Molly Pitcher", faction: "patriots", type: "unit", unitType: "artillery", cost: 3, atk: 3, hp: 3, opCost: 1, icon: "\uD83D\uDCA5", image: "assets/portraits/molly_pitcher.jpg", flavor: "Cannon heroine", rarity: "common", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 2, battleCry: null, effect: null, history: "Mary Hays took over her husband's cannon at Monmouth" },
                     { id: "patriot_marion", name: "Francis Marion", faction: "patriots", type: "unit", unitType: "infantry", cost: 3, atk: 3, hp: 3, opCost: 1, icon: "\uD83C\uDF3F", image: "assets/portraits/francis_marion.jpg", flavor: "The Swamp Fox", rarity: "rare", blitz: false, guard: false, fury: false, smokescreen: true, heavyArmor: 0, ambush: true, veteran: 0, battleCry: null, effect: null, history: "Marion's guerrilla tactics frustrated the British in the swamps" },
                     { id: "patriot_paine", name: "Thomas Paine", faction: "patriots", type: "unit", unitType: "infantry", cost: 2, atk: 0, hp: 3, opCost: 1, icon: "\uD83D\uDCDA", image: "assets/portraits/thomas_paine.jpg", flavor: "Common Sense", rarity: "common", blitz: false, guard: false, fury: false, smokescreen: true, heavyArmor: 0, ambush: false, veteran: 0, battleCry: function(instance) { _drawCards(2); }, battleCryText: "Battle Cry: Draw 2", effect: null, history: "Paine's pamphlet inspired the revolution" },
-                    { id: "patriot_steuben", name: "Baron von Steuben", faction: "patriots", type: "unit", unitType: "infantry", cost: 4, atk: 3, hp: 5, opCost: 1, icon: "\uD83D\uDCCB", flavor: "Drillmaster", rarity: "rare", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, battleCry: function(instance) { var side = _activeSide || G.player; side.supply += 1; }, battleCryText: "Battle Cry: +1 Supply", effect: null, history: "Steuben trained the Continental Army at Valley Forge" },
+                    { id: "patriot_steuben", name: "Baron von Steuben", faction: "patriots", type: "unit", unitType: "infantry", cost: 3, atk: 3, hp: 5, opCost: 1, icon: "\uD83D\uDCCB", flavor: "Drillmaster", rarity: "rare", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, battleCry: null, battleCryText: null, effect: null, history: "Steuben trained the Continental Army at Valley Forge" },
                     { id: "patriot_arnold", name: "Benedict Arnold", faction: "patriots", type: "unit", unitType: "infantry", cost: 4, atk: 5, hp: 4, opCost: 1, icon: "\u2694", image: "assets/portraits/benedict_arnold.jpg", flavor: "Brave but treacherous", rarity: "rare", blitz: true, guard: false, fury: true, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, battleCry: null, effect: null, history: "Arnold was a hero at Saratoga before his betrayal" },
                     { id: "patriot_sentry", name: "Continental Sentry", faction: "patriots", type: "unit", unitType: "infantry", cost: 1, atk: 1, hp: 2, opCost: 1, icon: "\uD83E\uDE96", flavor: "Night watchman", rarity: "common", blitz: false, guard: true, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, battleCry: null, effect: null, history: "Sentries guarded the camps through long cold nights" },
                     { id: "patriot_schooner", name: "Armed Schooner", faction: "patriots", type: "unit", unitType: "infantry", cost: 2, atk: 2, hp: 3, opCost: 1, icon: "\u26F5", flavor: "Fast escort", rarity: "common", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, battleCry: null, effect: null, history: "Washington's schooners raided British supply ships" },
@@ -3451,13 +3916,13 @@
                     { id: "british_tarleton", name: "Banastre Tarleton", faction: "british", type: "unit", unitType: "cavalry", cost: 4, atk: 5, hp: 3, opCost: 1, icon: "\uD83D\uDC0E", image: "assets/portraits/tarleton.jpg", flavor: "Cavalry colonel", rarity: "rare", blitz: true, guard: false, fury: true, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, battleCry: function(instance) { _dealDamageToOpponent(1); }, battleCryText: "Battle Cry: Deal 1 damage", effect: null, history: "Brutal dragoon commander" },
                     { id: "british_highlander", name: "Highland Soldier", faction: "british", type: "unit", unitType: "infantry", cost: 3, atk: 3, hp: 4, opCost: 1, icon: "\u2694", flavor: "Fierce warrior", rarity: "common", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: true, veteran: 0, battleCry: null, effect: null, history: "Scottish Highlanders served in the British Army" },
                     { id: "british_cannon_royal", name: "Royal Horse Artillery", faction: "british", type: "unit", unitType: "artillery", cost: 4, atk: 5, hp: 2, opCost: 1, icon: "\uD83D\uDCA5", flavor: "Mobile guns", rarity: "rare", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, battleCry: function(instance) { _dealDamageToOpponent(1); }, battleCryText: "Battle Cry: Deal 1 damage", effect: null, history: "Horse artillery could rapidly deploy on the battlefield" },
-                    { id: "british_bunker", name: "Assault on Bunker Hill", faction: "british", type: "order", cost: 4, atk: 0, hp: 0, opCost: 0, icon: "\uD83C\uDFD4", flavor: "Hill battle", rarity: "rare", battleCry: function() { _dealDamageToOpponent(3); }, battleCryText: "Deal 3 damage", effect: null, history: "Early major battle of the war" },
+                    // Removed per content request: Assault on Bunker Hill
                     { id: "british_blockade", name: "Royal Navy Blockade", faction: "british", type: "order", cost: 3, atk: 0, hp: 0, opCost: 0, icon: "\u26F5", flavor: "Naval blockade", rarity: "common", battleCry: function() { _drawCards(2); }, battleCryText: "Draw 2", effect: null, history: "British navy controlled the coast" },
                     // Naval & expansion cards
                     { id: "british_frigate", name: "HMS Frigate", faction: "british", type: "unit", unitType: "infantry", cost: 3, atk: 3, hp: 4, opCost: 1, icon: "\uD83D\uDEA2", flavor: "Warship", rarity: "common", blitz: false, guard: true, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, battleCry: function(instance) { _dealDamageToOpponent(1); }, battleCryText: "Battle Cry: Deal 1 damage", effect: null, history: "British warships patrolled the Atlantic" },
                     { id: "british_admiral", name: "Admiral Graves", faction: "british", type: "unit", unitType: "infantry", cost: 5, atk: 4, hp: 6, opCost: 2, icon: "\u2693", flavor: "Fleet commander", rarity: "legendary", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, battleCry: function(instance) { _dealDamageToOpponent(2); _drawCards(1); }, battleCryText: "Battle Cry: Deal 2 damage, Draw 1", effect: null, history: "Commanded the British North American fleet" },
                     { id: "british_artillery", name: "Royal Artillery", faction: "british", type: "unit", unitType: "artillery", cost: 2, atk: 4, hp: 1, opCost: 1, icon: "\uD83D\uDCA5", flavor: "Heavy guns", rarity: "common", blitz: false, guard: false, fury: false, smokescreen: true, heavyArmor: 0, ambush: false, veteran: 0, battleCry: null, effect: null, history: "British field cannons were feared in battle" },
-                    { id: "british_burning", name: "Burning of Norfolk", faction: "british", type: "order", cost: 5, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDD25", flavor: "Total destruction", rarity: "legendary", battleCry: function() { _dealDamageToOpponent(5); }, battleCryText: "Deal 5 damage", effect: null, history: "British burned Norfolk, Virginia in January 1776" },
+                    { id: "british_burning", name: "Burning of Norfolk", faction: "british", type: "order", cost: 5, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDD25", flavor: "Total destruction", rarity: "legendary", battleCry: function() { var targetId = ((_activeSide || G.player) === G.enemy) ? "playerHQCard" : "enemyHQCard"; var targetEl = document.getElementById(targetId); var srcEl = (_vfxSource && _vfxSource.el) ? _vfxSource.el : null; showBurningBombPass(srcEl, targetEl, function() { _dealDamageToOpponent(5); _igniteOpponentHQ(3000); }); }, battleCryText: "Throw a fire bomb to HQ, deal 5 damage and burn HQ (3s)", effect: null, history: "British burned Norfolk, Virginia in January 1776" },
                     { id: "british_intel", name: "British Intelligence", faction: "british", type: "order", cost: 3, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDD75", flavor: "Spy network", rarity: "rare", battleCry: function() { _drawCards(3); }, battleCryText: "Draw 3", effect: null, history: "Major Andre ran British spy operations" },
                     // British expansion 2
                     { id: "british_clinton", name: "General Clinton", faction: "british", type: "unit", unitType: "infantry", cost: 5, atk: 4, hp: 6, opCost: 1, icon: "\uD83C\uDF96", image: "assets/portraits/henry_clinton.jpg", flavor: "Cautious commander", rarity: "rare", blitz: false, guard: true, fury: false, smokescreen: false, heavyArmor: 1, ambush: false, veteran: 0, battleCry: function(instance) { _drawCards(1); }, battleCryText: "Battle Cry: Draw 1", effect: null, history: "Clinton commanded British forces in North America from 1778" },
@@ -3470,7 +3935,7 @@
                     { id: "british_jager", name: "Hessian Jager", faction: "british", type: "unit", unitType: "infantry", cost: 3, atk: 3, hp: 3, opCost: 1, icon: "\uD83C\uDFAF", flavor: "Elite sharpshooter", rarity: "common", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: true, veteran: 2, battleCry: null, effect: null, history: "German Jagers were expert marksmen and scouts" },
                     { id: "british_hussar", name: "British Hussar", faction: "british", type: "unit", unitType: "cavalry", cost: 2, atk: 2, hp: 2, opCost: 1, icon: "\uD83D\uDC0E", flavor: "Light cavalry", rarity: "common", blitz: false, guard: false, fury: true, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, battleCry: null, effect: null, history: "Hussars scouted ahead and harassed enemy flanks" },
                     { id: "british_man_o_war", name: "Man-of-War", faction: "british", type: "unit", unitType: "infantry", cost: 4, atk: 4, hp: 5, opCost: 1, icon: "\uD83D\uDEA2", flavor: "Ship of the line", rarity: "rare", blitz: false, guard: true, fury: false, smokescreen: false, heavyArmor: 1, ambush: false, veteran: 0, battleCry: null, effect: null, history: "Ships of the line were the backbone of the Royal Navy" },
-                    { id: "british_press_gang", name: "Press Gang", faction: "british", type: "order", cost: 2, atk: 0, hp: 0, opCost: 0, icon: "\u26D3", flavor: "Forced conscription", rarity: "common", battleCry: function() { _drawCards(1); var side = _activeSide || G.enemy; side.supply += 1; }, battleCryText: "Draw 1, +1 Supply", effect: null, history: "The Royal Navy forced civilians into service" },
+                    { id: "british_press_gang", name: "Press Gang", faction: "british", type: "order", cost: 1, atk: 0, hp: 0, opCost: 0, icon: "\u26D3", flavor: "Forced conscription", rarity: "common", battleCry: function() { _drawCards(1); }, battleCryText: "Draw 1", effect: null, history: "The Royal Navy forced civilians into service" },
                     { id: "british_martial_law", name: "Martial Law", faction: "british", type: "order", cost: 1, atk: 0, hp: 0, opCost: 0, icon: "\u2696", flavor: "Military authority", rarity: "common", battleCry: function() { _drawCards(1); }, battleCryText: "Draw 1", effect: null, history: "British declared martial law in rebellious colonies" },
                     { id: "british_bombardment", name: "Naval Bombardment", faction: "british", type: "order", cost: 4, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDCA5", flavor: "Broadside!", rarity: "rare", battleCry: function() { _dealDamageToOpponent(4); }, battleCryText: "Deal 4 damage", effect: null, history: "British warships bombarded coastal towns" },
                     { id: "british_fortify", name: "Fortify Position", faction: "british", type: "order", cost: 2, atk: 0, hp: 0, opCost: 0, icon: "\uD83E\uDDF1", flavor: "Hold the line!", rarity: "common", battleCry: function() { var side = _activeSide || G.enemy; for (var i = 0; i < side.board.length; i++) { side.board[i].hp += 1; } _log("All friendly units gain +1 HP!"); }, battleCryText: "All friendly units +1 HP", effect: null, history: "British fortifications were formidable defensive works" },
@@ -3478,10 +3943,10 @@
                     { id: "british_cutter", name: "Revenue Cutter", faction: "british", type: "unit", unitType: "infantry", cost: 2, atk: 2, hp: 3, opCost: 1, icon: "\u26F5", flavor: "Patrol vessel", rarity: "common", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, battleCry: null, effect: null, history: "Revenue cutters enforced trade laws along the coast" },
                     { id: "british_sentry", name: "Redcoat Sentry", faction: "british", type: "unit", unitType: "infantry", cost: 1, atk: 1, hp: 2, opCost: 1, icon: "\uD83E\uDE96", flavor: "Standing guard", rarity: "common", blitz: false, guard: true, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, battleCry: null, effect: null, history: "British sentries kept watch over occupied cities" },
                     // Command Point cards (item 21) - increase max supply slots
-                    { id: "patriot_warbonds", name: "War Bonds", faction: "patriots", type: "order", cost: 3, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDCDC", flavor: "Finance the war", rarity: "rare", battleCry: function() { var side = _activeSide || G.player; side.maxSupply += 1; side.supply += 1; }, battleCryText: "+1 Max Supply slot", effect: null, history: "The Continental Congress issued bonds to fund the war" },
-                    { id: "patriot_quartermaster", name: "Quartermaster Corps", faction: "patriots", type: "order", cost: 4, atk: 0, hp: 0, opCost: 0, icon: "\u2696\uFE0F", flavor: "Logistics master", rarity: "rare", battleCry: function() { var side = _activeSide || G.player; side.maxSupply += 2; side.supply += 2; }, battleCryText: "+2 Max Supply slots", effect: null, history: "Nathanael Greene revolutionized army logistics" },
-                    { id: "british_taxact", name: "New Tax Act", faction: "british", type: "order", cost: 3, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDCDC", flavor: "Crown taxation", rarity: "rare", battleCry: function() { var side = _activeSide || G.enemy; side.maxSupply += 1; side.supply += 1; }, battleCryText: "+1 Max Supply slot", effect: null, history: "Parliament repeatedly raised taxes on colonies" },
-                    { id: "british_admiralty", name: "Admiralty Decree", faction: "british", type: "order", cost: 4, atk: 0, hp: 0, opCost: 0, icon: "\u2696\uFE0F", flavor: "Royal logistics", rarity: "rare", battleCry: function() { var side = _activeSide || G.enemy; side.maxSupply += 2; side.supply += 2; }, battleCryText: "+2 Max Supply slots", effect: null, history: "The Royal Admiralty controlled all naval logistics" },
+                    { id: "patriot_warbonds", name: "War Bonds", faction: "patriots", type: "order", cost: 2, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDCDC", flavor: "Finance the war", rarity: "rare", battleCry: function() { var side = _activeSide || G.player; side.maxSupply += 1; }, battleCryText: "+1 Max Supply slot", effect: null, history: "The Continental Congress issued bonds to fund the war" },
+                    { id: "patriot_quartermaster", name: "Quartermaster Corps", faction: "patriots", type: "order", cost: 2, atk: 0, hp: 0, opCost: 0, icon: "\u2696\uFE0F", flavor: "Logistics master", rarity: "rare", battleCry: function() { var side = _activeSide || G.player; side.maxSupply += 2; }, battleCryText: "+2 Max Supply slots", effect: null, history: "Nathanael Greene revolutionized army logistics" },
+                    { id: "british_taxact", name: "New Tax Act", faction: "british", type: "order", cost: 2, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDCDC", flavor: "Crown taxation", rarity: "rare", battleCry: function() { var side = _activeSide || G.enemy; side.maxSupply += 1; }, battleCryText: "+1 Max Supply slot", effect: null, history: "Parliament repeatedly raised taxes on colonies" },
+                    { id: "british_admiralty", name: "Admiralty Decree", faction: "british", type: "order", cost: 2, atk: 0, hp: 0, opCost: 0, icon: "\u2696\uFE0F", flavor: "Royal logistics", rarity: "rare", battleCry: function() { var side = _activeSide || G.enemy; side.maxSupply += 2; }, battleCryText: "+2 Max Supply slots", effect: null, history: "The Royal Admiralty controlled all naval logistics" },
 
                     // HQ heal cards (batch 5a, hotfix: HP can exceed maxHP)
                     { id: "patriot_field_surgeon", name: "Field Surgeon", faction: "patriots", type: "order", cost: 2, atk: 0, hp: 0, opCost: 0, icon: "\u2695\uFE0F", flavor: "Battlefield medic", rarity: "common", battleCry: function() { var side = _activeSide || G.player; side.hp = side.hp + 3; _log("Field Surgeon heals HQ for 3!"); }, battleCryText: "Heal HQ for 3", effect: null, history: "Army surgeons saved countless lives on the battlefield" },
@@ -3493,11 +3958,11 @@
                     { id: "patriot_lafayette", name: "Marquis de Lafayette", faction: "patriots", type: "unit", unitType: "infantry", cost: 4, atk: 4, hp: 4, opCost: 1, icon: "\u269C", flavor: "French volunteer", rarity: "rare", blitz: true, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 1, battleCry: null, effect: null, history: "Lafayette served as a major general at age 19 and helped secure French aid" },
                     { id: "patriot_knox", name: "Henry Knox", faction: "patriots", type: "unit", unitType: "artillery", cost: 4, atk: 4, hp: 3, opCost: 1, icon: "\uD83D\uDCA5", flavor: "Chief of artillery", rarity: "rare", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, battleCry: function(instance) { _dealDamageToOpponent(2); }, battleCryText: "Battle Cry: Deal 2 damage", effect: null, history: "Knox hauled cannons from Ticonderoga to Boston through the winter of 1775" },
                     { id: "patriot_greene", name: "Nathanael Greene", faction: "patriots", type: "unit", unitType: "infantry", cost: 5, atk: 4, hp: 5, opCost: 1, icon: "\u2694", flavor: "Southern strategist", rarity: "rare", blitz: false, guard: true, fury: false, smokescreen: false, heavyArmor: 1, ambush: false, veteran: 2, battleCry: null, effect: null, history: "Greene waged a war of attrition that wore down Cornwallis in the Carolinas" },
-                    { id: "patriot_declaration", name: "Declaration of Independence", faction: "patriots", type: "order", cost: 5, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDCDC", flavor: "Self-evident truths", rarity: "legendary", battleCry: function() { _drawCards(3); var side = _activeSide || G.player; side.supply += 2; }, battleCryText: "Draw 3, +2 Supply", effect: null, history: "Adopted July 4, 1776 — the colonies declared themselves free states" },
+                    { id: "patriot_declaration", name: "Declaration of Independence", faction: "patriots", type: "order", cost: 3, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDCDC", flavor: "Self-evident truths", rarity: "legendary", battleCry: function() { _drawCards(3); }, battleCryText: "Draw 3", effect: null, history: "Adopted July 4, 1776 — the colonies declared themselves free states" },
                     { id: "british_cornwallis", name: "Lord Cornwallis", faction: "british", type: "unit", unitType: "infantry", cost: 6, atk: 6, hp: 6, opCost: 1, icon: "\uD83C\uDF96", flavor: "Southern commander", rarity: "legendary", blitz: false, guard: true, fury: false, smokescreen: false, heavyArmor: 2, ambush: false, veteran: 0, battleCry: function(instance) { _drawCards(1); }, battleCryText: "Battle Cry: Draw 1", effect: null, history: "Cornwallis won at Camden but surrendered at Yorktown in 1781" },
                     { id: "british_tarleton", name: "Banastre Tarleton", faction: "british", type: "unit", unitType: "cavalry", cost: 4, atk: 5, hp: 3, opCost: 1, icon: "\uD83D\uDC0E", flavor: "The Butcher", rarity: "rare", blitz: false, guard: false, fury: true, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 1, battleCry: null, effect: null, history: "Tarleton's dragoons earned a reputation for ferocity in the Carolinas" },
                     { id: "british_howe", name: "General Howe", faction: "british", type: "unit", unitType: "infantry", cost: 5, atk: 4, hp: 6, opCost: 1, icon: "\uD83C\uDF96", flavor: "Cautious victor", rarity: "rare", blitz: false, guard: true, fury: false, smokescreen: false, heavyArmor: 1, ambush: false, veteran: 0, battleCry: function(instance) { _drawCards(2); }, battleCryText: "Battle Cry: Draw 2", effect: null, history: "Howe captured New York and Philadelphia but failed to crush Washington" },
-                    { id: "british_tea_act", name: "Tea Act", faction: "british", type: "order", cost: 1, atk: 0, hp: 0, opCost: 0, icon: "\uD83C\uDF75", flavor: "Royal monopoly", rarity: "common", battleCry: function() { _drawCards(1); var side = _activeSide || G.enemy; side.supply += 1; }, battleCryText: "Draw 1, +1 Supply", effect: null, history: "The 1773 Tea Act triggered the Boston Tea Party" },
+                    { id: "british_tea_act", name: "Tea Act", faction: "british", type: "order", cost: 0, atk: 0, hp: 0, opCost: 0, icon: "\uD83C\uDF75", flavor: "Royal monopoly", rarity: "common", battleCry: function() { _drawCards(1); }, battleCryText: "Draw 1", effect: null, history: "The 1773 Tea Act triggered the Boston Tea Party" },
 
                     // === Batch 5c: 20 new Patriot cards ===
                     { id: "patriot_revere", name: "Paul Revere", faction: "patriots", type: "unit", unitType: "cavalry", cost: 2, atk: 2, hp: 2, opCost: 1, icon: "\uD83D\uDCEF", flavor: "Midnight rider", rarity: "rare", blitz: true, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, battleCry: function() { _drawCards(1); }, battleCryText: "Battle Cry: Draw 1", effect: null, history: "Revere's April 1775 ride warned the colonies: the Regulars are coming" },
@@ -3514,9 +3979,9 @@
                     { id: "patriot_barry", name: "John Barry", faction: "patriots", type: "unit", unitType: "infantry", cost: 5, atk: 5, hp: 4, opCost: 1, icon: "\uD83D\uDEA2", flavor: "Father of the Navy", rarity: "rare", blitz: false, guard: true, fury: false, smokescreen: false, heavyArmor: 1, ambush: false, veteran: 0, battleCry: null, effect: null, history: "Barry captured the HMS Edward in the first naval battle of the revolution" },
                     { id: "patriot_valley_forge", name: "Valley Forge", faction: "patriots", type: "order", cost: 3, atk: 0, hp: 0, opCost: 0, icon: "\u2744\uFE0F", flavor: "Hardened by winter", rarity: "rare", battleCry: function() { var side = _activeSide || G.player; for (var i = 0; i < side.board.length; i++) { side.board[i].hp += 1; side.board[i].atk += 1; } _log("Valley Forge: all friendly units +1/+1!"); }, battleCryText: "All friendly units +1/+1", effect: null, history: "Steuben's winter drills at Valley Forge turned militia into soldiers" },
                     { id: "patriot_monmouth", name: "Battle of Monmouth", faction: "patriots", type: "order", cost: 4, atk: 0, hp: 0, opCost: 0, icon: "\u2600", flavor: "Summer heat", rarity: "rare", battleCry: function() { _dealDamageToOpponent(3); _drawCards(1); }, battleCryText: "Deal 3 damage, Draw 1", effect: null, history: "The longest battle of the war — fought through scorching June heat in 1778" },
-                    { id: "patriot_saratoga2", name: "Convention of Saratoga", faction: "patriots", type: "order", cost: 5, atk: 0, hp: 0, opCost: 0, icon: "\uD83C\uDFC6", flavor: "Burgoyne's surrender", rarity: "legendary", battleCry: function() { _drawCards(2); var side = _activeSide || G.player; side.maxSupply += 1; side.supply += 2; }, battleCryText: "Draw 2, +1 Max Supply, +2 Supply", effect: null, history: "Burgoyne's surrender brought France into the war on the American side" },
+                    { id: "patriot_saratoga2", name: "Convention of Saratoga", faction: "patriots", type: "order", cost: 3, atk: 0, hp: 0, opCost: 0, icon: "\uD83C\uDFC6", flavor: "Burgoyne's surrender", rarity: "legendary", battleCry: function() { _drawCards(2); var side = _activeSide || G.player; side.maxSupply += 1; }, battleCryText: "Draw 2, +1 Max Supply", effect: null, history: "Burgoyne's surrender brought France into the war on the American side" },
                     { id: "patriot_articles", name: "Articles of Confederation", faction: "patriots", type: "order", cost: 3, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDCDC", flavor: "First constitution", rarity: "common", battleCry: function() { var side = _activeSide || G.player; side.maxSupply += 1; }, battleCryText: "+1 Max Supply", effect: null, history: "The Articles created a loose confederation of states to unite the war effort" },
-                    { id: "patriot_franklin", name: "Benjamin Franklin", faction: "patriots", type: "unit", unitType: "infantry", cost: 4, atk: 2, hp: 5, opCost: 1, icon: "\uD83D\uDCDC", flavor: "Diplomat in Paris", rarity: "legendary", blitz: false, guard: true, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, battleCry: function() { _drawCards(2); var side = _activeSide || G.player; side.supply += 1; }, battleCryText: "Battle Cry: Draw 2, +1 Supply", effect: null, history: "Franklin secured the French alliance that made American victory possible" },
+                    { id: "patriot_franklin", name: "Benjamin Franklin", faction: "patriots", type: "unit", unitType: "infantry", cost: 3, atk: 2, hp: 5, opCost: 1, icon: "\uD83D\uDCDC", flavor: "Diplomat in Paris", rarity: "legendary", blitz: false, guard: true, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, battleCry: function() { _drawCards(2); }, battleCryText: "Battle Cry: Draw 2", effect: null, history: "Franklin secured the French alliance that made American victory possible" },
                     { id: "patriot_adams_s", name: "Samuel Adams", faction: "patriots", type: "unit", unitType: "infantry", cost: 2, atk: 1, hp: 3, opCost: 1, icon: "\uD83D\uDCE2", flavor: "Agitator", rarity: "rare", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, battleCry: function() { _drawCards(2); }, battleCryText: "Battle Cry: Draw 2", effect: null, history: "Adams organized the Sons of Liberty and helped spark the revolution in Massachusetts" },
                     { id: "patriot_jay", name: "John Jay", faction: "patriots", type: "unit", unitType: "infantry", cost: 3, atk: 2, hp: 4, opCost: 1, icon: "\uD83D\uDCDC", flavor: "Negotiator", rarity: "rare", blitz: false, guard: true, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, battleCry: function() { _drawCards(1); }, battleCryText: "Battle Cry: Draw 1", effect: null, history: "Jay negotiated the Treaty of Paris that ended the war in 1783" },
                     { id: "patriot_pulaski", name: "Casimir Pulaski", faction: "patriots", type: "unit", unitType: "cavalry", cost: 4, atk: 4, hp: 3, opCost: 1, icon: "\uD83D\uDC0E", flavor: "Father of American cavalry", rarity: "rare", blitz: true, guard: false, fury: true, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 1, battleCry: null, effect: null, history: "The Polish nobleman organized America's first true cavalry units before dying at Savannah" },
@@ -3539,9 +4004,9 @@
                     { id: "british_chasseur", name: "Hessian Chasseur", faction: "british", type: "unit", unitType: "infantry", cost: 3, atk: 3, hp: 3, opCost: 1, icon: "\uD83C\uDFAF", flavor: "Rifle-armed skirmisher", rarity: "rare", blitz: false, guard: false, fury: false, smokescreen: true, heavyArmor: 0, ambush: true, veteran: 0, battleCry: null, effect: null, history: "Hessian chasseurs carried rifled carbines and served as the army's scouts" },
                     { id: "british_mortar", name: "Coehorn Mortar", faction: "british", type: "unit", unitType: "artillery", cost: 3, atk: 3, hp: 2, opCost: 1, icon: "\uD83D\uDCA5", flavor: "Portable siege gun", rarity: "common", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, battleCry: null, effect: null, history: "Light mortars lobbed shells over fortifications — standard siege equipment" },
                     { id: "british_sloop", name: "Sloop-of-War", faction: "british", type: "unit", unitType: "infantry", cost: 3, atk: 3, hp: 4, opCost: 1, icon: "\uD83D\uDEA2", flavor: "Patrol vessel", rarity: "common", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, battleCry: null, effect: null, history: "Smaller than frigates, sloops patrolled rivers and harbors for the Royal Navy" },
-                    { id: "british_act_supremacy", name: "Act of Supremacy", faction: "british", type: "order", cost: 3, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDC51", flavor: "Crown authority", rarity: "rare", battleCry: function() { var side = _activeSide || G.enemy; side.maxSupply += 1; side.supply += 1; _drawCards(1); }, battleCryText: "+1 Max Supply, +1 Supply, Draw 1", effect: null, history: "Parliament asserted supremacy over the colonies with the Declaratory Act of 1766" },
+                    { id: "british_act_supremacy", name: "Act of Supremacy", faction: "british", type: "order", cost: 2, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDC51", flavor: "Crown authority", rarity: "rare", battleCry: function() { var side = _activeSide || G.enemy; side.maxSupply += 1; _drawCards(1); }, battleCryText: "+1 Max Supply, Draw 1", effect: null, history: "Parliament asserted supremacy over the colonies with the Declaratory Act of 1766" },
                     { id: "british_brandywine", name: "Brandywine Flank", faction: "british", type: "order", cost: 4, atk: 0, hp: 0, opCost: 0, icon: "\uD83C\uDF09", flavor: "Masterful maneuver", rarity: "rare", battleCry: function() { _dealDamageToOpponent(3); _drawCards(1); }, battleCryText: "Deal 3 damage, Draw 1", effect: null, history: "Cornwallis marched his column 17 miles to take Washington in the flank at Brandywine" },
-                    { id: "british_loyalist_oath", name: "Oath of Allegiance", faction: "british", type: "order", cost: 2, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDCDC", flavor: "Swear to the Crown", rarity: "common", battleCry: function() { var side = _activeSide || G.enemy; side.supply += 2; }, battleCryText: "+2 Supply", effect: null, history: "Loyalist communities signed oaths of allegiance to receive protection from the Crown" }
+                    { id: "british_loyalist_oath", name: "Oath of Allegiance", faction: "british", type: "order", cost: 0, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDCDC", flavor: "Swear to the Crown", rarity: "common", battleCry: null, battleCryText: null, effect: null, history: "Loyalist communities signed oaths of allegiance to receive protection from the Crown" }
                 ];
             }
 
@@ -3553,6 +4018,12 @@
                 var useOwned = !_campaignMode;
                 var deck = createDeck(playerFaction, useOwned);
                 var enemyDeck = createDeck(enemyFaction);
+                if (options.playerDeck && options.playerDeck.length > 0) {
+                    deck = options.playerDeck.slice();
+                }
+                if (options.enemyDeck && options.enemyDeck.length > 0) {
+                    enemyDeck = options.enemyDeck.slice();
+                }
                 // Balance: enemy deck size = player deck size (batch 5e item 10).
                 if (enemyDeck.length > deck.length) enemyDeck = enemyDeck.slice(0, deck.length);
 
@@ -3566,10 +4037,8 @@
                     enemyHP = 35;
                 }
 
-                // Batch 5h item 5: player's chosen name appears in the HQ + nameplate.
-                var playerDisplayName = (_stats && _stats.playerName)
-                    ? _stats.playerName
-                    : (playerFaction === "patriots" ? "Washington" : "Cornwallis");
+                // HQ names are always fixed by faction.
+                var playerDisplayName = playerFaction === "patriots" ? "Washington" : "Cornwallis";
                 var enemyDisplayName = enemyFaction === "patriots" ? "Washington" : "Cornwallis";
                 G = {
                     phase: "player",
@@ -3583,7 +4052,11 @@
                         board: [],
                         deck: deck,
                         supply: 1,
-                        maxSupply: 1                    },
+                        maxSupply: 1,
+                        burnedCount: 0,
+                        burnedCards: [],
+                        fatigueCount: 0
+                    },
                     enemy: {
                         name: enemyDisplayName,
                         hp: enemyHP,
@@ -3592,7 +4065,11 @@
                         board: [],
                         deck: enemyDeck,
                         supply: 0,
-                        maxSupply: 0                    },
+                        maxSupply: 0,
+                        burnedCount: 0,
+                        burnedCards: [],
+                        fatigueCount: 0
+                    },
                     turn: 1,
                     log: [],
                     gameOver: false,
@@ -3697,6 +4174,9 @@
                     board: (s.board || []).map(_serializeInst).filter(function(x) { return x; }),
                     deck: (s.deck || []).map(function(d) { return d.id; }),
                     supply: s.supply, maxSupply: s.maxSupply,
+                    burnedCount: s.burnedCount || 0,
+                    burnedCards: (s.burnedCards || []).slice(-20),
+                    fatigueCount: s.fatigueCount || 0,
                 };
             }
             function _deserializeSide(o) {
@@ -3706,6 +4186,9 @@
                     board: (o.board || []).map(_deserializeInst).filter(function(x) { return x; }),
                     deck: (o.deck || []).map(_findDefById).filter(function(x) { return x; }),
                     supply: o.supply, maxSupply: o.maxSupply,
+                    burnedCount: o.burnedCount || 0,
+                    burnedCards: (o.burnedCards || []).slice(-20),
+                    fatigueCount: o.fatigueCount || 0,
                 };
             }
             function saveGame() {
@@ -3784,6 +4267,34 @@
             }
 
             // ========== DRAWING & HAND ==========
+            function _recordBurnedCard(side, cardDef) {
+                if (!side || !cardDef) return;
+                if (!side.burnedCards) side.burnedCards = [];
+                side.burnedCards.unshift(cardDef.name || cardDef.id || "Unknown");
+                if (side.burnedCards.length > 20) side.burnedCards.length = 20;
+            }
+            function showEnemyDrawAction(cardDef) {
+                try {
+                    if (!cardDef) return;
+                    var src = document.getElementById("enemyDeckCount");
+                    var dst = document.getElementById("enemyHand");
+                    if (!src || !dst) return;
+                    var from = src.getBoundingClientRect();
+                    var to = dst.getBoundingClientRect();
+                    var ghost = document.createElement("div");
+                    ghost.className = "enemy-draw-ghost";
+                    ghost.textContent = cardDef.name || "Draw";
+                    ghost.style.left = (from.left + from.width / 2 - 30) + "px";
+                    ghost.style.top = (from.top + from.height / 2 - 42) + "px";
+                    document.body.appendChild(ghost);
+                    ghost.animate([
+                        { transform: "translate(0,0) scale(0.64)", opacity: 0.75 },
+                        { transform: "translate(" + ((to.left + to.width / 2) - (from.left + from.width / 2)) + "px," + ((to.top + 22) - (from.top + from.height / 2)) + "px) scale(0.95)", opacity: 1, offset: 0.75 },
+                        { transform: "translate(" + ((to.left + to.width / 2) - (from.left + from.width / 2)) + "px," + ((to.top + 22) - (from.top + from.height / 2)) + "px) scale(0.65)", opacity: 0 }
+                    ], { duration: 560, easing: "ease-out", fill: "forwards" });
+                    setTimeout(function() { if (ghost.parentNode) ghost.parentNode.removeChild(ghost); }, 620);
+                } catch (e) {}
+            }
             function _drawCards(count) {
                 var side = _activeSide || G.player;
                 for (var i = 0; i < count; i++) {
@@ -3805,11 +4316,17 @@
                     }
                     if (side.hand.length >= 7) {
                         var burnedDef = side.deck.shift(); // burn card
-                        _log((side === G.player ? "Your" : "Enemy") + " hand is full — card burned!");
+                        side.burnedCount = (side.burnedCount || 0) + 1;
+                        _recordBurnedCard(side, burnedDef);
+                        _log((side === G.player ? "Your" : "Enemy") + " hand is full — burned: " + (burnedDef ? burnedDef.name : "Unknown"));
                         if (side === G.player) showBurnedCard(burnedDef);
                         continue;
                     }
                     var cardDef = side.deck.shift();
+                    if (side === G.enemy) {
+                        showEnemyDrawAction(cardDef);
+                        _log("Enemy draws: " + (cardDef ? cardDef.name : "Unknown"));
+                    }
                     var instance = createCardInstance(cardDef);
                     instance._justDrawn = true;
                     side.hand.push(instance);
@@ -3877,11 +4394,10 @@
                     } else {
                         G.player.board.push(instance);
                     }
-                    _playSound("card");
+                    _playSound("march");
 
                     var zoneMsg = instance.zone === "frontline" ? (instance.def.unitType === "cavalry" ? " (Cavalry!)" : " to frontline") : (instance.def.blitz ? " to reserve (Blitz!)" : " to reserve");
                     _log("Played " + instance.def.name + zoneMsg + ".");
-                    if (instance.def.history) _log("\uD83D\uDCD6 " + instance.def.history);
 
                     _unitsPlayedThisTurn.push(instance);
 
@@ -3896,9 +4412,8 @@
                         _vfxSource = null;
                     }
                 } else if (instance.def.type === "order") {
-                    _playSound("card");
+                    _playOrderSound(instance.def);
                     _log("Played " + instance.def.name + ".");
-                    if (instance.def.history) _log("\uD83D\uDCD6 " + instance.def.history);
                     var _orderEl = showFloatingOrder(instance);
 
                     try {
@@ -4044,6 +4559,14 @@
                     }, 30);
                 }
             }
+            function _igniteOpponentHQ(durationMs) {
+                if (!G) return;
+                var target = (_activeSide === G.enemy) ? "player" : "enemy";
+                var el = document.getElementById(target === "player" ? "playerHQCard" : "enemyHQCard");
+                if (!el) return;
+                addClass(el, "burning");
+                setTimeout(function() { removeClass(el, "burning"); }, durationMs || 3000);
+            }
 
             function _dealDamage(amount, target) {
                 if (target === "player") {
@@ -4170,7 +4693,7 @@
                     }
                 }
                 _log(instance.def.name + " advances to the frontline!");
-                _playSound("card");
+                _playSound("march");
                 return true;
             }
 
@@ -4297,6 +4820,15 @@
                 // every End Turn to keep Resume Game working if the player closes the tab.
                 try { saveGame(); } catch (e) {}
 
+                if (_rankedOnline) {
+                    G.phase = "enemy";
+                    _log("Opponent's turn...");
+                    render();
+                    _syncRankedState();
+                    _sendRanked("turn_end", {});
+                    return;
+                }
+
                 G.phase = "animating";
                 render();
                 setTimeout(function() {
@@ -4322,12 +4854,8 @@
                 _activeSide = G.enemy;
                 var _enemyUnitsPlayedThisTurn = [];
 
-                // Draw
-                if (G.enemy.deck.length > 0) {
-                    var cardDef = G.enemy.deck.shift();
-                    var instance = createCardInstance(cardDef);
-                    G.enemy.hand.push(instance);
-                }
+                // Draw (uses shared draw/burn/fatigue rules).
+                _drawCards(1);
 
                 // Natural +1/turn capped at 10 (batch 5e revert). Supply-pump cards
                 // (War Bonds, Quartermaster, Admiralty, Declaration, etc.) still push
@@ -4414,6 +4942,7 @@
                                 G.enemy.board.push(bestCard);
                                 var zMsg = bestCard.zone === "frontline" ? (bestCard.def.blitz ? " (Blitz!)" : (uType === "cavalry" ? " (Cavalry!)" : "")) : "";
                                 _log("Enemy plays " + bestCard.def.name + zMsg + ".");
+                                _playSound("march");
 
                                 _enemyUnitsPlayedThisTurn.push(bestCard);
 
@@ -4428,6 +4957,7 @@
                                 }
                             } else if (bestCard.def.type === "order") {
                                 _log("Enemy plays " + bestCard.def.name + ".");
+                                _playOrderSound(bestCard.def);
                                 var _enemyOrderEl = showFloatingOrder(bestCard);
                                 try {
                                     _vfxSource = { el: _enemyOrderEl };
@@ -4633,12 +5163,16 @@
                 G.turn += 1;
                 G.phase = "player";
                 _log("\u2014 Turn " + G.turn + " \u2014 Your turn!");
+                _playBattlefieldTurnAmbience(G.turn);
             }
 
             // ========== GAME OVER ==========
             function endGame() {
                 G.gameOver = true;
                 G.phase = "over";
+                if (_rankedOnline) {
+                    _sendRanked("game_over", { winner: G.winner || "unknown" });
+                }
                 clearSavedGame();
                 checkAchievements();
             }
@@ -4793,6 +5327,35 @@
                     }
                 } catch (e) {}
             }
+            function showBurningBombPass(srcElOverride, targetEl, onDone) {
+                try {
+                    if (!targetEl) return;
+                    var srcEl = srcElOverride || null;
+                    if (!srcEl) srcEl = document.getElementById("enemyHQCard");
+                    var src = getElCenter(srcEl);
+                    var dst = getElCenter(targetEl);
+                    var bomb = document.createElement("div");
+                    bomb.className = "burning-bomb-proj";
+                    bomb.style.left = (src.x - 11) + "px";
+                    bomb.style.top = (src.y - 11) + "px";
+                    document.body.appendChild(bomb);
+                    var dx = dst.x - src.x;
+                    var dy = dst.y - src.y;
+                    bomb.animate([
+                        { transform: "translate(0,0) scale(0.75) rotate(0deg)", opacity: 0.9 },
+                        { transform: "translate(" + (dx * 0.5) + "px," + ((dy * 0.5) - 42) + "px) scale(1.08) rotate(120deg)", opacity: 1, offset: 0.55 },
+                        { transform: "translate(" + dx + "px," + dy + "px) scale(0.72) rotate(280deg)", opacity: 1 }
+                    ], { duration: 520, easing: "cubic-bezier(0.2,0.65,0.25,1)", fill: "forwards" });
+                    setTimeout(function() {
+                        if (bomb.parentNode) bomb.parentNode.removeChild(bomb);
+                        targetEl.classList.add("hit");
+                        setTimeout(function() { targetEl.classList.remove("hit"); }, 450);
+                        if (onDone) onDone();
+                    }, 530);
+                } catch (e) {
+                    if (onDone) onDone();
+                }
+            }
 
             function showAttackArrow(fromEl, toX, toY, mode) {
                 var arrow = document.getElementById("attackArrow");
@@ -4893,6 +5456,118 @@
                         gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
                         osc.start(now);
                         osc.stop(now + 0.15);
+                    } else if (type === "march") {
+                        var mOsc = ctx.createOscillator();
+                        var mGain = ctx.createGain();
+                        mOsc.connect(mGain);
+                        mGain.connect(ctx.destination);
+                        mOsc.type = "square";
+                        mOsc.frequency.setValueAtTime(110, now);
+                        mOsc.frequency.exponentialRampToValueAtTime(85, now + 0.18);
+                        mGain.gain.setValueAtTime(0.08, now);
+                        mGain.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
+                        mOsc.start(now);
+                        mOsc.stop(now + 0.18);
+                    } else if (type === "order_bombard") {
+                        var bOsc = ctx.createOscillator();
+                        var bGain = ctx.createGain();
+                        bOsc.connect(bGain);
+                        bGain.connect(ctx.destination);
+                        bOsc.type = "triangle";
+                        bOsc.frequency.setValueAtTime(260, now);
+                        bOsc.frequency.exponentialRampToValueAtTime(55, now + 0.35);
+                        bGain.gain.setValueAtTime(0.11, now);
+                        bGain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+                        bOsc.start(now);
+                        bOsc.stop(now + 0.35);
+                    } else if (type === "order_rally") {
+                        var rOsc = ctx.createOscillator();
+                        var rGain = ctx.createGain();
+                        rOsc.connect(rGain);
+                        rGain.connect(ctx.destination);
+                        rOsc.type = "sine";
+                        rOsc.frequency.setValueAtTime(420, now);
+                        rOsc.frequency.linearRampToValueAtTime(620, now + 0.22);
+                        rGain.gain.setValueAtTime(0.07, now);
+                        rGain.gain.exponentialRampToValueAtTime(0.01, now + 0.22);
+                        rOsc.start(now);
+                        rOsc.stop(now + 0.22);
+                    } else if (type === "order_intel") {
+                        var iOsc = ctx.createOscillator();
+                        var iGain = ctx.createGain();
+                        iOsc.connect(iGain);
+                        iGain.connect(ctx.destination);
+                        iOsc.type = "triangle";
+                        iOsc.frequency.setValueAtTime(560, now);
+                        iOsc.frequency.linearRampToValueAtTime(760, now + 0.08);
+                        iOsc.frequency.linearRampToValueAtTime(620, now + 0.2);
+                        iGain.gain.setValueAtTime(0.06, now);
+                        iGain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                        iOsc.start(now);
+                        iOsc.stop(now + 0.2);
+                    } else if (type === "order_fortify") {
+                        var fOsc = ctx.createOscillator();
+                        var fGain = ctx.createGain();
+                        fOsc.connect(fGain);
+                        fGain.connect(ctx.destination);
+                        fOsc.type = "square";
+                        fOsc.frequency.setValueAtTime(180, now);
+                        fOsc.frequency.exponentialRampToValueAtTime(120, now + 0.26);
+                        fGain.gain.setValueAtTime(0.08, now);
+                        fGain.gain.exponentialRampToValueAtTime(0.01, now + 0.26);
+                        fOsc.start(now);
+                        fOsc.stop(now + 0.26);
+                    } else if (type === "order_command") {
+                        var cmdFreqs = [392, 494];
+                        for (var ci = 0; ci < cmdFreqs.length; ci++) {
+                            var cmdOsc = ctx.createOscillator();
+                            var cmdGain = ctx.createGain();
+                            cmdOsc.connect(cmdGain);
+                            cmdGain.connect(ctx.destination);
+                            cmdOsc.type = "sine";
+                            cmdOsc.frequency.setValueAtTime(cmdFreqs[ci], now + (ci * 0.09));
+                            cmdGain.gain.setValueAtTime(0, now + (ci * 0.09));
+                            cmdGain.gain.linearRampToValueAtTime(0.07, now + (ci * 0.09) + 0.03);
+                            cmdGain.gain.exponentialRampToValueAtTime(0.01, now + (ci * 0.09) + 0.16);
+                            cmdOsc.start(now + (ci * 0.09));
+                            cmdOsc.stop(now + (ci * 0.09) + 0.16);
+                        }
+                    } else if (type === "crowd_shout") {
+                        var cOsc = ctx.createOscillator();
+                        var cGain = ctx.createGain();
+                        cOsc.connect(cGain);
+                        cGain.connect(ctx.destination);
+                        cOsc.type = "sawtooth";
+                        cOsc.frequency.setValueAtTime(320, now);
+                        cOsc.frequency.exponentialRampToValueAtTime(180, now + 0.25);
+                        cGain.gain.setValueAtTime(0.05, now);
+                        cGain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                        cOsc.start(now);
+                        cOsc.stop(now + 0.25);
+                    } else if (type === "heavy_gunshot") {
+                        var gOsc = ctx.createOscillator();
+                        var gGain = ctx.createGain();
+                        gOsc.connect(gGain);
+                        gGain.connect(ctx.destination);
+                        gOsc.type = "triangle";
+                        gOsc.frequency.setValueAtTime(140, now);
+                        gOsc.frequency.exponentialRampToValueAtTime(40, now + 0.22);
+                        gGain.gain.setValueAtTime(0.14, now);
+                        gGain.gain.exponentialRampToValueAtTime(0.01, now + 0.22);
+                        gOsc.start(now);
+                        gOsc.stop(now + 0.22);
+                    } else if (type === "dying_voice") {
+                        var dOsc = ctx.createOscillator();
+                        var dGain = ctx.createGain();
+                        dOsc.connect(dGain);
+                        dGain.connect(ctx.destination);
+                        dOsc.type = "sine";
+                        dOsc.frequency.setValueAtTime(220, now);
+                        dOsc.frequency.exponentialRampToValueAtTime(90, now + 0.45);
+                        dGain.gain.setValueAtTime(0.05, now);
+                        dGain.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
+                        dOsc.start(now);
+                        dOsc.stop(now + 0.45);
                     } else if (type === "attack") {
                         var osc = ctx.createOscillator();
                         var gain = ctx.createGain();
@@ -4947,6 +5622,32 @@
                 } catch (e) {
                     // Silent fail
                 }
+            }
+            function _playOrderSound(def) {
+                if (!def) return;
+                var id = def.id || "";
+                // Finer order family routing so different order categories sound distinct.
+                if (id.indexOf("bombard") >= 0 || id.indexOf("burning") >= 0 || id.indexOf("cannon") >= 0 || id.indexOf("yorktown") >= 0 || id.indexOf("monmouth") >= 0) {
+                    _playSound("order_bombard");
+                } else if (id.indexOf("rally") >= 0 || id.indexOf("declaration") >= 0 || id.indexOf("liberty") >= 0 || id.indexOf("bayonet") >= 0) {
+                    _playSound("order_rally");
+                } else if (id.indexOf("spy") >= 0 || id.indexOf("intel") >= 0 || id.indexOf("andre") >= 0) {
+                    _playSound("order_intel");
+                } else if (id.indexOf("fortify") >= 0 || id.indexOf("martial") >= 0 || id.indexOf("quarters") >= 0 || id.indexOf("physician") >= 0 || id.indexOf("aid") >= 0) {
+                    _playSound("order_fortify");
+                } else if (id.indexOf("warbonds") >= 0 || id.indexOf("quartermaster") >= 0 || id.indexOf("admiralty") >= 0 || id.indexOf("taxact") >= 0 || id.indexOf("articles") >= 0 || id.indexOf("saratoga2") >= 0 || id.indexOf("tea_act") >= 0) {
+                    _playSound("order_command");
+                } else {
+                    _playSound("card");
+                }
+            }
+            function _playBattlefieldTurnAmbience(turnNumber) {
+                if (!turnNumber || turnNumber % 3 !== 0) return;
+                setTimeout(function() { _playSound("crowd_shout"); }, 100);
+                setTimeout(function() { _playSound("crowd_shout"); }, 380);
+                setTimeout(function() { _playSound("crowd_shout"); }, 640);
+                setTimeout(function() { _playSound("heavy_gunshot"); }, 980);
+                setTimeout(function() { _playSound("dying_voice"); }, 1350);
             }
 
             // ========== DOM HELPERS ==========
@@ -5082,15 +5783,58 @@
                 }
                 setTxt("enemyHandCount", G.enemy.hand.length);
                 setTxt("enemyDeckCount", G.enemy.deck.length);
+                setTxt("enemyBurnedCount", G.enemy.burnedCount || 0);
+                var deckPreview = document.getElementById("enemyDeckPreview");
+                if (deckPreview) {
+                    deckPreview.innerHTML = "";
+                    var limitDeck = Math.min((G.enemy.deck || []).length, 8);
+                    for (var di = 0; di < limitDeck; di++) {
+                        var deckChip = document.createElement("span");
+                        deckChip.className = "enemy-intel-chip deck";
+                        deckChip.textContent = (G.enemy.deck[di] && G.enemy.deck[di].name) ? G.enemy.deck[di].name : "Unknown";
+                        deckPreview.appendChild(deckChip);
+                    }
+                    if ((G.enemy.deck || []).length > limitDeck) {
+                        var moreDeck = document.createElement("span");
+                        moreDeck.className = "enemy-intel-chip deck";
+                        moreDeck.textContent = "+" + (G.enemy.deck.length - limitDeck) + " more";
+                        deckPreview.appendChild(moreDeck);
+                    }
+                }
+                var burnedPreview = document.getElementById("enemyBurnedPreview");
+                if (burnedPreview) {
+                    burnedPreview.innerHTML = "";
+                    var burns = G.enemy.burnedCards || [];
+                    if (burns.length === 0) {
+                        var none = document.createElement("span");
+                        none.className = "enemy-intel-chip burn";
+                        none.textContent = "None";
+                        burnedPreview.appendChild(none);
+                    } else {
+                        var limitBurn = Math.min(burns.length, 8);
+                        for (var bi = 0; bi < limitBurn; bi++) {
+                            var burnChip = document.createElement("span");
+                            burnChip.className = "enemy-intel-chip burn";
+                            burnChip.textContent = burns[bi];
+                            burnedPreview.appendChild(burnChip);
+                        }
+                        if (burns.length > limitBurn) {
+                            var moreBurn = document.createElement("span");
+                            moreBurn.className = "enemy-intel-chip burn";
+                            moreBurn.textContent = "+" + (burns.length - limitBurn) + " older";
+                            burnedPreview.appendChild(moreBurn);
+                        }
+                    }
+                }
                 renderSupplyBox("enemySupplyBox", G.enemy.supply, G.enemy.maxSupply);
 
                 // Humanized phase indicator (batch 5f item 11 + 5g item 5).
                 // During "animating" phase we hide the indicator entirely rather than
                 // showing a cryptic "—" placeholder.
                 var phaseLabel = "";
-                if (G.phase === "player") phaseLabel = "Your Turn \u2014 Turn " + (G.turn || 1);
-                else if (G.phase === "enemy") phaseLabel = "Enemy Turn";
-                else if (G.phase === "over") phaseLabel = "Battle Ended";
+                if (G.phase === "player") phaseLabel = _tx("game.phase.your", "Your Turn \u2014 Turn {turn}", { turn: (G.turn || 1) });
+                else if (G.phase === "enemy") phaseLabel = _tx("game.phase.enemy", "Enemy Turn");
+                else if (G.phase === "over") phaseLabel = _tx("game.phase.ended", "Battle Ended");
                 // G.phase === "animating" or unknown → blank
                 setTxt("phaseIndicator", phaseLabel);
 
@@ -5107,6 +5851,7 @@
                 if (G.gameOver) {
                     showGameOver();
                 }
+                _queueRankedSync();
             }
 
             function renderBoard() {
@@ -5202,11 +5947,16 @@
                 _drag.el.style.left = (touch.clientX - _drag.offsetX) + "px";
                 _drag.el.style.top = (touch.clientY - _drag.offsetY) + "px";
 
-                // Highlight zone under cursor
+                // Highlight zone under cursor.
+                // Frontline should NOT spread open while deploying;
+                // keep spread-open preview only for reserve.
                 var target = getDropZoneAt(touch.clientX, touch.clientY);
                 for (var i = 0; i < _drag.dropZones.length; i++) {
                     if (_drag.dropZones[i] === target) {
                         addClass(_drag.dropZones[i], "drop-zone-hover");
+                        if (_drag.dropZones[i].id !== "playerReserve") {
+                            removeClass(_drag.dropZones[i], "drop-zone-hover");
+                        }
                     } else {
                         removeClass(_drag.dropZones[i], "drop-zone-hover");
                     }
@@ -5233,26 +5983,22 @@
                 if (target) {
                     // Snapshot existing reserve/frontline positions for slide-aside + new card deploy animation (batch 5b items 4+5+6).
                     var preSnap = _snapshotBoardPositions();
-                    // Batch 5i item 2: compute the drop-slot index from mouse X within the
-                    // unit's destination zone (cavalry→frontline row, others→reserve row),
-                    // so the card lands at the cursor rather than at the row's end.
+                    // Compute drop slot from mouse X only for reserve deploys.
+                    // Frontline deploys keep natural order (no slot insertion / spread-aside).
                     var targetSlot;
                     if (droppedInst.def.type === "unit") {
-                        var destRowId, destZoneKey;
-                        if ((droppedInst.def.unitType || "infantry") === "cavalry") {
-                            destRowId = "playerFrontline";
-                            destZoneKey = "frontline";
-                        } else {
-                            destRowId = "playerReserve";
-                            destZoneKey = "reserve";
-                        }
-                        var destRow = document.getElementById(destRowId);
-                        if (destRow) {
-                            var rect = destRow.getBoundingClientRect();
-                            var zoneCountBefore = getUnitsInZone(G.player.board, destZoneKey).length;
-                            var total = zoneCountBefore + 1;
-                            var relX = dropX - rect.left;
-                            targetSlot = Math.max(0, Math.min(total - 1, Math.floor((relX / Math.max(1, rect.width)) * total)));
+                        var unitType = droppedInst.def.unitType || "infantry";
+                        if (unitType !== "cavalry") {
+                            var destRowId = "playerReserve";
+                            var destZoneKey = "reserve";
+                            var destRow = document.getElementById(destRowId);
+                            if (destRow) {
+                                var rect = destRow.getBoundingClientRect();
+                                var zoneCountBefore = getUnitsInZone(G.player.board, destZoneKey).length;
+                                var total = zoneCountBefore + 1;
+                                var relX = dropX - rect.left;
+                                targetSlot = Math.max(0, Math.min(total - 1, Math.floor((relX / Math.max(1, rect.width)) * total)));
+                            }
                         }
                     }
                     playCard(droppedInst, targetSlot);
@@ -5537,6 +6283,10 @@
                         var meta = KEYWORDS[key];
                         if (!meta) continue;
                         var val = instance.def[key];
+                        // Smokescreen is runtime on-board state: once consumed, hide its badge/effect.
+                        if (key === "smokescreen" && onBoard) {
+                            val = !!instance.hasSmokescreen;
+                        }
                         var active = meta.counted ? (val > 0) : !!val;
                         if (active) kwEntries.push({ key: key, meta: meta, val: val });
                     }
@@ -5626,7 +6376,7 @@
                 if (d.veteran) kw.push("Veteran " + d.veteran);
                 if (kw.length) lines.push(kw.join(", "));
                 if (d.battleCryText) lines.push(d.battleCryText);
-                if (d.history) lines.push(d.history);
+                // Unit intro/history is shown in Card Collection only, not in battle tooltips.
                 tooltip.innerHTML = lines.map(function(l) { return '<div>' + l + '</div>'; }).join("");
 
                 card.addEventListener("mouseenter", function() {
@@ -5834,7 +6584,13 @@
                 // to the slot nearest the click position (batch 5b item 7 + 5e item 7).
                 var playerFrontlineZone = document.querySelector(".frontline-zone");
                 if (playerFrontlineZone) {
-                    playerFrontlineZone.addEventListener("click", function(e) {
+                    function _getClientX(evt) {
+                        if (evt && typeof evt.clientX === "number") return evt.clientX;
+                        if (evt && evt.changedTouches && evt.changedTouches[0]) return evt.changedTouches[0].clientX;
+                        if (evt && evt.touches && evt.touches[0]) return evt.touches[0].clientX;
+                        return null;
+                    }
+                    function _moveSelectedToFrontlineAtPointer(e) {
                         if (!selectedCard || !G || G.phase !== "player" || G.gameOver) return;
                         var iType = selectedCard.def.unitType || "infantry";
                         var canMove = selectedCard.zone === "reserve" && iType !== "artillery" && iType !== "naval" && !selectedCard.exhausted;
@@ -5847,7 +6603,8 @@
                                 var rect = row.getBoundingClientRect();
                                 var frontCount = getUnitsInZone(G.player.board, "frontline").length;
                                 // After move, the row will have frontCount+1 slots. Distribute by X position.
-                                var relX = e.clientX - rect.left;
+                                var clientX = _getClientX(e);
+                                var relX = (clientX === null ? rect.width : (clientX - rect.left));
                                 var total = frontCount + 1;
                                 targetSlot = Math.max(0, Math.min(total - 1, Math.floor((relX / Math.max(1, rect.width)) * total)));
                             }
@@ -5855,7 +6612,9 @@
                             selectedCard = null;
                             moveUnitWithAnimation(inst, targetSlot);
                         }
-                    });
+                    }
+                    playerFrontlineZone.addEventListener("click", _moveSelectedToFrontlineAtPointer);
+                    playerFrontlineZone.addEventListener("touchend", _moveSelectedToFrontlineAtPointer, { passive: true });
                 }
                 // Click on empty area (outside cards/zones) deselects (batch 5b item 7/8).
                 document.addEventListener("click", function(e) {
@@ -5870,6 +6629,7 @@
                     render();
                 });
                 var campaignBtn = document.getElementById("campaignBtn");
+                var languageSelect = document.getElementById("languageSelect");
                 var endTurnBtn = document.getElementById("endTurnBtn");
                 var statsBtn = document.getElementById("statsBtn");
                 var playAgainBtn = document.getElementById("playAgainBtn");
@@ -5889,6 +6649,12 @@
                             _difficulty = btn.id.replace("diff", "").toLowerCase();
                         };
                     })(diffBtns[i]));
+                }
+                if (languageSelect) {
+                    languageSelect.value = _lang;
+                    languageSelect.addEventListener("change", function() {
+                        _setLanguage(languageSelect.value || "en");
+                    });
                 }
 
                 if (campaignBtn) {
@@ -6015,6 +6781,8 @@
                     });
                 }
                 var deckBuilderBritishBtn = document.getElementById("deckBuilderBritishBtn");
+                var rankedBtn = document.getElementById("rankedBtn");
+                if (rankedBtn) rankedBtn.addEventListener("click", showRankedScreen);
                 if (deckBuilderBritishBtn) {
                     deckBuilderBritishBtn.addEventListener("click", function() {
                         showDeckBuilder("british");
@@ -6119,6 +6887,13 @@
                 }
 
                 var draftStartBtn = document.getElementById("draftStartBtn");
+                var rankedSearchBtn = document.getElementById("rankedSearchBtn");
+                if (rankedSearchBtn) rankedSearchBtn.addEventListener("click", startRankedSearch);
+                var rankedBackBtn = document.getElementById("rankedBackBtn");
+                if (rankedBackBtn) rankedBackBtn.addEventListener("click", function() {
+                    _cancelRankedSearch();
+                    showMenu();
+                });
                 if (draftStartBtn) {
                     draftStartBtn.addEventListener("click", function() {
                         if (_draftRun && _draftRun.phase === "playing") {
@@ -6143,9 +6918,10 @@
                     }
 
                     if (sType !== "artillery" && sType !== "naval") {
-                        var enemyFront = getUnitsInZone(G.enemy.board, "frontline");
-                        if (enemyFront.length > 0) {
-                            _log("Must clear enemy frontline first!");
+                        // HQ guard rule: only reserve-zone Guards protect HQ.
+                        // Artillery/naval bypass this restriction.
+                        if (hasGuardNearHQ(G.enemy.board)) {
+                            _log("HQ is guarded by reserve Guards! Defeat those reserve guards first (artillery can ignore).");
                             render();
                             return;
                         }
@@ -6239,7 +7015,7 @@
             }
 
             function hideAllScreens() {
-                var screens = ["menuScreen", "gameScreen", "gameOverScreen", "campaignScreen", "deckBuilderScreen", "draftScreen", "shopScreen", "collectionScreen", "packInventoryScreen", "profileScreen"];
+                var screens = ["menuScreen", "gameScreen", "gameOverScreen", "campaignScreen", "deckBuilderScreen", "draftScreen", "rankedScreen", "shopScreen", "collectionScreen", "packInventoryScreen", "profileScreen"];
                 for (var i = 0; i < screens.length; i++) {
                     var el = document.getElementById(screens[i]);
                     if (el) {
@@ -6540,6 +7316,8 @@
 
             function showMenu() {
                 _campaignMode = false;
+                _rankedMode = false;
+                _cancelRankedSearch();
                 hideAllScreens();
                 var menuScreen = document.getElementById("menuScreen");
                 if (menuScreen) addClass(menuScreen, "active");
@@ -6550,6 +7328,285 @@
                 updatePackCountBadge();
                 updateResumeButton();
                 updateMenuAvatar();
+            }
+
+            // ========== RANKED MODE ==========
+            function _setRankedStatus(text) {
+                var status = document.getElementById("rankedStatus");
+                if (status) status.textContent = text || "";
+            }
+            function _getRankedServerUrl() {
+                var fallback = (window.location.protocol === "https:" ? "wss://" : "ws://") + (window.location.hostname || "localhost") + ":8787/ranked";
+                var input = document.getElementById("rankedServerUrlInput");
+                var typed = input ? (input.value || "").trim() : "";
+                if (typed) return typed;
+                try {
+                    var saved = localStorage.getItem(_rankedServerUrlStorageKey);
+                    if (saved && saved.trim()) return saved.trim();
+                } catch (e) {}
+                return fallback;
+            }
+            function _getRankedPlayerName() {
+                var n = (_stats && _stats.playerName) ? String(_stats.playerName).trim() : "";
+                return n || "General";
+            }
+            function _cancelRankedSearch() {
+                if (_rankedSyncTimer) {
+                    clearTimeout(_rankedSyncTimer);
+                    _rankedSyncTimer = null;
+                }
+                if (_rankedSocket) {
+                    try { _rankedSocket.send(JSON.stringify({ type: "queue_leave" })); } catch (e) {}
+                    try { _rankedSocket.close(); } catch (e) {}
+                }
+                _rankedSocket = null;
+                _rankedRoom = null;
+                _rankedChosenSet = null;
+                _rankedOnline = false;
+            }
+            function _serializeGameSnapshot() {
+                if (!G) return null;
+                return {
+                    phase: G.phase || "player",
+                    playerFaction: G.playerFaction,
+                    enemyFaction: G.enemyFaction,
+                    player: _serializeSide(G.player),
+                    enemy: _serializeSide(G.enemy),
+                    turn: G.turn || 1,
+                    gameOver: !!G.gameOver,
+                    winner: G.winner || null,
+                    log: (G.log || []).slice(-20)
+                };
+            }
+            function _applyGameSnapshot(snapshot) {
+                if (!snapshot) return;
+                _rankedSyncMute = true;
+                G = {
+                    phase: snapshot.phase || "player",
+                    playerFaction: snapshot.playerFaction,
+                    enemyFaction: snapshot.enemyFaction,
+                    player: _deserializeSide(snapshot.player || {}),
+                    enemy: _deserializeSide(snapshot.enemy || {}),
+                    turn: snapshot.turn || 1,
+                    gameOver: !!snapshot.gameOver,
+                    winner: snapshot.winner || null,
+                    log: snapshot.log || []
+                };
+                _rankedSyncMute = false;
+                render();
+            }
+            function _sendRanked(type, payload) {
+                if (!_rankedSocket || _rankedSocket.readyState !== WebSocket.OPEN) return false;
+                var data = payload || {};
+                data.type = type;
+                _rankedSocket.send(JSON.stringify(data));
+                return true;
+            }
+            function _syncRankedState() {
+                if (!_rankedOnline || _rankedSyncMute || !_rankedRoom || !_rankedRoom.canAct || !G || G.gameOver) return;
+                _sendRanked("sync_state", { state: _serializeGameSnapshot() });
+            }
+            function _queueRankedSync() {
+                if (_rankedSyncTimer) clearTimeout(_rankedSyncTimer);
+                _rankedSyncTimer = setTimeout(function() {
+                    _rankedSyncTimer = null;
+                    _syncRankedState();
+                }, 120);
+            }
+            function _rankedBeginTurn() {
+                if (!G || G.gameOver) return;
+                for (var r = 0; r < G.player.board.length; r++) {
+                    G.player.board[r].exhausted = false;
+                    G.player.board[r].attacksThisTurn = 0;
+                }
+                if (G.player.maxSupply < 10) G.player.maxSupply += 1;
+                G.player.supply = G.player.maxSupply;
+                _activeSide = G.player;
+                _drawCards(1);
+                _activeSide = null;
+                G.turn += 1;
+                G.phase = "player";
+                _log("— Turn " + G.turn + " — Your turn!");
+                _playBattlefieldTurnAmbience(G.turn);
+                render();
+                _syncRankedState();
+            }
+            function _wireRankedSocket(url) {
+                try {
+                    _rankedSocket = new WebSocket(url);
+                } catch (e) {
+                    _setRankedStatus("Cannot connect to ranked server: " + e.message);
+                    return;
+                }
+                _rankedSocket.onopen = function() {
+                    _setRankedStatus("Connected. Joining ranked queue...");
+                    _sendRanked("queue_join", { name: _getRankedPlayerName() });
+                };
+                _rankedSocket.onmessage = function(ev) {
+                    var msg = null;
+                    try { msg = JSON.parse(ev.data); } catch (e) { return; }
+                    if (!msg || !msg.type) return;
+                    if (msg.type === "queue_waiting") {
+                        _setRankedStatus(_tx("ranked.searching", "Searching for players...\nQueueing with: {deck}", { deck: "#" + (msg.queueSize || 1) }));
+                        return;
+                    }
+                    if (msg.type === "matched") {
+                        _rankedRoom = msg.room || null;
+                        startRankedMatch(_rankedChosenSet, _rankedRoom && _rankedRoom.opponentName);
+                        return;
+                    }
+                    if (msg.type === "state_update" && msg.state) {
+                        _applyGameSnapshot(msg.state);
+                        return;
+                    }
+                    if (msg.type === "turn_changed") {
+                        if (_rankedRoom) _rankedRoom.canAct = !!msg.canAct;
+                        if (msg.canAct) _rankedBeginTurn();
+                        return;
+                    }
+                    if (msg.type === "room_closed") {
+                        _setRankedStatus("Opponent disconnected. Returning to menu.");
+                        _cancelRankedSearch();
+                        setTimeout(showMenu, 900);
+                        return;
+                    }
+                    if (msg.type === "opponent_game_over") {
+                        if (G && !G.gameOver) {
+                            _log("Opponent reported game over.");
+                            render();
+                        }
+                        return;
+                    }
+                    if (msg.type === "error" && msg.message) {
+                        _setRankedStatus(msg.message);
+                    }
+                };
+                _rankedSocket.onclose = function() {
+                    if (!_rankedMode) return;
+                    _setRankedStatus("Disconnected from ranked server.");
+                };
+                _rankedSocket.onerror = function() {
+                    _setRankedStatus("Ranked network error. Check server URL and status.");
+                };
+            }
+            function _shuffleDefs(defs) {
+                var out = defs.slice();
+                for (var i = out.length - 1; i > 0; i--) {
+                    var j = Math.floor(Math.random() * (i + 1));
+                    var tmp = out[i];
+                    out[i] = out[j];
+                    out[j] = tmp;
+                }
+                return out;
+            }
+            function _deckDefsFromIds(ids, faction) {
+                var defs = [];
+                for (var i = 0; i < ids.length; i++) {
+                    var d = _findDefById(ids[i]);
+                    if (d && d.faction === faction) defs.push(d);
+                }
+                return defs;
+            }
+            function _buildRankedDeckOptions() {
+                var opts = [];
+                var saved = getSavedDecks();
+                for (var i = 0; i < saved.length; i++) {
+                    if (!saved[i].cardIds || saved[i].cardIds.length === 0) continue;
+                    opts.push({
+                        key: "saved:" + saved[i].name,
+                        label: "[Saved] " + saved[i].name + " (" + saved[i].faction + ", " + saved[i].cardIds.length + " cards)",
+                        faction: saved[i].faction,
+                        cardIds: saved[i].cardIds.slice()
+                    });
+                }
+                var pOwned = createDeck("patriots", true).map(function(d) { return d.id; });
+                var bOwned = createDeck("british", true).map(function(d) { return d.id; });
+                if (pOwned.length > 0) {
+                    opts.push({ key: "owned:patriots", label: "Owned Pool — Patriots (" + pOwned.length + ")", faction: "patriots", cardIds: pOwned });
+                }
+                if (bOwned.length > 0) {
+                    opts.push({ key: "owned:british", label: "Owned Pool — British (" + bOwned.length + ")", faction: "british", cardIds: bOwned });
+                }
+                return opts;
+            }
+            function showRankedScreen() {
+                _rankedMode = false;
+                _cancelRankedSearch();
+                hideAllScreens();
+                var el = document.getElementById("rankedScreen");
+                if (el) addClass(el, "active");
+                var sel = document.getElementById("rankedDeckSetSelect");
+                var urlInput = document.getElementById("rankedServerUrlInput");
+                if (urlInput) {
+                    urlInput.value = _getRankedServerUrl();
+                    try { localStorage.setItem(_rankedServerUrlStorageKey, urlInput.value); } catch (e) {}
+                }
+                _setRankedStatus(_tx("ranked.chooseDeck", "Choose a deck set to begin matchmaking."));
+                if (!sel) return;
+                sel.innerHTML = "";
+                var opts = _buildRankedDeckOptions();
+                if (opts.length === 0) {
+                    var none = document.createElement("option");
+                    none.value = "";
+                    none.textContent = "No card set available";
+                    sel.appendChild(none);
+                    sel.disabled = true;
+                    return;
+                }
+                sel.disabled = false;
+                for (var i = 0; i < opts.length; i++) {
+                    var o = document.createElement("option");
+                    o.value = opts[i].key;
+                    o.textContent = opts[i].label;
+                    sel.appendChild(o);
+                }
+            }
+            function startRankedSearch() {
+                var sel = document.getElementById("rankedDeckSetSelect");
+                if (!sel || sel.disabled) return;
+                var all = _buildRankedDeckOptions();
+                var chosen = null;
+                for (var i = 0; i < all.length; i++) if (all[i].key === sel.value) { chosen = all[i]; break; }
+                if (!chosen) {
+                    _setRankedStatus(_tx("ranked.selectValidDeck", "Please select a valid deck set."));
+                    return;
+                }
+                var url = _getRankedServerUrl();
+                if (!url) {
+                    _setRankedStatus(_tx("ranked.needUrl", "Please enter a ranked server WebSocket URL."));
+                    return;
+                }
+                try { localStorage.setItem(_rankedServerUrlStorageKey, url); } catch (e) {}
+                _cancelRankedSearch();
+                _rankedChosenSet = chosen;
+                _setRankedStatus(_tx("ranked.searching", "Searching for players...\nQueueing with: {deck}", { deck: chosen.label }));
+                _wireRankedSocket(url);
+            }
+            function startRankedMatch(chosenSet, enemyName) {
+                _rankedMode = true;
+                _rankedOnline = true;
+                _campaignMode = false;
+                var roleSide = (_rankedRoom && _rankedRoom.side) || "patriots";
+                var faction = roleSide;
+                var enemyFaction = faction === "patriots" ? "british" : "patriots";
+                var playerDefs = _deckDefsFromIds(chosenSet.cardIds || [], faction);
+                if (playerDefs.length === 0) {
+                    playerDefs = createDeck(faction, true);
+                }
+                var playerDeck = _shuffleDefs(playerDefs);
+                var enemyDeck = _shuffleDefs(createDeck(enemyFaction, false)).slice(0, playerDeck.length);
+                startGame(faction, {
+                    playerDeck: playerDeck,
+                    enemyDeck: enemyDeck,
+                    enemyName: enemyName || "Ranked Rival"
+                });
+                if (_rankedRoom && !_rankedRoom.canAct) {
+                    G.phase = "enemy";
+                    _log("Opponent's turn...");
+                    render();
+                } else {
+                    _syncRankedState();
+                }
             }
 
             function updatePackCountBadge() {
@@ -7348,10 +8405,12 @@
 
             // ========== PUBLIC API ==========
             function start() {
+                _loadLanguage();
                 initCardDefs();
                 loadCampaignProgress();
                 loadStats();
                 setupEventListeners();
+                _applyLanguageUI();
                 renderAchievements();
             }
 
