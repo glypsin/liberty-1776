@@ -3888,6 +3888,7 @@
                     { id: "patriot_valley_forge", name: "Valley Forge", faction: "patriots", type: "order", cost: 3, atk: 0, hp: 0, opCost: 0, icon: "\u2744", flavor: "Endure the winter", rarity: "rare", battleCry: function() { var side = _activeSide || G.player; for (var i = 0; i < side.board.length; i++) { side.board[i].atk += 1; side.board[i].hp += 1; } _log("All friendly units gain +1/+1!"); }, battleCryText: "All friendly units +1/+1", effect: null, history: "The harsh winter of 1777-78 forged a tougher army" },
                     { id: "patriot_bonhomme", name: "Bonhomme Richard", faction: "patriots", type: "unit", unitType: "infantry", cost: 4, atk: 4, hp: 5, opCost: 1, icon: "\uD83D\uDEA2", flavor: "Jones's flagship", rarity: "rare", blitz: false, guard: true, fury: false, smokescreen: false, heavyArmor: 1, ambush: false, veteran: 0, battleCry: null, effect: null, history: "Jones captured HMS Serapis from this battered ship" },
                     { id: "patriot_sons", name: "Sons of Liberty", faction: "patriots", type: "order", cost: 2, atk: 0, hp: 0, opCost: 0, icon: "\u270A", flavor: "No taxation!", rarity: "common", battleCry: function() { _dealDamageToOpponent(2); }, battleCryText: "Deal 2 damage", effect: null, history: "The Sons of Liberty organized the Boston Tea Party" },
+                    { id: "patriot_delaware", name: "Delaware Night Raid", faction: "patriots", type: "order", cost: 3, atk: 0, hp: 0, opCost: 0, icon: "\u2744\uFE0F", flavor: "Strike across the river", rarity: "rare", battleCry: function() { _dealDamageToOpponent(3); }, battleCryText: "Deal 3 damage", effect: null, history: "Raids along the Delaware kept the Hessians on edge through the winter of 1776" },
                     { id: "patriot_french_fleet", name: "French Fleet", faction: "patriots", type: "unit", unitType: "infantry", cost: 5, atk: 4, hp: 5, opCost: 1, icon: "\u269C", flavor: "Allied armada", rarity: "rare", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 1, ambush: false, veteran: 0, battleCry: function(instance) { _dealDamageToOpponent(2); }, battleCryText: "Battle Cry: Deal 2 damage", effect: null, history: "De Grasse's fleet sealed Cornwallis at Yorktown" },
                     { id: "patriot_hamilton", name: "Alexander Hamilton", faction: "patriots", type: "unit", unitType: "infantry", cost: 3, atk: 3, hp: 3, opCost: 1, icon: "\u2694", image: "assets/portraits/alexander_hamilton.jpg", flavor: "Aide-de-camp", rarity: "common", blitz: true, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, battleCry: null, effect: null, history: "Hamilton led the charge at Yorktown's Redoubt 10" },
                     // British
@@ -4022,8 +4023,9 @@
                     enemyHP = 35;
                 }
 
-                // HQ names are always fixed by faction.
-                var playerDisplayName = playerFaction === "patriots" ? "Washington" : "Cornwallis";
+                // Player HQ name prefers the user's chosen name in Profile; falls back to the
+                // faction-default commander. Enemy is always the faction-default.
+                var playerDisplayName = (_stats && _stats.playerName) ? _stats.playerName : (playerFaction === "patriots" ? "Washington" : "Cornwallis");
                 var enemyDisplayName = enemyFaction === "patriots" ? "Washington" : "Cornwallis";
                 G = {
                     phase: "player",
@@ -6178,17 +6180,22 @@
                     var targetSlot;
                     if (droppedInst.def.type === "unit") {
                         var unitType = droppedInst.def.unitType || "infantry";
-                        if (unitType !== "cavalry") {
-                            var destRowId = "playerReserve";
-                            var destZoneKey = "reserve";
-                            var destRow = document.getElementById(destRowId);
-                            if (destRow) {
-                                var rect = destRow.getBoundingClientRect();
-                                var zoneCountBefore = getUnitsInZone(G.player.board, destZoneKey).length;
-                                var total = zoneCountBefore + 1;
-                                var relX = dropX - rect.left;
-                                targetSlot = Math.max(0, Math.min(total - 1, Math.floor((relX / Math.max(1, rect.width)) * total)));
-                            }
+                        var destRowId, destZoneKey;
+                        if (unitType === "cavalry") {
+                            // Cavalry charge straight to the frontline row on deploy.
+                            destRowId = "playerFrontline";
+                            destZoneKey = "frontline";
+                        } else {
+                            destRowId = "playerReserve";
+                            destZoneKey = "reserve";
+                        }
+                        var destRow = document.getElementById(destRowId);
+                        if (destRow) {
+                            var rect = destRow.getBoundingClientRect();
+                            var zoneCountBefore = getUnitsInZone(G.player.board, destZoneKey).length;
+                            var total = zoneCountBefore + 1;
+                            var relX = dropX - rect.left;
+                            targetSlot = Math.max(0, Math.min(total - 1, Math.floor((relX / Math.max(1, rect.width)) * total)));
                         }
                     }
                     playCard(droppedInst, targetSlot);
@@ -6793,8 +6800,14 @@
                                 var rect = row.getBoundingClientRect();
                                 var frontCount = getUnitsInZone(G.player.board, "frontline").length;
                                 // After move, the row will have frontCount+1 slots. Distribute by X position.
-                                var clientX = _getClientX(e);
-                                var relX = (clientX === null ? rect.width : (clientX - rect.left));
+                                // Primary: e.clientX - rect.left for mouse; fall back to touch coords.
+                                var relX;
+                                if (e && typeof e.clientX === "number") {
+                                    relX = e.clientX - rect.left;
+                                } else {
+                                    var clientX = _getClientX(e);
+                                    relX = (clientX === null ? rect.width : (clientX - rect.left));
+                                }
                                 var total = frontCount + 1;
                                 targetSlot = Math.max(0, Math.min(total - 1, Math.floor((relX / Math.max(1, rect.width)) * total)));
                             }
