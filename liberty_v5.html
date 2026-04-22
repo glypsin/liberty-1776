@@ -688,11 +688,7 @@
 
         .card.hero {
             border-color: #FFD700;
-            box-shadow: 0 0 15px rgba(255, 215, 0, 0.35), 0 2px 8px rgba(0, 0, 0, 0.7);
-        }
-
-        .card.hero::after {
-            content: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
         }
 
         .card.disabled {
@@ -3391,26 +3387,15 @@
                     enemyExtraCards: 0
                 },
                 {
-                    id: "bunkerhill",
-                    name: "Battle of Bunker Hill",
-                    year: "June 1775",
-                    desc: "Hold the hill against waves of British assault. Don't fire until you see the whites of their eyes!",
-                    intro: "Colonial forces fortify Breed's Hill overlooking Boston Harbor. The British launch a frontal assault uphill. Hold your ground, soldier!",
+                    id: "princeton",
+                    name: "Battle of Princeton",
+                    year: "January 1777",
+                    desc: "A real pitched battle on frozen New Jersey farmland. Turn Mawhood's column before the redcoats can re-form!",
+                    intro: "Dawn over the open fields north of Stony Brook. Washington himself rides into musket range to rally the line. Sun-bright frost, orchard walls, open pasture — this is the battleground. Hold the ridge, roll the flank, win the day.",
                     difficulty: "easy",
-                    enemyHP: 25,
+                    enemyHP: 26,
                     playerHP: 30,
                     enemyExtraCards: 0
-                },
-                {
-                    id: "trenton",
-                    name: "Crossing the Delaware",
-                    year: "December 1776",
-                    desc: "A daring Christmas night attack on the Hessian garrison at Trenton.",
-                    intro: "Washington's army crosses the icy Delaware River on Christmas night. The Hessian mercenaries won't expect an attack in this weather. Surprise is your greatest weapon!",
-                    difficulty: "normal",
-                    enemyHP: 30,
-                    playerHP: 30,
-                    enemyExtraCards: 1
                 },
                 {
                     id: "saratoga",
@@ -3903,6 +3888,7 @@
                     { id: "patriot_valley_forge", name: "Valley Forge", faction: "patriots", type: "order", cost: 3, atk: 0, hp: 0, opCost: 0, icon: "\u2744", flavor: "Endure the winter", rarity: "rare", battleCry: function() { var side = _activeSide || G.player; for (var i = 0; i < side.board.length; i++) { side.board[i].atk += 1; side.board[i].hp += 1; } _log("All friendly units gain +1/+1!"); }, battleCryText: "All friendly units +1/+1", effect: null, history: "The harsh winter of 1777-78 forged a tougher army" },
                     { id: "patriot_bonhomme", name: "Bonhomme Richard", faction: "patriots", type: "unit", unitType: "infantry", cost: 4, atk: 4, hp: 5, opCost: 1, icon: "\uD83D\uDEA2", flavor: "Jones's flagship", rarity: "rare", blitz: false, guard: true, fury: false, smokescreen: false, heavyArmor: 1, ambush: false, veteran: 0, battleCry: null, effect: null, history: "Jones captured HMS Serapis from this battered ship" },
                     { id: "patriot_sons", name: "Sons of Liberty", faction: "patriots", type: "order", cost: 2, atk: 0, hp: 0, opCost: 0, icon: "\u270A", flavor: "No taxation!", rarity: "common", battleCry: function() { _dealDamageToOpponent(2); }, battleCryText: "Deal 2 damage", effect: null, history: "The Sons of Liberty organized the Boston Tea Party" },
+                    { id: "patriot_delaware", name: "Delaware Night Raid", faction: "patriots", type: "order", cost: 3, atk: 0, hp: 0, opCost: 0, icon: "\u2744\uFE0F", flavor: "Strike across the river", rarity: "rare", battleCry: function() { _dealDamageToOpponent(3); }, battleCryText: "Deal 3 damage", effect: null, history: "Raids along the Delaware kept the Hessians on edge through the winter of 1776" },
                     { id: "patriot_french_fleet", name: "French Fleet", faction: "patriots", type: "unit", unitType: "infantry", cost: 5, atk: 4, hp: 5, opCost: 1, icon: "\u269C", flavor: "Allied armada", rarity: "rare", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 1, ambush: false, veteran: 0, battleCry: function(instance) { _dealDamageToOpponent(2); }, battleCryText: "Battle Cry: Deal 2 damage", effect: null, history: "De Grasse's fleet sealed Cornwallis at Yorktown" },
                     { id: "patriot_hamilton", name: "Alexander Hamilton", faction: "patriots", type: "unit", unitType: "infantry", cost: 3, atk: 3, hp: 3, opCost: 1, icon: "\u2694", image: "assets/portraits/alexander_hamilton.jpg", flavor: "Aide-de-camp", rarity: "common", blitz: true, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, battleCry: null, effect: null, history: "Hamilton led the charge at Yorktown's Redoubt 10" },
                     // British
@@ -3922,7 +3908,7 @@
                     { id: "british_frigate", name: "HMS Frigate", faction: "british", type: "unit", unitType: "infantry", cost: 3, atk: 3, hp: 4, opCost: 1, icon: "\uD83D\uDEA2", flavor: "Warship", rarity: "common", blitz: false, guard: true, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, battleCry: function(instance) { _dealDamageToOpponent(1); }, battleCryText: "Battle Cry: Deal 1 damage", effect: null, history: "British warships patrolled the Atlantic" },
                     { id: "british_admiral", name: "Admiral Graves", faction: "british", type: "unit", unitType: "infantry", cost: 5, atk: 4, hp: 6, opCost: 2, icon: "\u2693", flavor: "Fleet commander", rarity: "legendary", blitz: false, guard: false, fury: false, smokescreen: false, heavyArmor: 0, ambush: false, veteran: 0, battleCry: function(instance) { _dealDamageToOpponent(2); _drawCards(1); }, battleCryText: "Battle Cry: Deal 2 damage, Draw 1", effect: null, history: "Commanded the British North American fleet" },
                     { id: "british_artillery", name: "Royal Artillery", faction: "british", type: "unit", unitType: "artillery", cost: 2, atk: 4, hp: 1, opCost: 1, icon: "\uD83D\uDCA5", flavor: "Heavy guns", rarity: "common", blitz: false, guard: false, fury: false, smokescreen: true, heavyArmor: 0, ambush: false, veteran: 0, battleCry: null, effect: null, history: "British field cannons were feared in battle" },
-                    { id: "british_burning", name: "Burning of Norfolk", faction: "british", type: "order", cost: 5, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDD25", flavor: "Total destruction", rarity: "legendary", battleCry: function() { var targetId = ((_activeSide || G.player) === G.enemy) ? "playerHQCard" : "enemyHQCard"; var targetEl = document.getElementById(targetId); var srcEl = (_vfxSource && _vfxSource.el) ? _vfxSource.el : null; showBurningBombPass(srcEl, targetEl, function() { _dealDamageToOpponent(5); _igniteOpponentHQ(3000); }); }, battleCryText: "Throw a fire bomb to HQ, deal 5 damage and burn HQ (3s)", effect: null, history: "British burned Norfolk, Virginia in January 1776" },
+                    { id: "british_burning", name: "Burning of Norfolk", faction: "british", type: "order", cost: 5, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDD25", flavor: "Total destruction", rarity: "legendary", battleCry: function() { var targetId = ((_activeSide || G.player) === G.enemy) ? "playerHQCard" : "enemyHQCard"; var targetEl = document.getElementById(targetId); var srcEl = (_vfxSource && _vfxSource.el) ? _vfxSource.el : null; showBurningBombPass(srcEl, targetEl, function() { _playSound("fire_whoosh"); _dealDamageToOpponent(5); _igniteOpponentHQ(3000); }); }, battleCryText: "Throw a fire bomb to HQ, deal 5 damage and burn HQ (3s)", effect: null, history: "British burned Norfolk, Virginia in January 1776" },
                     { id: "british_intel", name: "British Intelligence", faction: "british", type: "order", cost: 3, atk: 0, hp: 0, opCost: 0, icon: "\uD83D\uDD75", flavor: "Spy network", rarity: "rare", battleCry: function() { _drawCards(3); }, battleCryText: "Draw 3", effect: null, history: "Major Andre ran British spy operations" },
                     // British expansion 2
                     { id: "british_clinton", name: "General Clinton", faction: "british", type: "unit", unitType: "infantry", cost: 5, atk: 4, hp: 6, opCost: 1, icon: "\uD83C\uDF96", image: "assets/portraits/henry_clinton.jpg", flavor: "Cautious commander", rarity: "rare", blitz: false, guard: true, fury: false, smokescreen: false, heavyArmor: 1, ambush: false, veteran: 0, battleCry: function(instance) { _drawCards(1); }, battleCryText: "Battle Cry: Draw 1", effect: null, history: "Clinton commanded British forces in North America from 1778" },
@@ -4037,8 +4023,9 @@
                     enemyHP = 35;
                 }
 
-                // HQ names are always fixed by faction.
-                var playerDisplayName = playerFaction === "patriots" ? "Washington" : "Cornwallis";
+                // Player HQ name prefers the user's chosen name in Profile; falls back to the
+                // faction-default commander. Enemy is always the faction-default.
+                var playerDisplayName = (_stats && _stats.playerName) ? _stats.playerName : (playerFaction === "patriots" ? "Washington" : "Cornwallis");
                 var enemyDisplayName = enemyFaction === "patriots" ? "Washington" : "Cornwallis";
                 G = {
                     phase: "player",
@@ -4394,7 +4381,7 @@
                     } else {
                         G.player.board.push(instance);
                     }
-                    _playSound("march");
+                    _playSound("soldier_march");
 
                     var zoneMsg = instance.zone === "frontline" ? (instance.def.unitType === "cavalry" ? " (Cavalry!)" : " to frontline") : (instance.def.blitz ? " to reserve (Blitz!)" : " to reserve");
                     _log("Played " + instance.def.name + zoneMsg + ".");
@@ -4942,7 +4929,7 @@
                                 G.enemy.board.push(bestCard);
                                 var zMsg = bestCard.zone === "frontline" ? (bestCard.def.blitz ? " (Blitz!)" : (uType === "cavalry" ? " (Cavalry!)" : "")) : "";
                                 _log("Enemy plays " + bestCard.def.name + zMsg + ".");
-                                _playSound("march");
+                                _playSound("soldier_march");
 
                                 _enemyUnitsPlayedThisTurn.push(bestCard);
 
@@ -5456,18 +5443,43 @@
                         gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
                         osc.start(now);
                         osc.stop(now + 0.15);
-                    } else if (type === "march") {
-                        var mOsc = ctx.createOscillator();
-                        var mGain = ctx.createGain();
-                        mOsc.connect(mGain);
-                        mGain.connect(ctx.destination);
-                        mOsc.type = "square";
-                        mOsc.frequency.setValueAtTime(110, now);
-                        mOsc.frequency.exponentialRampToValueAtTime(85, now + 0.18);
-                        mGain.gain.setValueAtTime(0.08, now);
-                        mGain.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
-                        mOsc.start(now);
-                        mOsc.stop(now + 0.18);
+                    } else if (type === "march" || type === "soldier_march") {
+                        // Soldier marching: a cadence of four boot thuds on packed earth.
+                        // "soldier_march" is the same pattern but a touch louder/longer,
+                        // used specifically on unit deploy so the column "arrives".
+                        var stepCount = 4;
+                        var stepGap = 0.13;
+                        var loud = type === "soldier_march";
+                        for (var mi = 0; mi < stepCount; mi++) {
+                            var tStep = now + (mi * stepGap);
+                            // Low thud body.
+                            var mOsc = ctx.createOscillator();
+                            var mGain = ctx.createGain();
+                            mOsc.connect(mGain);
+                            mGain.connect(ctx.destination);
+                            mOsc.type = "square";
+                            // Alternate left/right foot with slight pitch variation.
+                            var baseHz = (mi % 2 === 0) ? 118 : 102;
+                            mOsc.frequency.setValueAtTime(baseHz, tStep);
+                            mOsc.frequency.exponentialRampToValueAtTime(baseHz * 0.72, tStep + 0.11);
+                            mGain.gain.setValueAtTime(0, tStep);
+                            mGain.gain.linearRampToValueAtTime(loud ? 0.11 : 0.08, tStep + 0.015);
+                            mGain.gain.exponentialRampToValueAtTime(0.01, tStep + 0.14);
+                            mOsc.start(tStep);
+                            mOsc.stop(tStep + 0.15);
+                            // Tiny boot scuff click on top of the thud.
+                            var scOsc = ctx.createOscillator();
+                            var scGain = ctx.createGain();
+                            scOsc.connect(scGain);
+                            scGain.connect(ctx.destination);
+                            scOsc.type = "triangle";
+                            scOsc.frequency.setValueAtTime(520, tStep);
+                            scOsc.frequency.exponentialRampToValueAtTime(260, tStep + 0.04);
+                            scGain.gain.setValueAtTime(loud ? 0.05 : 0.035, tStep);
+                            scGain.gain.exponentialRampToValueAtTime(0.005, tStep + 0.05);
+                            scOsc.start(tStep);
+                            scOsc.stop(tStep + 0.06);
+                        }
                     } else if (type === "order_bombard") {
                         var bOsc = ctx.createOscillator();
                         var bGain = ctx.createGain();
@@ -5532,30 +5544,184 @@
                             cmdOsc.start(now + (ci * 0.09));
                             cmdOsc.stop(now + (ci * 0.09) + 0.16);
                         }
+                    } else if (type === "order_naval") {
+                        // Naval orders: a ship's bell (two quick clangs) over a low water rumble.
+                        var bellFreqs = [880, 880];
+                        for (var bi = 0; bi < bellFreqs.length; bi++) {
+                            var bT = now + bi * 0.18;
+                            var bOscN = ctx.createOscillator();
+                            var bGainN = ctx.createGain();
+                            bOscN.connect(bGainN);
+                            bGainN.connect(ctx.destination);
+                            bOscN.type = "triangle";
+                            bOscN.frequency.setValueAtTime(bellFreqs[bi], bT);
+                            bGainN.gain.setValueAtTime(0, bT);
+                            bGainN.gain.linearRampToValueAtTime(0.09, bT + 0.01);
+                            bGainN.gain.exponentialRampToValueAtTime(0.01, bT + 0.32);
+                            bOscN.start(bT);
+                            bOscN.stop(bT + 0.35);
+                        }
+                        // Low water hum under the bell.
+                        var waveOsc = ctx.createOscillator();
+                        var waveGain = ctx.createGain();
+                        waveOsc.connect(waveGain);
+                        waveGain.connect(ctx.destination);
+                        waveOsc.type = "sine";
+                        waveOsc.frequency.setValueAtTime(70, now);
+                        waveOsc.frequency.linearRampToValueAtTime(55, now + 0.5);
+                        waveGain.gain.setValueAtTime(0.06, now);
+                        waveGain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                        waveOsc.start(now);
+                        waveOsc.stop(now + 0.52);
+                    } else if (type === "order_heal") {
+                        // Medical/healing: soft rising chime (C-E-G arpeggio on sine).
+                        var healFreqs = [523, 659, 784];
+                        for (var hi = 0; hi < healFreqs.length; hi++) {
+                            var hT = now + hi * 0.08;
+                            var hOsc = ctx.createOscillator();
+                            var hGain = ctx.createGain();
+                            hOsc.connect(hGain);
+                            hGain.connect(ctx.destination);
+                            hOsc.type = "sine";
+                            hOsc.frequency.setValueAtTime(healFreqs[hi], hT);
+                            hGain.gain.setValueAtTime(0, hT);
+                            hGain.gain.linearRampToValueAtTime(0.05, hT + 0.02);
+                            hGain.gain.exponentialRampToValueAtTime(0.01, hT + 0.22);
+                            hOsc.start(hT);
+                            hOsc.stop(hT + 0.24);
+                        }
+                    } else if (type === "order_victory") {
+                        // Victory trumpet fanfare: bugle-like triangle wave on G-C-E-G.
+                        var vFreqs = [392, 523, 659, 784];
+                        var vTimes = [0, 0.1, 0.2, 0.3];
+                        var vDurs  = [0.1, 0.1, 0.1, 0.35];
+                        for (var vi = 0; vi < vFreqs.length; vi++) {
+                            var vT = now + vTimes[vi];
+                            var vOsc = ctx.createOscillator();
+                            var vGain = ctx.createGain();
+                            vOsc.connect(vGain);
+                            vGain.connect(ctx.destination);
+                            vOsc.type = "triangle";
+                            vOsc.frequency.setValueAtTime(vFreqs[vi], vT);
+                            vGain.gain.setValueAtTime(0, vT);
+                            vGain.gain.linearRampToValueAtTime(0.09, vT + 0.015);
+                            vGain.gain.exponentialRampToValueAtTime(0.01, vT + vDurs[vi]);
+                            vOsc.start(vT);
+                            vOsc.stop(vT + vDurs[vi] + 0.02);
+                        }
+                    } else if (type === "order_scroll") {
+                        // Political documents: paper unfurl (short sweeping noise).
+                        for (var pi = 0; pi < 20; pi++) {
+                            var pT = now + pi * 0.012;
+                            var pOsc = ctx.createOscillator();
+                            var pGain = ctx.createGain();
+                            pOsc.connect(pGain);
+                            pGain.connect(ctx.destination);
+                            pOsc.type = "sawtooth";
+                            // Rising, slightly jittery frequency to mimic paper rustle.
+                            pOsc.frequency.setValueAtTime(1600 + pi * 40 + Math.random() * 220, pT);
+                            pGain.gain.setValueAtTime(0, pT);
+                            pGain.gain.linearRampToValueAtTime(0.025, pT + 0.005);
+                            pGain.gain.exponentialRampToValueAtTime(0.005, pT + 0.03);
+                            pOsc.start(pT);
+                            pOsc.stop(pT + 0.04);
+                        }
+                        // Wax-seal thud at the end.
+                        var sealOsc = ctx.createOscillator();
+                        var sealGain = ctx.createGain();
+                        sealOsc.connect(sealGain);
+                        sealGain.connect(ctx.destination);
+                        sealOsc.type = "sine";
+                        sealOsc.frequency.setValueAtTime(160, now + 0.28);
+                        sealOsc.frequency.exponentialRampToValueAtTime(80, now + 0.36);
+                        sealGain.gain.setValueAtTime(0.1, now + 0.28);
+                        sealGain.gain.exponentialRampToValueAtTime(0.01, now + 0.38);
+                        sealOsc.start(now + 0.28);
+                        sealOsc.stop(now + 0.4);
                     } else if (type === "crowd_shout") {
                         var cOsc = ctx.createOscillator();
                         var cGain = ctx.createGain();
                         cOsc.connect(cGain);
                         cGain.connect(ctx.destination);
                         cOsc.type = "sawtooth";
-                        cOsc.frequency.setValueAtTime(320, now);
-                        cOsc.frequency.exponentialRampToValueAtTime(180, now + 0.25);
+                        // Per-shout pitch jitter so a stacked crowd sounds like many voices, not one.
+                        var cStart = 280 + Math.random() * 120;
+                        var cEnd = 140 + Math.random() * 80;
+                        cOsc.frequency.setValueAtTime(cStart, now);
+                        cOsc.frequency.exponentialRampToValueAtTime(cEnd, now + 0.22);
                         cGain.gain.setValueAtTime(0.05, now);
                         cGain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
                         cOsc.start(now);
                         cOsc.stop(now + 0.25);
+                    } else if (type === "crowd_shout_solo") {
+                        // A lone war cry: louder, longer, more melodic than a crowd shout.
+                        var soloOsc = ctx.createOscillator();
+                        var soloGain = ctx.createGain();
+                        soloOsc.connect(soloGain);
+                        soloGain.connect(ctx.destination);
+                        soloOsc.type = "sawtooth";
+                        soloOsc.frequency.setValueAtTime(260, now);
+                        soloOsc.frequency.linearRampToValueAtTime(420, now + 0.12);
+                        soloOsc.frequency.exponentialRampToValueAtTime(180, now + 0.55);
+                        soloGain.gain.setValueAtTime(0, now);
+                        soloGain.gain.linearRampToValueAtTime(0.12, now + 0.06);
+                        soloGain.gain.exponentialRampToValueAtTime(0.01, now + 0.55);
+                        soloOsc.start(now);
+                        soloOsc.stop(now + 0.55);
                     } else if (type === "heavy_gunshot") {
+                        // Musket blast: bright crack into a low boom.
+                        var crackOsc = ctx.createOscillator();
+                        var crackGain = ctx.createGain();
+                        crackOsc.connect(crackGain);
+                        crackGain.connect(ctx.destination);
+                        crackOsc.type = "square";
+                        crackOsc.frequency.setValueAtTime(900, now);
+                        crackOsc.frequency.exponentialRampToValueAtTime(220, now + 0.06);
+                        crackGain.gain.setValueAtTime(0.18, now);
+                        crackGain.gain.exponentialRampToValueAtTime(0.01, now + 0.06);
+                        crackOsc.start(now);
+                        crackOsc.stop(now + 0.06);
+
                         var gOsc = ctx.createOscillator();
                         var gGain = ctx.createGain();
                         gOsc.connect(gGain);
                         gGain.connect(ctx.destination);
                         gOsc.type = "triangle";
-                        gOsc.frequency.setValueAtTime(140, now);
-                        gOsc.frequency.exponentialRampToValueAtTime(40, now + 0.22);
-                        gGain.gain.setValueAtTime(0.14, now);
-                        gGain.gain.exponentialRampToValueAtTime(0.01, now + 0.22);
-                        gOsc.start(now);
-                        gOsc.stop(now + 0.22);
+                        gOsc.frequency.setValueAtTime(160, now);
+                        gOsc.frequency.exponentialRampToValueAtTime(38, now + 0.28);
+                        gGain.gain.setValueAtTime(0.2, now + 0.02);
+                        gGain.gain.exponentialRampToValueAtTime(0.01, now + 0.32);
+                        gOsc.start(now + 0.02);
+                        gOsc.stop(now + 0.32);
+                    } else if (type === "fire_whoosh") {
+                        // A burning bomb hitting ground: low impact thud + noisy crackling whoosh.
+                        var fbOsc = ctx.createOscillator();
+                        var fbGain = ctx.createGain();
+                        fbOsc.connect(fbGain);
+                        fbGain.connect(ctx.destination);
+                        fbOsc.type = "sawtooth";
+                        fbOsc.frequency.setValueAtTime(180, now);
+                        fbOsc.frequency.exponentialRampToValueAtTime(60, now + 0.18);
+                        fbGain.gain.setValueAtTime(0.14, now);
+                        fbGain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                        fbOsc.start(now);
+                        fbOsc.stop(now + 0.22);
+
+                        // Crackle: a flurry of high detuned blips to evoke flame roar.
+                        for (var fi = 0; fi < 14; fi++) {
+                            var fT = now + 0.04 + (fi * 0.035) + Math.random() * 0.02;
+                            var fOscC = ctx.createOscillator();
+                            var fGainC = ctx.createGain();
+                            fOscC.connect(fGainC);
+                            fGainC.connect(ctx.destination);
+                            fOscC.type = "triangle";
+                            fOscC.frequency.setValueAtTime(1800 + Math.random() * 1400, fT);
+                            fGainC.gain.setValueAtTime(0, fT);
+                            fGainC.gain.linearRampToValueAtTime(0.04, fT + 0.006);
+                            fGainC.gain.exponentialRampToValueAtTime(0.002, fT + 0.06);
+                            fOscC.start(fT);
+                            fOscC.stop(fT + 0.07);
+                        }
                     } else if (type === "dying_voice") {
                         var dOsc = ctx.createOscillator();
                         var dGain = ctx.createGain();
@@ -5626,16 +5792,29 @@
             function _playOrderSound(def) {
                 if (!def) return;
                 var id = def.id || "";
-                // Finer order family routing so different order categories sound distinct.
-                if (id.indexOf("bombard") >= 0 || id.indexOf("burning") >= 0 || id.indexOf("cannon") >= 0 || id.indexOf("yorktown") >= 0 || id.indexOf("monmouth") >= 0) {
+                // Order family routing so every order type sounds distinct.
+                // Order matters: more specific matches come first.
+                if (id.indexOf("burning") >= 0) {
+                    // Burning of Norfolk already plays its own fire_whoosh on impact;
+                    // precede it with an artillery thump so the card "launches" audibly.
                     _playSound("order_bombard");
-                } else if (id.indexOf("rally") >= 0 || id.indexOf("declaration") >= 0 || id.indexOf("liberty") >= 0 || id.indexOf("bayonet") >= 0) {
+                } else if (id.indexOf("bombard") >= 0 || id.indexOf("cannon") >= 0 || id.indexOf("yorktown") >= 0 || id.indexOf("monmouth") >= 0 || id.indexOf("brandywine") >= 0) {
+                    _playSound("order_bombard");
+                } else if (id.indexOf("blockade") >= 0 || id.indexOf("press_gang") >= 0 || id.indexOf("admiralty") >= 0) {
+                    _playSound("order_naval");
+                } else if (id.indexOf("surgeon") >= 0 || id.indexOf("physician") >= 0 || id.indexOf("loyalist_aid") >= 0 || id.indexOf("winter_quarters") >= 0) {
+                    _playSound("order_heal");
+                } else if (id.indexOf("saratoga") >= 0) {
+                    _playSound("order_victory");
+                } else if (id.indexOf("declaration") >= 0 || id.indexOf("articles") >= 0 || id.indexOf("tea_act") >= 0 || id.indexOf("taxact") >= 0 || id.indexOf("loyalist_oath") >= 0 || id.indexOf("act_supremacy") >= 0) {
+                    _playSound("order_scroll");
+                } else if (id.indexOf("rally") >= 0 || id.indexOf("liberty") >= 0 || id.indexOf("bayonet") >= 0 || id.indexOf("sons") >= 0) {
                     _playSound("order_rally");
                 } else if (id.indexOf("spy") >= 0 || id.indexOf("intel") >= 0 || id.indexOf("andre") >= 0) {
                     _playSound("order_intel");
-                } else if (id.indexOf("fortify") >= 0 || id.indexOf("martial") >= 0 || id.indexOf("quarters") >= 0 || id.indexOf("physician") >= 0 || id.indexOf("aid") >= 0) {
+                } else if (id.indexOf("fortify") >= 0 || id.indexOf("martial") >= 0) {
                     _playSound("order_fortify");
-                } else if (id.indexOf("warbonds") >= 0 || id.indexOf("quartermaster") >= 0 || id.indexOf("admiralty") >= 0 || id.indexOf("taxact") >= 0 || id.indexOf("articles") >= 0 || id.indexOf("saratoga2") >= 0 || id.indexOf("tea_act") >= 0) {
+                } else if (id.indexOf("warbonds") >= 0 || id.indexOf("quartermaster") >= 0) {
                     _playSound("order_command");
                 } else {
                     _playSound("card");
@@ -5643,11 +5822,24 @@
             }
             function _playBattlefieldTurnAmbience(turnNumber) {
                 if (!turnNumber || turnNumber % 3 !== 0) return;
-                setTimeout(function() { _playSound("crowd_shout"); }, 100);
-                setTimeout(function() { _playSound("crowd_shout"); }, 380);
-                setTimeout(function() { _playSound("crowd_shout"); }, 640);
-                setTimeout(function() { _playSound("heavy_gunshot"); }, 980);
-                setTimeout(function() { _playSound("dying_voice"); }, 1350);
+                // Phase 1: a lone war cry opens the bar.
+                setTimeout(function() { _playSound("crowd_shout_solo"); }, 80);
+                // Phase 2: a roar of many shouts answer it (staggered for a crowd feel).
+                var manyShouts = [520, 640, 720, 820, 900, 1000, 1120, 1240, 1360];
+                for (var si = 0; si < manyShouts.length; si++) {
+                    (function(t) {
+                        setTimeout(function() { _playSound("crowd_shout"); }, t);
+                    })(manyShouts[si]);
+                }
+                // Phase 3: a volley of heavy gunshots rolls across the line.
+                var gunshots = [1550, 1720, 1900, 2070, 2280];
+                for (var gi = 0; gi < gunshots.length; gi++) {
+                    (function(t) {
+                        setTimeout(function() { _playSound("heavy_gunshot"); }, t);
+                    })(gunshots[gi]);
+                }
+                // Phase 4: a man falls with a dying voice after the volley.
+                setTimeout(function() { _playSound("dying_voice"); }, 2650);
             }
 
             // ========== DOM HELPERS ==========
@@ -5988,17 +6180,22 @@
                     var targetSlot;
                     if (droppedInst.def.type === "unit") {
                         var unitType = droppedInst.def.unitType || "infantry";
-                        if (unitType !== "cavalry") {
-                            var destRowId = "playerReserve";
-                            var destZoneKey = "reserve";
-                            var destRow = document.getElementById(destRowId);
-                            if (destRow) {
-                                var rect = destRow.getBoundingClientRect();
-                                var zoneCountBefore = getUnitsInZone(G.player.board, destZoneKey).length;
-                                var total = zoneCountBefore + 1;
-                                var relX = dropX - rect.left;
-                                targetSlot = Math.max(0, Math.min(total - 1, Math.floor((relX / Math.max(1, rect.width)) * total)));
-                            }
+                        var destRowId, destZoneKey;
+                        if (unitType === "cavalry") {
+                            // Cavalry charge straight to the frontline row on deploy.
+                            destRowId = "playerFrontline";
+                            destZoneKey = "frontline";
+                        } else {
+                            destRowId = "playerReserve";
+                            destZoneKey = "reserve";
+                        }
+                        var destRow = document.getElementById(destRowId);
+                        if (destRow) {
+                            var rect = destRow.getBoundingClientRect();
+                            var zoneCountBefore = getUnitsInZone(G.player.board, destZoneKey).length;
+                            var total = zoneCountBefore + 1;
+                            var relX = dropX - rect.left;
+                            targetSlot = Math.max(0, Math.min(total - 1, Math.floor((relX / Math.max(1, rect.width)) * total)));
                         }
                     }
                     playCard(droppedInst, targetSlot);
@@ -6603,8 +6800,14 @@
                                 var rect = row.getBoundingClientRect();
                                 var frontCount = getUnitsInZone(G.player.board, "frontline").length;
                                 // After move, the row will have frontCount+1 slots. Distribute by X position.
-                                var clientX = _getClientX(e);
-                                var relX = (clientX === null ? rect.width : (clientX - rect.left));
+                                // Primary: e.clientX - rect.left for mouse; fall back to touch coords.
+                                var relX;
+                                if (e && typeof e.clientX === "number") {
+                                    relX = e.clientX - rect.left;
+                                } else {
+                                    var clientX = _getClientX(e);
+                                    relX = (clientX === null ? rect.width : (clientX - rect.left));
+                                }
                                 var total = frontCount + 1;
                                 targetSlot = Math.max(0, Math.min(total - 1, Math.floor((relX / Math.max(1, rect.width)) * total)));
                             }
